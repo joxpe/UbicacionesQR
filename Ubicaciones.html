@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>Registro SKUs - LIMSA Cloud</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    
+    <style>
+        .loading-spinner { border-top-color: #3b82f6; animation: spinner 0.6s linear infinite; }
+        @keyframes spinner { to { transform: rotate(360deg); } }
+        .animate-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Evitar zoom automático en iPhone al tocar inputs */
+        input[type="text"] { font-size: 16px !important; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen font-sans">
+
+    <div id="pantallaSelector" class="max-w-md mx-auto p-6">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">LIMSA Cloud</h1>
+            <p class="text-slate-500 font-medium">Registro de SKUs por Ubicación</p>
+        </header>
+        <div class="grid grid-cols-3 gap-3" id="gridAlmacenes">
+            </div>
+    </div>
+
+    <div id="pantallaApp" class="hidden flex flex-col min-h-screen">
+        <header class="bg-white border-b p-4 sticky top-0 z-30 shadow-sm flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <button onclick="regresarAlSelector()" class="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                    <svg class="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <div>
+                    <p id="txtAlmacen" class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold inline-block uppercase tracking-widest"></p>
+                    <h1 class="text-lg font-bold block">Registro de SKUs</h1>
+                </div>
+            </div>
+            <div id="globalLoader" class="hidden w-5 h-5 border-2 border-blue-500 rounded-full loading-spinner"></div>
+        </header>
+
+        <main class="max-w-md mx-auto p-4 space-y-4 pb-32 w-full">
+            
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2 tracking-wider">1. Ubicación de Destino</label>
+                <div class="flex gap-2">
+                    <input type="text" id="inputUbicacion" placeholder="Ej: A08-C" 
+                        class="flex-1 border border-slate-200 rounded-xl px-4 py-3 uppercase focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    <button onclick="abrirScanner('ubicacion')" class="bg-blue-50 text-blue-600 p-3 rounded-xl border border-blue-100 active:scale-90 transition-transform">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke-width="2"/></svg>
+                    </button>
+                </div>
+                <div id="statusUbicacion" class="mt-3 flex items-center gap-2 text-blue-700 hidden animate-in">
+                    <span class="bg-blue-100 p-1 rounded-md">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg>
+                    </span>
+                    <span class="font-bold tracking-tight uppercase" id="valUbicacion"></span>
+                </div>
+            </div>
+
+            <div id="cardExistentes" class="hidden bg-slate-100 p-4 rounded-2xl border border-dashed border-slate-300 animate-in">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">📦 Ya registrados aquí</h3>
+                    <button onclick="cargarExistentes(ubicacionActiva)" class="text-blue-600 text-[10px] font-bold bg-white px-2 py-1 rounded-lg shadow-sm border border-slate-200">ACTUALIZAR</button>
+                </div>
+                <div id="listaExistentes" class="space-y-2">
+                    </div>
+            </div>
+
+            <div id="cardCaptura" class="hidden bg-white p-5 rounded-2xl shadow-sm border border-slate-200 animate-in">
+                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2 tracking-wider">2. Escaneo de Mercancía</label>
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="inputSku" placeholder="Escanea SKU o EAN..." 
+                        class="flex-1 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 outline-none transition-all">
+                    <button onclick="abrirScanner('sku')" class="bg-green-50 text-green-600 p-3 rounded-xl border border-green-100 active:scale-90 transition-transform">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 4v16m8-8H4" stroke-width="2"/></svg>
+                    </button>
+                </div>
+                <div id="listaNuevos" class="space-y-3">
+                    </div>
+            </div>
+        </main>
+
+        <div id="footerAcciones" class="hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-20">
+            <div class="max-w-md mx-auto flex gap-3">
+                <button onclick="limpiarTodo()" class="flex-1 py-4 bg-slate-100 rounded-2xl font-bold text-slate-600 active:bg-slate-200 transition-colors uppercase text-sm">Limpiar</button>
+                <button id="btnGuardar" onclick="guardarLote()" disabled 
+                    class="flex-[2] py-4 bg-blue-600 rounded-2xl font-bold text-white shadow-lg shadow-blue-200 disabled:bg-slate-300 disabled:shadow-none transition-all uppercase text-sm tracking-wide">
+                    Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalScanner" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex flex-col items-center justify-center p-6">
+        <div class="w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl">
+            <div id="reader"></div>
+        </div>
+        <button onclick="cerrarScanner()" class="mt-8 bg-white/10 text-white border border-white/20 px-10 py-3 rounded-full font-bold backdrop-blur-md">Cerrar</button>
+    </div>
+
+    <script>
+        // Configuración de Supabase
+        const SB_URL = "https://smlalagqfphliastgjbh.supabase.co/rest/v1/";
+        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtbGFsYWdxZnBobGlhc3RnamJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExODc3ODIsImV4cCI6MjA3Njc2Mzc4Mn0.L4bp6sGzzjiNsGSY1fTYolSLxvVoJh1ENon9Prw1CZA";
+        
+        const ALMACENES = ["ai","ac","as","at","am","al","ab","ag","aa","ad","ah","aj"];
+
+        let almacenActual = "";
+        let ubicacionActiva = "";
+        let skusNuevos = [];
+        let html5QrCode = null;
+
+        // --- SELECTOR DE ALMACENES ---
+        const grid = document.getElementById('gridAlmacenes');
+        ALMACENES.forEach(alm => {
+            const btn = document.createElement('button');
+            btn.className = "bg-white border border-slate-200 p-4 rounded-2xl font-extrabold text-lg text-slate-700 shadow-sm active:bg-blue-600 active:text-white active:scale-95 transition-all uppercase";
+            btn.innerText = alm;
+            btn.onclick = () => {
+                almacenActual = alm;
+                document.getElementById('txtAlmacen').innerText = alm;
+                document.getElementById('pantallaSelector').classList.add('hidden');
+                document.getElementById('pantallaApp').classList.remove('hidden');
+                document.getElementById('inputUbicacion').focus();
+            };
+            grid.appendChild(btn);
+        });
+
+        // --- EVENTOS TECLADO ---
+        document.getElementById('inputUbicacion').addEventListener('keypress', e => { if(e.key === 'Enter') procesarUbicacion(e.target.value); });
+        document.getElementById('inputSku').addEventListener('keypress', e => { if(e.key === 'Enter') procesarSku(e.target.value); });
+
+        // --- LOGICA UBICACIÓN ---
+        async function procesarUbicacion(val) {
+            const u = val.toUpperCase().trim();
+            if(!/^[A-Z]\d{2}-[A-Z]$/.test(u)) { 
+                alert("⚠️ Formato incorrecto. Debe ser como: A08-C"); 
+                return; 
+            }
+            ubicacionActiva = u;
+            document.getElementById('valUbicacion').innerText = u;
+            document.getElementById('statusUbicacion').classList.remove('hidden');
+            document.getElementById('cardCaptura').classList.remove('hidden');
+            document.getElementById('footerAcciones').classList.remove('hidden');
+            
+            await cargarExistentes(u);
+            document.getElementById('inputSku').focus();
+        }
+
+        async function cargarExistentes(u) {
+            const lista = document.getElementById('listaExistentes');
+            document.getElementById('cardExistentes').classList.remove('hidden');
+            lista.innerHTML = `<div class="flex justify-center py-4"><div class="w-6 h-6 border-2 border-blue-500 rounded-full loading-spinner"></div></div>`;
+            try {
+                // Buscamos códigos en la ubicación activa
+                const query = `almacen=eq.${almacenActual.toLowerCase()}&or=(ubicacion_1.eq.${u},ubicacion_2.eq.${u},ubicacion_3.eq.${u},ubicacion_4.eq.${u})&select=codigo`;
+                const res = await fetch(`${SB_URL}almacen_datos?${query}`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
+                const data = await res.json();
+                
+                if(data.length === 0) {
+                    lista.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-2">Sin registros previos en esta zona.</p>`;
+                    return;
+                }
+
+                // Cruzamos con catalogo_articulos para traer los nombres (Igual que en tu SwiftUI)
+                let codigos = data.map(d => d.codigo.toLowerCase());
+                const resCat = await fetch(`${SB_URL}catalogo_articulos?articulo=in.("${codigos.join('","')}")&select=articulo,nombre`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
+                const catData = await resCat.json();
+                const descMap = Object.fromEntries(catData.map(c => [c.articulo.toLowerCase(), c.nombre]));
+
+                lista.innerHTML = data.map(d => `
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm animate-in">
+                        <div class="min-w-0 flex-1">
+                            <p class="font-bold text-xs text-slate-800 tracking-tight">${d.codigo.toUpperCase()}</p>
+                            <p class="text-[10px] text-slate-500 truncate uppercase font-medium">${descMap[d.codigo.toLowerCase()] || 'Sin descripción'}</p>
+                        </div>
+                        <button onclick="eliminarFisico('${d.codigo}')" class="ml-2 text-red-300 hover:text-red-500 p-2 text-xl font-light">&times;</button>
+                    </div>`).join('');
+            } catch (e) { lista.innerHTML = "Error de conexión con la nube."; }
+        }
+
+        // --- LÓGICA SKU (CON CATÁLOGO) ---
+        async function procesarSku(val) {
+            const raw = val.trim();
+            if(!raw) return;
+            document.getElementById('globalLoader').classList.remove('hidden');
+            
+            let articuloId = raw;
+            let nombreArticulo = "Cargando...";
+
+            try {
+                // Resolución de EAN (Buscamos en almacen_datos si existe el vínculo)
+                const esEan = !raw.startsWith("30") && /^\d+$/.test(raw);
+                if(esEan) {
+                    const resEan = await fetch(`${SB_URL}almacen_datos?codigo_barra=eq.${raw}&select=codigo&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
+                    const dataEan = await resEan.json();
+                    if(dataEan[0]) {
+                        articuloId = dataEan[0].codigo;
+                    } else {
+                        alert("❌ EAN no vinculado en base de datos.");
+                        document.getElementById('globalLoader').classList.add('hidden');
+                        return;
+                    }
+                }
+
+                // Búsqueda en Catálogo Maestro (Para traer el NOMBRE correcto con acentos)
+                const resCat = await fetch(`${SB_URL}catalogo_articulos?articulo=eq.${articuloId.toLowerCase()}&select=nombre&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
+                const dataCat = await resCat.json();
+                nombreArticulo = dataCat[0]?.nombre || "ARTÍCULO NUEVO (SIN CATÁLOGO)";
+
+                // Evitar duplicados en la lista de captura actual
+                if(skusNuevos.find(s => s.articulo.toLowerCase() === articuloId.toLowerCase())) {
+                    document.getElementById('inputSku').value = "";
+                    document.getElementById('globalLoader').classList.add('hidden');
+                    return;
+                }
+
+                skusNuevos.push({ articulo: articuloId, nombre: nombreArticulo });
+                renderNuevos();
+                document.getElementById('inputSku').value = "";
+                document.getElementById('btnGuardar').disabled = false;
+            } catch (e) { alert("Error al consultar el catálogo."); }
+            
+            document.getElementById('globalLoader').classList.add('hidden');
+        }
+
+        function renderNuevos() {
+            const div = document.getElementById('listaNuevos');
+            div.innerHTML = skusNuevos.map((s, idx) => `
+                <div class="bg-green-50 border border-green-100 p-3 rounded-xl flex justify-between items-center animate-in shadow-sm">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-black text-green-800 text-xs tracking-tighter">${s.articulo.toUpperCase()}</p>
+                        <p class="text-[10px] text-green-600 truncate uppercase font-bold">${s.nombre}</p>
+                    </div>
+                    <button onclick="skusNuevos.splice(${idx},1);renderNuevos();" class="ml-2 bg-green-200/50 text-green-800 rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs">✕</button>
+                </div>`).join('');
+        }
+
+        // --- GUARDADO FINAL (SLOTS 1-4) ---
+        async function guardarLote() {
+            const btn = document.getElementById('btnGuardar');
+            btn.disabled = true;
+            btn.innerText = "SINCRONIZANDO...";
+
+            for (const item of skusNuevos) {
+                await upsertEnSlots(item.articulo.toLowerCase());
+            }
+
+            alert("✅ ¡Sincronizado con éxito!");
+            limpiarTodo();
+            await cargarExistentes(ubicacionActiva);
+        }
+
+        async function upsertEnSlots(articulo) {
+            // Buscamos si el artículo ya existe en este almacén en alguna ubicación
+            const res = await fetch(`${SB_URL}almacen_datos?codigo=eq.${articulo}&almacen=eq.${almacenActual.toLowerCase()}`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
+            const fila = (await res.json())[0];
+            
+            // Fecha local con formato Supabase (YYYY-MM-DD HH:MM:SS)
+            const now = new Date().toLocaleString('sv-SE').replace('T', ' ');
+
+            if(!fila) {
+                // Caso Nuevo: No existe el SKU en el almacén
+                await fetch(`${SB_URL}almacen_datos`, {
+                    method: 'POST',
+                    headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        codigo: articulo, 
+                        almacen: almacenActual.toLowerCase(), 
+                        ubicacion_1: ubicacionActiva, 
+                        estado_1: "OK", 
+                        fecha_1: now 
+                    })
+                });
+            } else {
+                // Caso Actualizar: Buscamos slot vacío (del 1 al 4)
+                let slot = 1;
+                if(!fila.ubicacion_1) slot = 1;
+                else if(!fila.ubicacion_2) slot = 2;
+                else if(!fila.ubicacion_3) slot = 3;
+                else slot = 4; // Si todos llenos, pisa el 4 por política de negocio
+
+                let p = {};
+                p[`ubicacion_${slot}`] = ubicacionActiva;
+                p[`estado_${slot}`] = "OK";
+                p[`fecha_${slot}`] = now;
+
+                await fetch(`${SB_URL}almacen_datos?codigo=eq.${articulo}&almacen=eq.${almacenActual.toLowerCase()}`, {
+                    method: 'PATCH',
+                    headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" },
+                    body: JSON.stringify(p)
+                });
+            }
+        }
+
+        async function eliminarFisico(codigo) {
+            if(!confirm(`¿Quitar ${codigo.toUpperCase()} de ${ubicacionActiva}?`)) return;
+            const res = await fetch(`${SB_URL}almacen_datos?codigo=eq.${codigo}&almacen=eq.${almacenActual.toLowerCase()}`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
+            const fila = (await res.json())[0];
+            if(!fila) return;
+
+            let slot = 0;
+            if(fila.ubicacion_1 === ubicacionActiva) slot = 1;
+            else if(fila.ubicacion_2 === ubicacionActiva) slot = 2;
+            else if(fila.ubicacion_3 === ubicacionActiva) slot = 3;
+            else if(fila.ubicacion_4 === ubicacionActiva) slot = 4;
+
+            if(slot > 0) {
+                let p = {};
+                p[`ubicacion_${slot}`] = null; p[`estado_${slot}`] = null; p[`fecha_${slot}`] = null;
+                await fetch(`${SB_URL}almacen_datos?codigo=eq.${codigo}&almacen=eq.${almacenActual.toLowerCase()}`, {
+                    method: 'PATCH',
+                    headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" },
+                    body: JSON.stringify(p)
+                });
+                await cargarExistentes(ubicacionActiva);
+            }
+        }
+
+        // --- UTILS ---
+        function limpiarTodo() {
+            skusNuevos = [];
+            renderNuevos();
+            document.getElementById('btnGuardar').disabled = true;
+            document.getElementById('btnGuardar').innerText = "Guardar Cambios";
+            document.getElementById('inputSku').value = "";
+            document.getElementById('inputSku').focus();
+        }
+
+        function regresarAlSelector() {
+            if(skusNuevos.length > 0 && !confirm("¿Salir sin guardar cambios?")) return;
+            document.getElementById('pantallaApp').classList.add('hidden');
+            document.getElementById('pantallaSelector').classList.remove('hidden');
+            limpiarTodo();
+            document.getElementById('inputUbicacion').value = "";
+            document.getElementById('statusUbicacion').classList.add('hidden');
+            document.getElementById('cardExistentes').classList.add('hidden');
+        }
+
+        function abrirScanner(tipo) {
+            document.getElementById('modalScanner').classList.remove('hidden');
+            html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start({ facingMode: "environment" }, { fps: 15, qrbox: 250 }, (txt) => {
+                cerrarScanner();
+                if(tipo === 'ubicacion') procesarUbicacion(txt);
+                else procesarSku(txt);
+            });
+        }
+
+        function cerrarScanner() {
+            if(html5QrCode) html5QrCode.stop().then(() => {
+                document.getElementById('modalScanner').classList.add('hidden');
+                html5QrCode = null;
+            });
+        }
+    </script>
+</body>
+</html>
