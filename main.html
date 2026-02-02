@@ -60,7 +60,7 @@
         <header class="bg-white border-b p-4 sticky top-0 z-30 shadow-sm flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <button onclick="regresarAAlmacenes()" class="p-2 hover:bg-slate-100 rounded-full">
-                    <svg class="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
                 </button>
                 <div>
                     <p id="txtAlmacen" class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold inline-block uppercase"></p>
@@ -85,7 +85,7 @@
             <div id="cardExistentes" class="hidden bg-slate-100 p-4 rounded-2xl border border-dashed border-slate-300">
                 <div class="flex justify-between items-center mb-3">
                     <h3 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">📦 Registrados aquí</h3>
-                    <button onclick="cargarExistentes(ubicacionActiva)" class="text-blue-600 text-[10px] font-bold bg-white px-2 py-1 rounded-lg border uppercase">Actualizar</button>
+                    <button onclick="cargarExistentes(ubicacionActiva)" class="text-blue-600 text-[10px] font-bold bg-white px-2 py-1 rounded-lg border uppercase tracking-tighter">Actualizar</button>
                 </div>
                 <div id="listaExistentes" class="space-y-2"></div>
             </div>
@@ -131,8 +131,8 @@
                 <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
                     <div id="corrNombre" class="mb-4 text-xs font-black text-slate-500 uppercase leading-tight">--</div>
                     <div class="flex flex-col gap-4 divide-y divide-slate-100">
-                        <div class="pb-1"><p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Código LIMSA</p><p id="corrLimsa" class="font-black text-2xl text-indigo-600 uppercase tracking-tight">--</p></div>
-                        <div class="pt-3"><p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Código de Barras</p><p id="corrBarras" class="font-black text-2xl text-slate-800 uppercase tracking-tight">--</p></div>
+                        <div class="pb-1"><p class="text-[9px] font-bold text-slate-400 uppercase mb-1">LIMSA</p><p id="corrLimsa" class="font-black text-2xl text-indigo-600 uppercase tracking-tight">--</p></div>
+                        <div class="pt-3"><p class="text-[9px] font-bold text-slate-400 uppercase mb-1">BARRAS</p><p id="corrBarras" class="font-black text-2xl text-slate-800 uppercase tracking-tight">--</p></div>
                     </div>
                     <div id="corrMensaje" class="mt-6 p-3 rounded-xl text-xs font-bold text-center"></div>
                 </div>
@@ -141,7 +141,7 @@
                     <p id="labelVinculo" class="text-[10px] font-bold text-indigo-800 uppercase text-center"></p>
                     <div class="flex gap-2">
                         <input type="text" id="inputVinculo" class="flex-1 border border-indigo-200 rounded-xl px-4 py-4 text-center font-black text-indigo-700 uppercase text-lg" placeholder="Vincular código">
-                        <button onclick="abrirScanner('vinculo')" class="bg-indigo-600 text-white p-4 rounded-xl">📷</button>
+                        <button onclick="abrirScanner('vinculo')" class="bg-indigo-600 text-white p-4 rounded-xl shadow-sm">📷</button>
                     </div>
                     <button onclick="guardarVinculo()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold uppercase text-sm shadow-md">Guardar Vínculo</button>
                 </div>
@@ -175,30 +175,11 @@
         let modoCatalogo = "registro";
         let correlacionActiva = { limsa: "", barras: "", modo: "" };
 
-        // --- NAVEGACIÓN MODULAR ---
-        function irASelectorAlmacen() { 
-            document.getElementById('pantallaMenuPrincipal').classList.add('hidden'); 
-            document.getElementById('pantallaSelectorAlmacen').classList.remove('hidden'); 
-        }
-        
-        function regresarAlMenuPrincipal() { 
-            document.getElementById('pantallaSelectorAlmacen').classList.add('hidden'); 
-            document.getElementById('pantallaCorrelacion').classList.add('hidden'); 
-            document.getElementById('pantallaMenuPrincipal').classList.remove('hidden'); 
-            limpiarTodo(); 
-        }
-        
-        function irACorrelacion() { 
-            document.getElementById('pantallaMenuPrincipal').classList.add('hidden'); 
-            document.getElementById('pantallaCorrelacion').classList.remove('hidden'); 
-            setTimeout(() => document.getElementById('inputCorr').focus(), 300); 
-        }
-        
-        function regresarAAlmacenes() { 
-            document.getElementById('pantallaApp').classList.add('hidden'); 
-            document.getElementById('pantallaSelectorAlmacen').classList.remove('hidden');
-            limpiarTodo(); // LIMPIEZA AL SALIR DEL ALMACÉN
-        }
+        // --- NAVEGACIÓN ---
+        function irASelectorAlmacen() { document.getElementById('pantallaMenuPrincipal').classList.add('hidden'); document.getElementById('pantallaSelectorAlmacen').classList.remove('hidden'); }
+        function regresarAlMenuPrincipal() { document.getElementById('pantallaSelectorAlmacen').classList.add('hidden'); document.getElementById('pantallaCorrelacion').classList.add('hidden'); document.getElementById('pantallaMenuPrincipal').classList.remove('hidden'); limpiarTodo(); }
+        function irACorrelacion() { document.getElementById('pantallaMenuPrincipal').classList.add('hidden'); document.getElementById('pantallaCorrelacion').classList.remove('hidden'); setTimeout(() => document.getElementById('inputCorr').focus(), 300); }
+        function regresarAAlmacenes() { document.getElementById('pantallaApp').classList.add('hidden'); document.getElementById('pantallaSelectorAlmacen').classList.remove('hidden'); limpiarTodo(); }
 
         const grid = document.getElementById('gridAlmacenes');
         ALMACENES.forEach(alm => {
@@ -210,10 +191,7 @@
                 document.getElementById('txtAlmacen').innerText = alm; 
                 document.getElementById('pantallaSelectorAlmacen').classList.add('hidden'); 
                 document.getElementById('pantallaApp').classList.remove('hidden');
-                
-                // RESET TOTAL AL ENTRAR A UN NUEVO ALMACÉN
                 limpiarTodo();
-                setTimeout(() => document.getElementById('inputUbicacion').focus(), 300);
             };
             grid.appendChild(btn);
         });
@@ -224,7 +202,7 @@
         document.getElementById('inputVinculo').addEventListener('keypress', e => { if(e.key === 'Enter') guardarVinculo(); });
         document.getElementById('busquedaCat').addEventListener('keypress', e => { if(e.key === 'Enter') ejecutarBusquedaCatalogo(); });
 
-        // --- BUSCADOR MAESTRO ---
+        // --- BUSCADOR ---
         function abrirCatalogo(modo) { modoCatalogo = modo; document.getElementById('modalCatalogo').classList.remove('hidden'); document.getElementById('busquedaCat').focus(); }
         function cerrarCatalogo() { document.getElementById('modalCatalogo').classList.add('hidden'); }
         async function ejecutarBusquedaCatalogo() {
@@ -248,10 +226,10 @@
         }
         function seleccionarArticuloCat(sku, nombre) { if(modoCatalogo === "registro") procesarSku(sku); else procesarCorrelacion(sku); cerrarCatalogo(); }
 
-        // --- LÓGICA REGISTRO ---
+        // --- REGISTRO ---
         async function procesarUbicacion(val) {
             const u = val.toUpperCase().trim();
-            if(!u || u.length < 2) { alert("⚠️ Ingresa una ubicación."); return; }
+            if(!u || u.length < 2) { alert("⚠️ Ubicación no válida."); return; }
             ubicacionActiva = u;
             document.getElementById('valUbicacion').innerText = u;
             document.getElementById('statusUbicacion').classList.remove('hidden');
@@ -314,12 +292,14 @@
                         let p = {}; p[`ubicacion_${s}`] = ubicacionActiva; p[`estado_${s}`] = "OK"; p[`fecha_${s}`] = now;
                         await fetch(`${SB_URL}almacen_datos?codigo=eq.${item.articulo.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(p) });
                     } else {
-                        await fetch(`${SB_URL}almacen_datos`, { method: 'POST', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo: item.articulo, almacen: almacenActual, ubicacion_1: ubicacionActiva, estado_1: "OK", fecha_1: now }) });
+                        await fetch(`${SB_URL}almacen_datos`, { method: 'POST', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo: item.articulo, almacen: almacenActual.toLowerCase(), ubicacion_1: ubicacionActiva, estado_1: "OK", fecha_1: now }) });
                     }
                 }
-                alert("✅ Guardado."); skusNuevos = []; renderNuevos(); await cargarExistentes(ubicacionActiva);
-            } catch (e) { alert("Error."); }
-            btn.innerText = "Guardar Cambios";
+                alert("✅ Guardado correctamente.");
+                
+                // MEJORA: LIMPIEZA Y FOCUS A UBICACIÓN PARA EL SIGUIENTE
+                limpiarTodo();
+            } catch (e) { alert("Error."); btn.innerText = "Guardar Cambios"; btn.disabled = false; }
         }
 
         async function eliminarFisico(cod) {
@@ -336,7 +316,7 @@
             } catch(e) { alert("Error."); }
         }
 
-        // --- LÓGICA CORRELACIÓN ---
+        // --- CORRELACIÓN ---
         async function procesarCorrelacion(manual = null) {
             const val = (manual || document.getElementById('inputCorr').value).trim();
             if(!val) return;
@@ -404,7 +384,6 @@
             } catch(e) { alert("Error."); }
         }
 
-        // --- UTILS ---
         function abrirScanner(t) {
             document.getElementById('modalScanner').classList.remove('hidden');
             html5QrCode = new Html5Qrcode("reader");
@@ -426,6 +405,7 @@
 
             // UI REGISTRO
             document.getElementById('btnGuardar').disabled = true;
+            document.getElementById('btnGuardar').innerText = "Guardar Cambios";
             document.getElementById('inputUbicacion').value = "";
             document.getElementById('inputSku').value = "";
             document.getElementById('valUbicacion').innerText = "";
@@ -438,6 +418,11 @@
             document.getElementById('inputCorr').value = "";
             document.getElementById('inputVinculo').value = "";
             document.getElementById('resCorrelacion').classList.add('hidden');
+            
+            // AUTO-FOCUS: Si estamos en la pantalla de Registro, enfocar Ubicación
+            if(!document.getElementById('pantallaApp').classList.contains('hidden')) {
+                setTimeout(() => document.getElementById('inputUbicacion').focus(), 300);
+            }
         }
     </script>
 </body>
