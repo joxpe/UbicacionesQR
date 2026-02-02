@@ -97,34 +97,45 @@
 
         <main class="max-w-md mx-auto p-6 space-y-6">
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-4">
-                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-widest text-center">Escanear código (LIMSA o Barras)</label>
+                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-widest text-center">Escanear código base (LIMSA o Barras)</label>
                 <div class="flex flex-col items-center gap-4">
-                    <button onclick="abrirScanner('correlacion')" class="w-20 h-20 bg-purple-50 text-purple-600 rounded-full border border-purple-100 flex items-center justify-center active:scale-90 transition-transform">
+                    <button onclick="abrirScanner('correlacion')" class="w-20 h-20 bg-purple-50 text-purple-600 rounded-full border border-purple-100 flex items-center justify-center active:scale-90 transition-transform shadow-sm">
                         <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke-width="2"/></svg>
                     </button>
-                    <input type="text" id="inputCorrelacion" placeholder="Captura manual..." class="w-full text-center border-b-2 border-slate-100 py-2 focus:border-purple-500 outline-none text-xl font-bold">
+                    <input type="text" id="inputCorrelacion" placeholder="Captura manual..." class="w-full text-center border-b-2 border-slate-100 py-2 focus:border-purple-500 outline-none text-xl font-bold uppercase">
                 </div>
             </div>
 
             <div id="resCorrelacion" class="hidden bg-white p-6 rounded-3xl shadow-sm border border-slate-200 animate-in space-y-4 text-center">
-                <div id="tipoCorrelacion" class="text-[10px] font-black uppercase text-purple-500 tracking-tighter"></div>
-                <div>
-                    <p class="text-slate-400 text-xs uppercase font-bold">LIMSA</p>
-                    <p id="valLimsa" class="text-2xl font-black text-slate-800 tracking-tight">---</p>
-                </div>
-                <div>
-                    <p class="text-slate-400 text-xs uppercase font-bold">Código de Barras</p>
-                    <p id="valEan" class="text-2xl font-black text-slate-800 tracking-tight">---</p>
+                <div id="tipoCorrelacion" class="text-[10px] font-black uppercase text-purple-500 tracking-tighter">Estado de Búsqueda</div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-slate-50 p-3 rounded-2xl">
+                        <p class="text-slate-400 text-[10px] uppercase font-bold mb-1">LIMSA</p>
+                        <p id="valLimsa" class="text-lg font-black text-slate-800 tracking-tighter truncate">---</p>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-2xl">
+                        <p class="text-slate-400 text-[10px] uppercase font-bold mb-1">Barras</p>
+                        <p id="valEan" class="text-lg font-black text-slate-800 tracking-tighter truncate">---</p>
+                    </div>
                 </div>
 
-                <div id="areaComplementaria" class="hidden space-y-3 pt-4 border-t border-slate-50">
-                    <p id="msgCorrelacion" class="text-amber-600 text-xs font-bold bg-amber-50 p-2 rounded-lg"></p>
-                    <input type="text" id="inputComplemento" placeholder="Escanear valor faltante..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-center font-bold text-purple-700">
-                    <button onclick="guardarCorrelacion()" class="w-full bg-purple-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-purple-100">VINCULAR AHORA</button>
+                <div id="areaComplementaria" class="hidden space-y-4 pt-4 border-t border-slate-50">
+                    <div class="bg-amber-50 p-3 rounded-xl">
+                        <p id="msgCorrelacion" class="text-amber-700 text-xs font-bold leading-tight"></p>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <input type="text" id="inputComplemento" placeholder="Código complementario..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-center font-bold text-purple-700 outline-none focus:ring-2 focus:ring-purple-500">
+                        <button onclick="abrirScanner('complemento')" class="bg-purple-50 text-purple-600 p-3 rounded-xl border border-purple-100 active:scale-90 transition-transform">
+                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 4v16m8-8H4" stroke-width="2"/></svg>
+                        </button>
+                    </div>
+                    
+                    <button onclick="guardarCorrelacion()" class="w-full bg-purple-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-purple-100 active:bg-purple-700 transition-all">VINCULAR AHORA</button>
                 </div>
 
                 <div id="areaEliminar" class="hidden pt-4 border-t border-slate-50">
-                    <button onclick="eliminarCorrelacion()" class="w-full bg-red-50 text-red-600 py-3 rounded-2xl font-bold text-xs uppercase tracking-widest">Eliminar Vínculo</button>
+                    <button onclick="eliminarCorrelacion()" class="w-full bg-red-50 text-red-600 py-3 rounded-2xl font-bold text-[10px] uppercase tracking-widest border border-red-100 hover:bg-red-100 transition-colors">Eliminar Vínculo</button>
                 </div>
             </div>
         </main>
@@ -151,18 +162,16 @@
         // --- NAVEGACIÓN ---
         function navegarA(pantalla) {
             document.querySelectorAll('body > div').forEach(d => d.classList.add('hidden'));
-            if(pantalla === 'registro') {
-                document.getElementById('pantallaSelectorAlmacen').classList.remove('hidden');
-            } else if(pantalla === 'correlacion') {
-                document.getElementById('pantallaCorrelacion').classList.remove('hidden');
-            } else if(pantalla === 'selectorAlmacen') {
-                document.getElementById('pantallaSelectorAlmacen').classList.remove('hidden');
-            } else if(pantalla === 'menu') {
-                document.getElementById('pantallaMenu').classList.remove('hidden');
-            }
+            if(pantalla === 'registro') document.getElementById('pantallaSelectorAlmacen').classList.remove('hidden');
+            else if(pantalla === 'correlacion') document.getElementById('pantallaCorrelacion').classList.remove('hidden');
+            else if(pantalla === 'selectorAlmacen') document.getElementById('pantallaSelectorAlmacen').classList.remove('hidden');
+            else if(pantalla === 'menu') document.getElementById('pantallaMenu').classList.remove('hidden');
         }
 
-        function regresarAlMenu() { navegarA('menu'); }
+        function regresarAlMenu() {
+            navegarA('menu');
+            limpiarPantallaCorrelacion();
+        }
 
         // --- SELECTOR ALMACÉN ---
         const grid = document.getElementById('gridAlmacenes');
@@ -181,6 +190,7 @@
 
         // --- LÓGICA CORRELACIÓN ---
         document.getElementById('inputCorrelacion').addEventListener('keypress', e => { if(e.key === 'Enter') buscarCorrelacion(e.target.value); });
+        document.getElementById('inputComplemento').addEventListener('keypress', e => { if(e.key === 'Enter') guardarCorrelacion(); });
 
         async function buscarCorrelacion(val) {
             const code = val.trim();
@@ -213,20 +223,25 @@
                     document.getElementById('valEan').innerText = fila.codigo_barra || "---";
                     if(fila.codigo_barra) {
                         document.getElementById('areaEliminar').classList.remove('hidden');
+                        document.getElementById('tipoCorrelacion').innerText = "Relación Existente";
                     } else {
                         prepararVinculo();
                     }
                 } else {
                     prepararVinculo();
                 }
+                document.getElementById('inputCorrelacion').value = "";
             } catch (e) { alert("Error de conexión"); }
         }
 
         function prepararVinculo() {
             document.getElementById('areaComplementaria').classList.remove('hidden');
-            document.getElementById('msgCorrelacion').innerText = modoCorrelacion === "LIMSA" ? "No tiene barras. Escanea el código de barras ahora." : "No vinculado. Escanea el código LIMSA ahora.";
+            document.getElementById('tipoCorrelacion').innerText = "Falta Información";
+            document.getElementById('msgCorrelacion').innerText = modoCorrelacion === "LIMSA" 
+                ? "Este código LIMSA no tiene barras asignado. Escanea el código de barras faltante." 
+                : "Este código de barras no está vinculado. Escanea el código LIMSA (30...) correspondiente.";
             document.getElementById('inputComplemento').value = "";
-            document.getElementById('inputComplemento').focus();
+            setTimeout(() => document.getElementById('inputComplemento').focus(), 100);
         }
 
         async function guardarCorrelacion() {
@@ -236,16 +251,17 @@
             let limsa = modoCorrelacion === "LIMSA" ? document.getElementById('valLimsa').innerText.toLowerCase() : comp.toLowerCase();
             let ean = modoCorrelacion === "EAN" ? document.getElementById('valEan').innerText : comp;
 
+            // Validación básica
+            if(!limsa.startsWith("30")) { alert("El código LIMSA debe empezar con 30"); return; }
+
             const payload = { "codigo_barra": ean };
 
             try {
-                // Actualizar en almacen_datos (iOS ok1)
                 const res1 = await fetch(`${SB_URL}almacen_datos?codigo=eq.${limsa}`, {
                     method: 'PATCH',
                     headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" },
                     body: JSON.stringify(payload)
                 });
-                // Actualizar en auditoria_conteos (iOS ok2)
                 await fetch(`${SB_URL}auditoria_conteos?codigo=eq.${limsa}`, {
                     method: 'PATCH',
                     headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" },
@@ -253,14 +269,16 @@
                 });
 
                 if(res1.ok) {
-                    alert("✅ Correlación guardada.");
+                    alert("✅ Guardado correctamente.");
                     buscarCorrelacion(limsa);
+                } else {
+                    alert("Error: El código LIMSA no existe en almacen_datos.");
                 }
             } catch (e) { alert("Error al guardar"); }
         }
 
         async function eliminarCorrelacion() {
-            if(!confirm("¿Eliminar la relación de este código?")) return;
+            if(!confirm("¿Deseas eliminar la relación de este código?")) return;
             let limsa = document.getElementById('valLimsa').innerText.toLowerCase();
             const payload = { "codigo_barra": null };
 
@@ -280,12 +298,16 @@
             } catch (e) { alert("Error"); }
         }
 
-        // --- LÓGICA REGISTRO (EXISTENTE) ---
+        function limpiarPantallaCorrelacion() {
+            document.getElementById('resCorrelacion').classList.add('hidden');
+            document.getElementById('inputCorrelacion').value = "";
+        }
+
+        // --- LÓGICA REGISTRO ---
         async function procesarUbicacion(val) {
             const u = val.toUpperCase().trim();
             if(!/^[A-Z]\d{2}-[A-Z]$/.test(u)) return;
             ubicacionActiva = u;
-            document.getElementById('statusUbicacion').classList.remove('hidden');
             document.getElementById('valUbicacion').innerText = u;
             document.getElementById('cardCaptura').classList.remove('hidden');
             document.getElementById('footerRegistro').classList.remove('hidden');
@@ -295,10 +317,10 @@
         async function cargarExistentes(u) {
             const lista = document.getElementById('listaExistentes');
             document.getElementById('cardExistentes').classList.remove('hidden');
-            lista.innerHTML = "Cargando...";
+            lista.innerHTML = "Consultando...";
             const res = await fetch(`${SB_URL}almacen_datos?almacen=eq.${almacenActual.toLowerCase()}&or=(ubicacion_1.eq.${u},ubicacion_2.eq.${u},ubicacion_3.eq.${u},ubicacion_4.eq.${u})&select=codigo`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
             const data = await res.json();
-            lista.innerHTML = data.length ? data.map(d => `<div class="bg-white p-2 rounded border flex justify-between uppercase font-bold text-xs"><span>${d.codigo}</span></div>`).join('') : "Vacío";
+            lista.innerHTML = data.length ? data.map(d => `<div class="bg-white p-2 rounded border border-slate-200 uppercase font-black text-[10px] tracking-tight text-slate-700"><span>${d.codigo}</span></div>`).join('') : "No hay datos";
         }
 
         async function procesarSku(val) {
@@ -306,7 +328,7 @@
             if(!raw) return;
             const resCat = await fetch(`${SB_URL}catalogo_articulos?articulo=eq.${raw.toLowerCase()}&select=nombre&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
             const dataCat = await resCat.json();
-            skusNuevos.push({ articulo: raw, nombre: dataCat[0]?.nombre || "Producto" });
+            skusNuevos.push({ articulo: raw, nombre: dataCat[0]?.nombre || "Producto LIMSA" });
             renderNuevos();
             document.getElementById('inputSku').value = "";
             document.getElementById('btnGuardarRegistro').disabled = false;
@@ -314,9 +336,9 @@
 
         function renderNuevos() {
             document.getElementById('listaNuevos').innerHTML = skusNuevos.map((s, idx) => `
-                <div class="bg-green-50 border border-green-100 p-3 rounded-xl flex justify-between items-center text-xs">
-                    <div><b>${s.articulo.toUpperCase()}</b><br>${s.nombre}</div>
-                    <button onclick="skusNuevos.splice(${idx},1);renderNuevos();">✕</button>
+                <div class="bg-green-50 border border-green-100 p-3 rounded-xl flex justify-between items-center text-[10px] animate-in">
+                    <div><b class="text-green-900">${s.articulo.toUpperCase()}</b><br><span class="text-green-700 uppercase">${s.nombre}</span></div>
+                    <button class="text-green-900 font-bold p-1" onclick="skusNuevos.splice(${idx},1);renderNuevos();">✕</button>
                 </div>`).join('');
         }
 
@@ -347,7 +369,7 @@
             document.getElementById('btnGuardarRegistro').innerText = "GUARDAR LOTE";
         }
 
-        // --- SCANNER COMÚN ---
+        // --- SCANNER ÚNICO ---
         function abrirScanner(tipo) {
             document.getElementById('modalScanner').classList.remove('hidden');
             html5QrCode = new Html5Qrcode("reader");
@@ -356,6 +378,9 @@
                 if(tipo === 'ubicacion') procesarUbicacion(txt);
                 else if(tipo === 'sku') procesarSku(txt);
                 else if(tipo === 'correlacion') buscarCorrelacion(txt);
+                else if(tipo === 'complemento') {
+                    document.getElementById('inputComplemento').value = txt;
+                }
             });
         }
 
