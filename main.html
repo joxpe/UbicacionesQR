@@ -112,7 +112,7 @@
     <div id="pantallaCorrelacion" class="hidden flex flex-col min-h-screen">
         <header class="bg-white border-b p-4 flex items-center gap-3">
             <button onclick="regresarAlMenuPrincipal()" class="p-2 hover:bg-slate-100 rounded-full"><svg class="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button>
-            <h1 class="text-lg font-bold">Correlación</h1>
+            <h1 class="text-lg font-bold">Correlación de Códigos</h1>
         </header>
 
         <main class="max-w-md mx-auto p-4 space-y-5 w-full">
@@ -130,18 +130,10 @@
             <div id="resCorrelacion" class="hidden space-y-4 animate-in">
                 <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
                     <div id="corrNombre" class="mb-4 text-xs font-black text-slate-500 uppercase leading-tight">--</div>
-                    
                     <div class="flex flex-col gap-4 divide-y divide-slate-100">
-                        <div class="pb-1">
-                            <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Código LIMSA</p>
-                            <p id="corrLimsa" class="font-black text-2xl text-indigo-600 uppercase tracking-tight">--</p>
-                        </div>
-                        <div class="pt-3">
-                            <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Código de Barras</p>
-                            <p id="corrBarras" class="font-black text-2xl text-slate-800 uppercase tracking-tight">--</p>
-                        </div>
+                        <div class="pb-1"><p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Código LIMSA</p><p id="corrLimsa" class="font-black text-2xl text-indigo-600 uppercase tracking-tight">--</p></div>
+                        <div class="pt-3"><p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Código de Barras</p><p id="corrBarras" class="font-black text-2xl text-slate-800 uppercase tracking-tight">--</p></div>
                     </div>
-
                     <div id="corrMensaje" class="mt-6 p-3 rounded-xl text-xs font-bold text-center"></div>
                 </div>
 
@@ -149,7 +141,7 @@
                     <p id="labelVinculo" class="text-[10px] font-bold text-indigo-800 uppercase text-center"></p>
                     <div class="flex gap-2">
                         <input type="text" id="inputVinculo" class="flex-1 border border-indigo-200 rounded-xl px-4 py-4 text-center font-black text-indigo-700 uppercase text-lg" placeholder="Vincular código">
-                        <button onclick="abrirScanner('vinculo')" class="bg-indigo-600 text-white p-4 rounded-xl shadow-sm">📷</button>
+                        <button onclick="abrirScanner('vinculo')" class="bg-indigo-600 text-white p-4 rounded-xl">📷</button>
                     </div>
                     <button onclick="guardarVinculo()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold uppercase text-sm shadow-md">Guardar Vínculo</button>
                 </div>
@@ -166,7 +158,7 @@
     <div id="modalCatalogo" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex flex-col">
         <div class="bg-white w-full max-w-md mx-auto mt-10 rounded-t-3xl flex-1 flex flex-col shadow-2xl overflow-hidden animate-in">
             <header class="p-4 border-b flex justify-between items-center bg-slate-50"><h2 class="font-bold text-slate-800 uppercase text-xs">Buscador Maestro</h2><button onclick="cerrarCatalogo()" class="text-slate-400 p-2 text-2xl">&times;</button></header>
-            <div class="p-4 bg-white shadow-sm"><input type="text" id="busquedaCat" placeholder="Ej: LLANTA MICHELIN..." class="w-full border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"></div>
+            <div class="p-4 bg-white shadow-sm"><input type="text" id="busquedaCat" placeholder="Palabras separadas..." class="w-full border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"></div>
             <div id="resultadosCat" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50"></div>
         </div>
     </div>
@@ -183,7 +175,7 @@
         let modoCatalogo = "registro";
         let correlacionActiva = { limsa: "", barras: "", modo: "" };
 
-        // --- NAVEGACIÓN ---
+        // --- NAVEGACIÓN MODULAR ---
         function irASelectorAlmacen() { document.getElementById('pantallaMenuPrincipal').classList.add('hidden'); document.getElementById('pantallaSelectorAlmacen').classList.remove('hidden'); }
         function regresarAlMenuPrincipal() { document.getElementById('pantallaSelectorAlmacen').classList.add('hidden'); document.getElementById('pantallaCorrelacion').classList.add('hidden'); document.getElementById('pantallaMenuPrincipal').classList.remove('hidden'); limpiarTodo(); }
         function irACorrelacion() { document.getElementById('pantallaMenuPrincipal').classList.add('hidden'); document.getElementById('pantallaCorrelacion').classList.remove('hidden'); setTimeout(() => document.getElementById('inputCorr').focus(), 300); }
@@ -194,7 +186,15 @@
             const btn = document.createElement('button');
             btn.className = "bg-white border border-slate-200 p-4 rounded-2xl font-extrabold text-lg text-slate-700 active:bg-blue-600 active:text-white uppercase transition-all shadow-sm";
             btn.innerText = alm;
-            btn.onclick = () => { almacenActual = alm; document.getElementById('txtAlmacen').innerText = alm; document.getElementById('pantallaSelectorAlmacen').classList.add('hidden'); document.getElementById('pantallaApp').classList.remove('hidden'); };
+            btn.onclick = () => { 
+                almacenActual = alm; 
+                document.getElementById('txtAlmacen').innerText = alm; 
+                document.getElementById('pantallaSelectorAlmacen').classList.add('hidden'); 
+                document.getElementById('pantallaApp').classList.remove('hidden');
+                
+                // AJUSTE: AUTO-FOCUS EN UBICACIÓN AL ENTRAR AL ALMACÉN
+                setTimeout(() => document.getElementById('inputUbicacion').focus(), 300);
+            };
             grid.appendChild(btn);
         });
 
@@ -204,7 +204,7 @@
         document.getElementById('inputVinculo').addEventListener('keypress', e => { if(e.key === 'Enter') guardarVinculo(); });
         document.getElementById('busquedaCat').addEventListener('keypress', e => { if(e.key === 'Enter') ejecutarBusquedaCatalogo(); });
 
-        // --- BUSCADOR MAESTRO ---
+        // --- BUSCADOR MAESTRO (MULTI-PALABRA) ---
         function abrirCatalogo(modo) { modoCatalogo = modo; document.getElementById('modalCatalogo').classList.remove('hidden'); document.getElementById('busquedaCat').focus(); }
         function cerrarCatalogo() { document.getElementById('modalCatalogo').classList.add('hidden'); }
         async function ejecutarBusquedaCatalogo() {
@@ -231,7 +231,7 @@
         // --- LÓGICA REGISTRO ---
         async function procesarUbicacion(val) {
             const u = val.toUpperCase().trim();
-            if(!u || u.length < 2) { alert("⚠️ Ubicación no válida."); return; }
+            if(!u || u.length < 2) { alert("⚠️ Ingresa una ubicación."); return; }
             ubicacionActiva = u;
             document.getElementById('valUbicacion').innerText = u;
             document.getElementById('statusUbicacion').classList.remove('hidden');
@@ -323,10 +323,7 @@
             document.getElementById('resCorrelacion').classList.remove('hidden');
             const msg = document.getElementById('corrMensaje');
             msg.innerText = "Consultando...";
-
-            // CORRECCIÓN: LIMPIAR EL SEGUNDO CAMPO SIEMPRE AL INICIAR UNA BÚSQUEDA
             document.getElementById('inputVinculo').value = "";
-
             correlacionActiva = { limsa: "", barras: "", modo: "" };
             document.getElementById('formVinculo').classList.add('hidden');
             document.getElementById('btnEliminarCorr').classList.add('hidden');
@@ -382,12 +379,8 @@
             if(!confirm("¿Eliminar vínculo?")) return;
             try {
                 await fetch(`${SB_URL}almacen_datos?codigo=eq.${correlacionActiva.limsa.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo_barra: null }) });
-                
-                // CORRECCIÓN: LIMPIAR EL TEXTO DEL SEGUNDO RECUADRO ANTES DE REFRESCAR
                 document.getElementById('inputVinculo').value = "";
-                
-                alert("Vínculo eliminado."); 
-                procesarCorrelacion(correlacionActiva.limsa);
+                alert("Vínculo eliminado."); procesarCorrelacion(correlacionActiva.limsa);
             } catch(e) { alert("Error."); }
         }
 
