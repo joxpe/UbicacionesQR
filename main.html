@@ -4,148 +4,154 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sistemas LIMSA Cloud</title>
+    <title>Sistemas LIMSA Cloud - PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         .loading-spinner { border-top-color: #3b82f6; animation: spinner 0.6s linear infinite; }
         @keyframes spinner { to { transform: rotate(360deg); } }
         .animate-in { animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         input[type="text"] { font-size: 16px !important; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 min-h-screen font-sans">
+<body class="bg-slate-100 text-slate-900 min-h-screen font-sans">
 
-    <div id="pantallaMenu" class="max-w-md mx-auto p-6">
+    <div id="pantallaMenu" class="max-w-md mx-auto p-6 animate-in">
         <header class="text-center mb-10">
-            <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">LIMSA Cloud</h1>
-            <p class="text-slate-500 font-medium">Selecciona una herramienta</p>
+            <h1 class="text-3xl font-black text-slate-800 tracking-tighter">LIMSA <span class="text-blue-600">CLOUD</span></h1>
+            <p class="text-slate-500 text-sm font-bold uppercase tracking-widest">Panel Maestro</p>
         </header>
-        <div class="space-y-4">
-            <button onclick="navegarA('registro')" class="w-full bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex items-center gap-4 active:scale-95 transition-all">
-                <div class="bg-blue-100 p-3 rounded-2xl text-blue-600">
-                    <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" /></svg>
+        <div class="grid gap-4">
+            <button onclick="navegarA('selectorAlmacen')" class="bg-white border border-slate-200 p-6 rounded-[2rem] shadow-sm flex items-center gap-5 active:scale-95 transition-all text-left">
+                <div class="bg-blue-600 text-white p-4 rounded-2xl shadow-lg">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
                 </div>
-                <div class="text-left">
-                    <h2 class="font-bold text-lg text-slate-800">Registro de SKUs</h2>
-                    <p class="text-xs text-slate-500">Asignar productos a ubicaciones</p>
-                </div>
+                <div><h2 class="font-black text-slate-800">REGISTRO SKUs</h2><p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Control de Ubicaciones</p></div>
             </button>
 
-            <button onclick="navegarA('correlacion')" class="w-full bg-white border border-slate-200 p-6 rounded-3xl shadow-sm flex items-center gap-4 active:scale-95 transition-all">
-                <div class="bg-purple-100 p-3 rounded-2xl text-purple-600">
-                    <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+            <button onclick="navegarA('correlacion')" class="bg-white border border-slate-200 p-6 rounded-[2rem] shadow-sm flex items-center gap-5 active:scale-95 transition-all text-left">
+                <div class="bg-purple-600 text-white p-4 rounded-2xl shadow-lg">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" /></svg>
                 </div>
-                <div class="text-left">
-                    <h2 class="font-bold text-lg text-slate-800">Correlación</h2>
-                    <p class="text-xs text-slate-500">Vincular LIMSA con Códigos de Barras</p>
-                </div>
+                <div><h2 class="font-black text-slate-800">CORRELACIÓN</h2><p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Vincular Códigos</p></div>
             </button>
         </div>
     </div>
 
     <div id="pantallaSelectorAlmacen" class="hidden max-w-md mx-auto p-6 animate-in">
-        <button onclick="regresarAlMenu()" class="mb-4 text-slate-400 flex items-center gap-1 font-bold text-sm"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M15 19l-7-7 7-7" stroke-width="3"/></svg> VOLVER</button>
-        <h1 class="text-2xl font-bold mb-6 text-slate-800">Selecciona Almacén</h1>
+        <button onclick="navegarA('menu')" class="mb-4 text-slate-400 flex items-center gap-1 font-bold text-xs"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M15 19l-7-7 7-7" stroke-width="3"/></svg> VOLVER AL MENÚ</button>
+        <h1 class="text-2xl font-black mb-6 text-slate-800 tracking-tighter italic">Selecciona Almacén</h1>
         <div class="grid grid-cols-3 gap-3" id="gridAlmacenes"></div>
     </div>
 
     <div id="pantallaAppRegistro" class="hidden flex flex-col min-h-screen animate-in">
         <header class="bg-white border-b p-4 sticky top-0 z-30 shadow-sm flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <button onclick="navegarA('selectorAlmacen')" class="text-slate-400"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M15 19l-7-7 7-7" stroke-width="2"/></svg></button>
+                <button onclick="navegarA('selectorAlmacen')" class="p-2 bg-slate-100 rounded-full text-slate-600"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M15 19l-7-7 7-7" stroke-width="3"/></svg></button>
                 <div>
                     <p id="txtAlmacen" class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold inline-block uppercase"></p>
-                    <h1 class="text-lg font-bold">Registro de SKUs</h1>
+                    <h1 class="text-lg font-black tracking-tighter">Registro de SKUs</h1>
                 </div>
             </div>
+            <div id="loaderReg" class="hidden w-4 h-4 border-2 border-blue-600 rounded-full loading-spinner"></div>
         </header>
         <main class="max-w-md mx-auto p-4 space-y-4 pb-32 w-full">
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2">1. Ubicación</label>
+            <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-200">
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">1. Ubicación Destino</label>
                 <div class="flex gap-2">
-                    <input type="text" id="inputUbicacion" placeholder="Ej: A08-C" class="flex-1 border rounded-xl px-4 py-3 uppercase focus:ring-2 focus:ring-blue-500 outline-none">
+                    <input type="text" id="inputUbicacion" placeholder="Ej: A08-C" class="flex-1 border border-slate-200 rounded-xl px-4 py-3 uppercase font-bold focus:ring-2 focus:ring-blue-500 outline-none">
                     <button onclick="abrirScanner('ubicacion')" class="bg-blue-50 text-blue-600 p-3 rounded-xl border border-blue-100"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke-width="2"/></svg></button>
                 </div>
+                <div id="statusUbicacion" class="mt-3 flex items-center gap-2 text-blue-700 hidden"><span class="font-black text-lg" id="valUbicacion"></span></div>
             </div>
-            <div id="cardExistentes" class="hidden bg-slate-100 p-4 rounded-2xl border border-dashed border-slate-300">
-                <div id="listaExistentes" class="space-y-2 text-sm"></div>
+            <div id="cardExistentes" class="hidden bg-slate-200 p-4 rounded-[1.5rem] border border-dashed border-slate-300">
+                <div id="listaExistentes" class="space-y-1 text-[10px] font-bold uppercase text-slate-600"></div>
             </div>
-            <div id="cardCaptura" class="hidden bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2">2. Escaneo SKUs</label>
+            <div id="cardCaptura" class="hidden bg-white p-5 rounded-[2rem] shadow-sm border border-slate-200">
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2">2. Escaneo de Mercancía</label>
                 <div class="flex gap-2 mb-4">
-                    <input type="text" id="inputSku" placeholder="30... o EAN" class="flex-1 border rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 outline-none">
+                    <input type="text" id="inputSku" placeholder="30... o EAN" class="flex-1 border border-slate-200 rounded-xl px-4 py-3 font-bold focus:ring-2 focus:ring-green-500 outline-none">
                     <button onclick="abrirScanner('sku')" class="bg-green-50 text-green-600 p-3 rounded-xl border border-green-100"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 4v16m8-8H4" stroke-width="2"/></svg></button>
                 </div>
                 <div id="listaNuevos" class="space-y-3"></div>
             </div>
         </main>
-        <div id="footerRegistro" class="hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t p-4 z-20">
+        <div id="footerRegistro" class="hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t p-4 z-20 shadow-xl">
             <div class="max-w-md mx-auto flex gap-3">
-                <button onclick="limpiarTodoRegistro()" class="flex-1 py-4 bg-slate-100 rounded-2xl font-bold text-slate-600">LIMPIAR</button>
-                <button id="btnGuardarRegistro" onclick="guardarLoteRegistro()" disabled class="flex-[2] py-4 bg-blue-600 rounded-2xl font-bold text-white disabled:bg-slate-300">GUARDAR LOTE</button>
+                <button onclick="limpiarTodoRegistro()" class="flex-1 py-4 bg-slate-200 rounded-2xl font-black text-slate-600 uppercase text-xs">Limpiar</button>
+                <button id="btnGuardarRegistro" onclick="guardarLoteRegistro()" disabled class="flex-[2] py-4 bg-blue-600 rounded-2xl font-black text-white disabled:bg-slate-300 uppercase text-xs">Guardar Lote</button>
             </div>
         </div>
     </div>
 
     <div id="pantallaCorrelacion" class="hidden flex flex-col min-h-screen animate-in">
-        <header class="bg-white border-b p-4 sticky top-0 z-30 shadow-sm flex items-center gap-3">
-            <button onclick="regresarAlMenu()" class="text-slate-400"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M15 19l-7-7 7-7" stroke-width="2"/></svg></button>
-            <h1 class="text-lg font-bold">Correlación de Códigos</h1>
+        <header class="bg-white border-b p-4 sticky top-0 z-30 shadow-sm flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <button onclick="navegarA('menu')" class="p-2 bg-slate-100 rounded-full text-slate-600"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M15 19l-7-7 7-7" stroke-width="3"/></svg></button>
+                <h1 class="text-lg font-black uppercase tracking-tighter italic">Vincular Códigos</h1>
+            </div>
+            <div id="loaderCorr" class="hidden w-5 h-5 border-2 border-purple-600 rounded-full loading-spinner"></div>
         </header>
 
-        <main class="max-w-md mx-auto p-6 space-y-6">
-            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-4">
-                <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-widest text-center">Escanear código base (LIMSA o Barras)</label>
+        <main class="max-w-md mx-auto p-4 space-y-4 pb-32 w-full">
+            <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-200 text-center space-y-4">
                 <div class="flex flex-col items-center gap-4">
-                    <button onclick="abrirScanner('correlacion')" class="w-20 h-20 bg-purple-50 text-purple-600 rounded-full border border-purple-100 flex items-center justify-center active:scale-90 transition-transform shadow-sm">
-                        <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke-width="2"/></svg>
-                    </button>
-                    <input type="text" id="inputCorrelacion" placeholder="Captura manual..." class="w-full text-center border-b-2 border-slate-100 py-2 focus:border-purple-500 outline-none text-xl font-bold uppercase">
+                    <button onclick="abrirScanner('correlacion')" class="w-24 h-24 bg-purple-600 text-white rounded-full flex items-center justify-center shadow-xl border-[6px] border-purple-50 active:scale-95 transition-transform"><svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" stroke-width="2"/></svg></button>
+                    <input type="text" id="inputCorrelacion" placeholder="30... o Código Barras" class="w-full text-center border-none text-xl font-black uppercase focus:ring-0 placeholder:text-slate-200">
                 </div>
             </div>
 
-            <div id="resCorrelacion" class="hidden bg-white p-6 rounded-3xl shadow-sm border border-slate-200 animate-in space-y-4 text-center">
-                <div id="tipoCorrelacion" class="text-[10px] font-black uppercase text-purple-500 tracking-tighter">Estado de Búsqueda</div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-slate-50 p-3 rounded-2xl">
-                        <p class="text-slate-400 text-[10px] uppercase font-bold mb-1">LIMSA</p>
-                        <p id="valLimsa" class="text-lg font-black text-slate-800 tracking-tighter truncate">---</p>
+            <div id="resCorrelacion" class="hidden bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden animate-in">
+                <div class="bg-slate-800 p-3 text-center"><span id="tagEstado" class="px-3 py-1 rounded-full text-[9px] font-black uppercase bg-amber-400 text-slate-900 italic tracking-widest uppercase">Validando</span></div>
+                <div class="p-6 space-y-6">
+                    <div class="text-center border-b border-slate-50 pb-4">
+                        <h2 id="valNombre" class="text-xl font-black text-slate-800 leading-tight uppercase tracking-tight">---</h2>
+                        <div class="flex justify-center gap-2 mt-2 text-[9px] font-black uppercase tracking-tighter">
+                            <span id="valGrupo" class="bg-blue-50 text-blue-600 px-2 py-0.5 rounded">---</span>
+                            <span id="valGrupo2" class="bg-purple-50 text-purple-600 px-2 py-0.5 rounded">---</span>
+                        </div>
                     </div>
-                    <div class="bg-slate-50 p-3 rounded-2xl">
-                        <p class="text-slate-400 text-[10px] uppercase font-bold mb-1">Barras</p>
-                        <p id="valEan" class="text-lg font-black text-slate-800 tracking-tighter truncate">---</p>
-                    </div>
-                </div>
 
-                <div id="areaComplementaria" class="hidden space-y-4 pt-4 border-t border-slate-50">
-                    <div class="bg-amber-50 p-3 rounded-xl">
-                        <p id="msgCorrelacion" class="text-amber-700 text-xs font-bold leading-tight"></p>
+                    <div class="grid grid-cols-2 gap-3 text-center">
+                        <div class="bg-slate-50 p-3 rounded-2xl">
+                            <p class="text-[8px] font-black text-slate-400 uppercase mb-1">Proveedor</p>
+                            <p id="valProveedor" class="text-[10px] font-bold text-slate-700 truncate uppercase">---</p>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-2xl">
+                            <p class="text-[8px] font-black text-slate-400 uppercase mb-1">Clave Prov</p>
+                            <p id="valClaveProv" class="text-[10px] font-bold text-slate-700 truncate uppercase">---</p>
+                        </div>
                     </div>
-                    
-                    <div class="flex gap-2">
-                        <input type="text" id="inputComplemento" placeholder="Código complementario..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-center font-bold text-purple-700 outline-none focus:ring-2 focus:ring-purple-500">
-                        <button onclick="abrirScanner('complemento')" class="bg-purple-50 text-purple-600 p-3 rounded-xl border border-purple-100 active:scale-90 transition-transform">
-                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 4v16m8-8H4" stroke-width="2"/></svg>
-                        </button>
-                    </div>
-                    
-                    <button onclick="guardarCorrelacion()" class="w-full bg-purple-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-purple-100 active:bg-purple-700 transition-all">VINCULAR AHORA</button>
-                </div>
 
-                <div id="areaEliminar" class="hidden pt-4 border-t border-slate-50">
-                    <button onclick="eliminarCorrelacion()" class="w-full bg-red-50 text-red-600 py-3 rounded-2xl font-bold text-[10px] uppercase tracking-widest border border-red-100 hover:bg-red-100 transition-colors">Eliminar Vínculo</button>
+                    <div class="grid grid-cols-1 gap-3">
+                        <div class="bg-slate-900 p-4 rounded-2xl flex justify-between items-center text-white">
+                            <div><p class="text-[8px] font-black text-slate-500 uppercase tracking-widest">Código LIMSA</p><p id="valLimsa" class="text-xl font-black tracking-tight">---</p></div>
+                        </div>
+                        <div class="bg-slate-100 p-4 rounded-2xl flex justify-between items-center">
+                            <div><p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Código de Barras</p><p id="valEan" class="text-xl font-black text-slate-700 tracking-tight">---</p></div>
+                        </div>
+                    </div>
+
+                    <div id="areaComplementaria" class="hidden bg-purple-600 p-6 rounded-[2.5rem] space-y-4">
+                        <p id="msgCorrelacion" class="text-purple-100 text-[11px] font-bold text-center leading-tight"></p>
+                        <div class="flex gap-2">
+                            <input type="text" id="inputComplemento" placeholder="Escaneo..." class="flex-1 bg-white border-none rounded-2xl px-4 py-3 text-center font-black text-purple-700 outline-none">
+                            <button onclick="abrirScanner('complemento')" class="bg-purple-800 text-white p-3 rounded-xl active:scale-90 transition-transform"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 4v16m8-8H4" stroke-width="3"/></svg></button>
+                        </div>
+                        <button onclick="guardarCorrelacion()" class="w-full bg-white text-purple-700 py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-md">Vincular Ahora</button>
+                    </div>
+
+                    <div id="areaEliminar" class="hidden"><button onclick="eliminarCorrelacion()" class="w-full bg-red-50 text-red-600 border border-red-100 py-4 rounded-2xl font-black text-[9px] uppercase tracking-widest">Eliminar Vínculo</button></div>
+                    <button onclick="limpiarTodoCorrelacion()" class="w-full py-2 text-slate-400 font-bold text-[9px] uppercase tracking-widest">Limpiar Búsqueda</button>
                 </div>
             </div>
         </main>
     </div>
 
-    <div id="modalScanner" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex flex-col items-center justify-center p-6">
-        <div class="w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl">
-            <div id="reader"></div>
-        </div>
-        <button onclick="cerrarScanner()" class="mt-8 bg-white/10 text-white border border-white/20 px-10 py-3 rounded-full font-bold backdrop-blur-md">Cancelar</button>
+    <div id="modalScanner" class="fixed inset-0 bg-slate-900/98 z-50 hidden flex flex-col items-center justify-center p-6 backdrop-blur-sm">
+        <div class="w-full max-w-sm bg-white rounded-[3rem] overflow-hidden shadow-2xl border-[10px] border-white/10"><div id="reader"></div></div>
+        <button onclick="cerrarScanner()" class="mt-10 bg-white/10 text-white border border-white/20 px-12 py-4 rounded-full font-black uppercase tracking-widest text-xs">Cerrar</button>
     </div>
 
     <script>
@@ -153,240 +159,165 @@
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtbGFsYWdxZnBobGlhc3RnamJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExODc3ODIsImV4cCI6MjA3Njc2Mzc4Mn0.L4bp6sGzzjiNsGSY1fTYolSLxvVoJh1ENon9Prw1CZA";
         const ALMACENES = ["ai","ac","as","at","am","al","ab","ag","aa","ad","ah","aj"];
 
-        let almacenActual = "";
-        let ubicacionActiva = "";
-        let skusNuevos = [];
-        let html5QrCode = null;
-        let modoCorrelacion = ""; // "LIMSA" o "EAN"
+        let almacenActual = "", ubicacionActiva = "", skusNuevos = [], html5QrCode = null, modoCorrelacion = "";
 
-        // --- NAVEGACIÓN ---
-        function navegarA(pantalla) {
+        function navegarA(p) {
             document.querySelectorAll('body > div').forEach(d => d.classList.add('hidden'));
-            if(pantalla === 'registro') document.getElementById('pantallaSelectorAlmacen').classList.remove('hidden');
-            else if(pantalla === 'correlacion') document.getElementById('pantallaCorrelacion').classList.remove('hidden');
-            else if(pantalla === 'selectorAlmacen') document.getElementById('pantallaSelectorAlmacen').classList.remove('hidden');
-            else if(pantalla === 'menu') document.getElementById('pantallaMenu').classList.remove('hidden');
+            document.getElementById('pantalla' + p.charAt(0).toUpperCase() + p.slice(1)).classList.remove('hidden');
         }
 
-        function regresarAlMenu() {
-            navegarA('menu');
-            limpiarPantallaCorrelacion();
-        }
-
-        // --- SELECTOR ALMACÉN ---
         const grid = document.getElementById('gridAlmacenes');
         ALMACENES.forEach(alm => {
             const btn = document.createElement('button');
-            btn.className = "bg-white border border-slate-200 p-4 rounded-2xl font-extrabold text-lg text-slate-700 shadow-sm active:bg-blue-600 active:text-white transition-all uppercase";
-            btn.innerText = alm;
-            btn.onclick = () => {
-                almacenActual = alm;
-                document.getElementById('txtAlmacen').innerText = alm;
-                document.getElementById('pantallaSelectorAlmacen').classList.add('hidden');
-                document.getElementById('pantallaAppRegistro').classList.remove('hidden');
-            };
+            btn.className = "bg-white border border-slate-200 p-4 rounded-2xl font-black text-slate-700 active:bg-blue-600 active:text-white uppercase transition-all";
+            btn.innerText = alm; btn.onclick = () => { almacenActual = alm; document.getElementById('txtAlmacen').innerText = alm; navegarA('appRegistro'); };
             grid.appendChild(btn);
         });
 
-        // --- LÓGICA CORRELACIÓN ---
+        // LÓGICA CORRELACIÓN PRO
         document.getElementById('inputCorrelacion').addEventListener('keypress', e => { if(e.key === 'Enter') buscarCorrelacion(e.target.value); });
         document.getElementById('inputComplemento').addEventListener('keypress', e => { if(e.key === 'Enter') guardarCorrelacion(); });
 
         async function buscarCorrelacion(val) {
-            const code = val.trim();
-            if(!code) return;
-            
+            const code = val.trim(); if(!code) return;
+            document.getElementById('loaderCorr').classList.remove('hidden');
             document.getElementById('resCorrelacion').classList.remove('hidden');
             document.getElementById('areaComplementaria').classList.add('hidden');
             document.getElementById('areaEliminar').classList.add('hidden');
-            
-            let query = "";
-            if(code.startsWith("30")) {
-                modoCorrelacion = "LIMSA";
-                document.getElementById('valLimsa').innerText = code.toUpperCase();
-                document.getElementById('valEan').innerText = "---";
-                query = `codigo=eq.${code.toLowerCase()}`;
-            } else {
-                modoCorrelacion = "EAN";
-                document.getElementById('valLimsa').innerText = "---";
-                document.getElementById('valEan').innerText = code;
-                query = `codigo_barra=eq.${code}`;
-            }
+            resetFicha();
+
+            let query = code.startsWith("30") ? `codigo=eq.${code.toLowerCase()}` : `codigo_barra=eq.${code}`;
+            modoCorrelacion = code.startsWith("30") ? "LIMSA" : "EAN";
 
             try {
                 const res = await fetch(`${SB_URL}almacen_datos?${query}&select=codigo,codigo_barra&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
-                const data = await res.json();
-                const fila = data[0];
+                const fila = (await res.json())[0];
+                let finalLimsa = fila ? fila.codigo.toLowerCase() : (modoCorrelacion === "LIMSA" ? code.toLowerCase() : "");
 
-                if(fila) {
-                    document.getElementById('valLimsa').innerText = fila.codigo.toUpperCase();
-                    document.getElementById('valEan').innerText = fila.codigo_barra || "---";
-                    if(fila.codigo_barra) {
-                        document.getElementById('areaEliminar').classList.remove('hidden');
-                        document.getElementById('tipoCorrelacion').innerText = "Relación Existente";
-                    } else {
-                        prepararVinculo();
-                    }
+                document.getElementById('valLimsa').innerText = fila ? fila.codigo.toUpperCase() : (modoCorrelacion === "LIMSA" ? code.toUpperCase() : "---");
+                document.getElementById('valEan').innerText = fila ? (fila.codigo_barra || "---") : (modoCorrelacion === "EAN" ? code : "---");
+
+                if(fila && fila.codigo_barra) {
+                    document.getElementById('tagEstado').innerText = "VINCULADO";
+                    document.getElementById('tagEstado').className = "px-3 py-1 rounded-full text-[9px] font-black uppercase bg-green-400 text-green-900 italic";
+                    document.getElementById('areaEliminar').classList.remove('hidden');
                 } else {
-                    prepararVinculo();
+                    document.getElementById('areaComplementaria').classList.remove('hidden');
+                    document.getElementById('tagEstado').innerText = "FALTA VÍNCULO";
+                    document.getElementById('tagEstado').className = "px-3 py-1 rounded-full text-[9px] font-black uppercase bg-amber-400 text-amber-900 italic";
+                    document.getElementById('msgCorrelacion').innerText = modoCorrelacion === "LIMSA" ? "No tiene barras. Escanea el código EAN." : "Nuevo. Escanea el LIMSA (30...).";
                 }
-                document.getElementById('inputCorrelacion').value = "";
-            } catch (e) { alert("Error de conexión"); }
-        }
 
-        function prepararVinculo() {
-            document.getElementById('areaComplementaria').classList.remove('hidden');
-            document.getElementById('tipoCorrelacion').innerText = "Falta Información";
-            document.getElementById('msgCorrelacion').innerText = modoCorrelacion === "LIMSA" 
-                ? "Este código LIMSA no tiene barras asignado. Escanea el código de barras faltante." 
-                : "Este código de barras no está vinculado. Escanea el código LIMSA (30...) correspondiente.";
-            document.getElementById('inputComplemento').value = "";
-            setTimeout(() => document.getElementById('inputComplemento').focus(), 100);
-        }
-
-        async function guardarCorrelacion() {
-            const comp = document.getElementById('inputComplemento').value.trim();
-            if(!comp) return;
-
-            let limsa = modoCorrelacion === "LIMSA" ? document.getElementById('valLimsa').innerText.toLowerCase() : comp.toLowerCase();
-            let ean = modoCorrelacion === "EAN" ? document.getElementById('valEan').innerText : comp;
-
-            // Validación básica
-            if(!limsa.startsWith("30")) { alert("El código LIMSA debe empezar con 30"); return; }
-
-            const payload = { "codigo_barra": ean };
-
-            try {
-                const res1 = await fetch(`${SB_URL}almacen_datos?codigo=eq.${limsa}`, {
-                    method: 'PATCH',
-                    headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
-                });
-                await fetch(`${SB_URL}auditoria_conteos?codigo=eq.${limsa}`, {
-                    method: 'PATCH',
-                    headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
-                });
-
-                if(res1.ok) {
-                    alert("✅ Guardado correctamente.");
-                    buscarCorrelacion(limsa);
-                } else {
-                    alert("Error: El código LIMSA no existe en almacen_datos.");
+                if(finalLimsa) {
+                    const resCat = await fetch(`${SB_URL}catalogo_articulos?articulo=eq.${finalLimsa.toUpperCase()}&select=nombre,proveedor,clave_proveedor,grupo,grupo2&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
+                    const cat = (await resCat.json())[0];
+                    if(cat) {
+                        document.getElementById('valNombre').innerText = cat.nombre;
+                        document.getElementById('valProveedor').innerText = cat.proveedor || "N/A";
+                        document.getElementById('valClaveProv').innerText = cat.clave_proveedor || "N/A";
+                        document.getElementById('valGrupo').innerText = cat.grupo || "S/G";
+                        document.getElementById('valGrupo2').innerText = cat.grupo2 || "S/S";
+                    } else document.getElementById('valNombre').innerText = "PRODUCTO NO EN CATÁLOGO";
                 }
-            } catch (e) { alert("Error al guardar"); }
-        }
-
-        async function eliminarCorrelacion() {
-            if(!confirm("¿Deseas eliminar la relación de este código?")) return;
-            let limsa = document.getElementById('valLimsa').innerText.toLowerCase();
-            const payload = { "codigo_barra": null };
-
-            try {
-                await fetch(`${SB_URL}almacen_datos?codigo=eq.${limsa}`, {
-                    method: 'PATCH',
-                    headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
-                });
-                await fetch(`${SB_URL}auditoria_conteos?codigo=eq.${limsa}`, {
-                    method: 'PATCH',
-                    headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
-                });
-                alert("✅ Relación eliminada.");
-                buscarCorrelacion(limsa);
-            } catch (e) { alert("Error"); }
-        }
-
-        function limpiarPantallaCorrelacion() {
-            document.getElementById('resCorrelacion').classList.add('hidden');
+            } catch (e) { alert("Error de red"); }
+            document.getElementById('loaderCorr').classList.add('hidden');
             document.getElementById('inputCorrelacion').value = "";
         }
 
-        // --- LÓGICA REGISTRO ---
+        async function guardarCorrelacion() {
+            const comp = document.getElementById('inputComplemento').value.trim(); if(!comp) return;
+            let limsa = (modoCorrelacion === "LIMSA" ? document.getElementById('valLimsa').innerText : comp).toLowerCase();
+            let ean = modoCorrelacion === "EAN" ? document.getElementById('valEan').innerText : comp;
+            try {
+                const payload = { "codigo_barra": ean };
+                await fetch(`${SB_URL}almacen_datos?codigo=eq.${limsa}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                await fetch(`${SB_URL}auditoria_conteos?codigo=eq.${limsa}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                alert("✅ Vinculado"); buscarCorrelacion(limsa);
+            } catch (e) { alert("Error"); }
+        }
+
+        async function eliminarCorrelacion() {
+            if(!confirm("¿Borrar vínculo de barras?")) return;
+            let limsa = document.getElementById('valLimsa').innerText.toLowerCase();
+            await fetch(`${SB_URL}almacen_datos?codigo=eq.${limsa}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({"codigo_barra": null}) });
+            await fetch(`${SB_URL}auditoria_conteos?codigo=eq.${limsa}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({"codigo_barra": null}) });
+            buscarCorrelacion(limsa);
+        }
+
+        function resetFicha() {
+            document.getElementById('valNombre').innerText = "Buscando...";
+            ["valLimsa","valEan","valProveedor","valClaveProv","valGrupo","valGrupo2"].forEach(id => document.getElementById(id).innerText = "---");
+        }
+
+        function limpiarTodoCorrelacion() { document.getElementById('resCorrelacion').classList.add('hidden'); document.getElementById('inputCorrelacion').value = ""; }
+
+        // LÓGICA REGISTRO
+        document.getElementById('inputUbicacion').addEventListener('keypress', e => { if(e.key === 'Enter') procesarUbicacion(e.target.value); });
+        document.getElementById('inputSku').addEventListener('keypress', e => { if(e.key === 'Enter') procesarSku(e.target.value); });
+
         async function procesarUbicacion(val) {
-            const u = val.toUpperCase().trim();
-            if(!/^[A-Z]\d{2}-[A-Z]$/.test(u)) return;
-            ubicacionActiva = u;
-            document.getElementById('valUbicacion').innerText = u;
+            const u = val.toUpperCase().trim(); if(!/^[A-Z]\d{2}-[A-Z]$/.test(u)) return;
+            ubicacionActiva = u; document.getElementById('valUbicacion').innerText = u;
+            document.getElementById('statusUbicacion').classList.remove('hidden');
             document.getElementById('cardCaptura').classList.remove('hidden');
             document.getElementById('footerRegistro').classList.remove('hidden');
             await cargarExistentes(u);
         }
 
         async function cargarExistentes(u) {
-            const lista = document.getElementById('listaExistentes');
+            const lista = document.getElementById('listaExistentes'); lista.innerHTML = "Consultando...";
             document.getElementById('cardExistentes').classList.remove('hidden');
-            lista.innerHTML = "Consultando...";
             const res = await fetch(`${SB_URL}almacen_datos?almacen=eq.${almacenActual.toLowerCase()}&or=(ubicacion_1.eq.${u},ubicacion_2.eq.${u},ubicacion_3.eq.${u},ubicacion_4.eq.${u})&select=codigo`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
             const data = await res.json();
-            lista.innerHTML = data.length ? data.map(d => `<div class="bg-white p-2 rounded border border-slate-200 uppercase font-black text-[10px] tracking-tight text-slate-700"><span>${d.codigo}</span></div>`).join('') : "No hay datos";
+            lista.innerHTML = data.map(d => `<div class="bg-white p-2 rounded border border-slate-200 text-[9px] font-black uppercase"><span>${d.codigo}</span></div>`).join('') || "Zona vacía";
         }
 
         async function procesarSku(val) {
-            const raw = val.trim();
-            if(!raw) return;
-            const resCat = await fetch(`${SB_URL}catalogo_articulos?articulo=eq.${raw.toLowerCase()}&select=nombre&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
+            const raw = val.trim(); if(!raw) return;
+            const resCat = await fetch(`${SB_URL}catalogo_articulos?articulo=eq.${raw.toUpperCase()}&select=nombre&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
             const dataCat = await resCat.json();
             skusNuevos.push({ articulo: raw, nombre: dataCat[0]?.nombre || "Producto LIMSA" });
-            renderNuevos();
-            document.getElementById('inputSku').value = "";
+            renderNuevos(); document.getElementById('inputSku').value = "";
             document.getElementById('btnGuardarRegistro').disabled = false;
         }
 
         function renderNuevos() {
-            document.getElementById('listaNuevos').innerHTML = skusNuevos.map((s, idx) => `
-                <div class="bg-green-50 border border-green-100 p-3 rounded-xl flex justify-between items-center text-[10px] animate-in">
-                    <div><b class="text-green-900">${s.articulo.toUpperCase()}</b><br><span class="text-green-700 uppercase">${s.nombre}</span></div>
-                    <button class="text-green-900 font-bold p-1" onclick="skusNuevos.splice(${idx},1);renderNuevos();">✕</button>
-                </div>`).join('');
+            document.getElementById('listaNuevos').innerHTML = skusNuevos.map((s, idx) => `<div class="bg-green-50 border border-green-100 p-3 rounded-xl flex justify-between items-center text-[10px] animate-in"><div><b>${s.articulo.toUpperCase()}</b><br>${s.nombre}</div><button class="font-black" onclick="skusNuevos.splice(${idx},1);renderNuevos();">✕</button></div>`).join('');
         }
 
         async function guardarLoteRegistro() {
             document.getElementById('btnGuardarRegistro').innerText = "GUARDANDO...";
             for (const item of skusNuevos) { await upsertSlot(item.articulo.toLowerCase()); }
-            alert("✅ Guardado");
-            limpiarTodoRegistro();
-            cargarExistentes(ubicacionActiva);
+            alert("✅ Guardado"); limpiarTodoRegistro(); cargarExistentes(ubicacionActiva);
         }
 
         async function upsertSlot(articulo) {
             const res = await fetch(`${SB_URL}almacen_datos?codigo=eq.${articulo}&almacen=eq.${almacenActual.toLowerCase()}`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
             const fila = (await res.json())[0];
             const now = new Date().toLocaleString('sv-SE').replace('T', ' ');
-            if(!fila) {
-                await fetch(`${SB_URL}almacen_datos`, { method: 'POST', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo: articulo, almacen: almacenActual, ubicacion_1: ubicacionActiva, estado_1: "OK", fecha_1: now }) });
-            } else {
-                let slot = 1; if(fila.ubicacion_1) slot = fila.ubicacion_2 ? (fila.ubicacion_3 ? 4 : 3) : 2;
+            if(!fila) await fetch(`${SB_URL}almacen_datos`, { method: 'POST', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo: articulo, almacen: almacenActual, ubicacion_1: ubicacionActiva, estado_1: "OK", fecha_1: now }) });
+            else {
+                let slot = !fila.ubicacion_1 ? 1 : (!fila.ubicacion_2 ? 2 : (!fila.ubicacion_3 ? 3 : 4));
                 let p = {}; p[`ubicacion_${slot}`] = ubicacionActiva; p[`estado_${slot}`] = "OK"; p[`fecha_${slot}`] = now;
                 await fetch(`${SB_URL}almacen_datos?codigo=eq.${articulo}&almacen=eq.${almacenActual.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(p) });
             }
         }
 
-        function limpiarTodoRegistro() {
-            skusNuevos = []; renderNuevos();
-            document.getElementById('btnGuardarRegistro').disabled = true;
-            document.getElementById('btnGuardarRegistro').innerText = "GUARDAR LOTE";
-        }
+        function limpiarTodoRegistro() { skusNuevos = []; renderNuevos(); document.getElementById('btnGuardarRegistro').disabled = true; document.getElementById('btnGuardarRegistro').innerText = "GUARDAR LOTE"; }
 
-        // --- SCANNER ÚNICO ---
         function abrirScanner(tipo) {
             document.getElementById('modalScanner').classList.remove('hidden');
             html5QrCode = new Html5Qrcode("reader");
-            html5QrCode.start({ facingMode: "environment" }, { fps: 15, qrbox: 250 }, (txt) => {
+            html5QrCode.start({ facingMode: "environment" }, { fps: 20, qrbox: 250 }, (txt) => {
                 cerrarScanner();
                 if(tipo === 'ubicacion') procesarUbicacion(txt);
                 else if(tipo === 'sku') procesarSku(txt);
                 else if(tipo === 'correlacion') buscarCorrelacion(txt);
-                else if(tipo === 'complemento') {
-                    document.getElementById('inputComplemento').value = txt;
-                }
+                else if(tipo === 'complemento') document.getElementById('inputComplemento').value = txt;
             });
         }
 
-        function cerrarScanner() {
-            if(html5QrCode) html5QrCode.stop().then(() => { document.getElementById('modalScanner').classList.add('hidden'); html5QrCode = null; });
-        }
+        function cerrarScanner() { if(html5QrCode) html5QrCode.stop().then(() => { document.getElementById('modalScanner').classList.add('hidden'); html5QrCode = null; }); }
     </script>
 </body>
 </html>
