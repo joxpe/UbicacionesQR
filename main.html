@@ -60,7 +60,7 @@
         <header class="bg-white border-b p-4 sticky top-0 z-30 shadow-sm flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <button onclick="regresarAAlmacenes()" class="p-2 hover:bg-slate-100 rounded-full">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                    <svg class="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
                 </button>
                 <div>
                     <p id="txtAlmacen" class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold inline-block uppercase"></p>
@@ -148,10 +148,10 @@
                 <div id="formVinculo" class="hidden bg-indigo-50 p-6 rounded-3xl border border-indigo-100 space-y-4 animate-in">
                     <p id="labelVinculo" class="text-[10px] font-bold text-indigo-800 uppercase text-center"></p>
                     <div class="flex gap-2">
-                        <input type="text" id="inputVinculo" class="flex-1 border border-indigo-200 rounded-xl px-4 py-4 text-center font-black text-indigo-700 uppercase text-lg" placeholder="Escanea el vínculo">
-                        <button onclick="abrirScanner('vinculo')" class="bg-indigo-600 text-white p-4 rounded-xl">📷</button>
+                        <input type="text" id="inputVinculo" class="flex-1 border border-indigo-200 rounded-xl px-4 py-4 text-center font-black text-indigo-700 uppercase text-lg" placeholder="Vincular código">
+                        <button onclick="abrirScanner('vinculo')" class="bg-indigo-600 text-white p-4 rounded-xl shadow-sm">📷</button>
                     </div>
-                    <button onclick="guardarVinculo()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold uppercase text-sm shadow-md">Guardar Vínculo (Manual)</button>
+                    <button onclick="guardarVinculo()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold uppercase text-sm shadow-md">Guardar Vínculo</button>
                 </div>
                 <button id="btnEliminarCorr" onclick="eliminarRelacionTotal()" class="hidden w-full bg-red-50 text-red-600 py-4 rounded-xl font-bold text-xs uppercase border border-red-100">Eliminar Relación</button>
             </div>
@@ -201,13 +201,10 @@
         document.getElementById('inputUbicacion').addEventListener('keypress', e => { if(e.key === 'Enter') procesarUbicacion(e.target.value); });
         document.getElementById('inputSku').addEventListener('keypress', e => { if(e.key === 'Enter') procesarSku(e.target.value); });
         document.getElementById('inputCorr').addEventListener('keypress', e => { if(e.key === 'Enter') procesarCorrelacion(); });
-        
-        // AUTO-GUARDADO CON ENTER EN EL VÍNCULO
         document.getElementById('inputVinculo').addEventListener('keypress', e => { if(e.key === 'Enter') guardarVinculo(); });
-        
         document.getElementById('busquedaCat').addEventListener('keypress', e => { if(e.key === 'Enter') ejecutarBusquedaCatalogo(); });
 
-        // --- BUSCADOR ---
+        // --- BUSCADOR MAESTRO ---
         function abrirCatalogo(modo) { modoCatalogo = modo; document.getElementById('modalCatalogo').classList.remove('hidden'); document.getElementById('busquedaCat').focus(); }
         function cerrarCatalogo() { document.getElementById('modalCatalogo').classList.add('hidden'); }
         async function ejecutarBusquedaCatalogo() {
@@ -326,6 +323,10 @@
             document.getElementById('resCorrelacion').classList.remove('hidden');
             const msg = document.getElementById('corrMensaje');
             msg.innerText = "Consultando...";
+
+            // CORRECCIÓN: LIMPIAR EL SEGUNDO CAMPO SIEMPRE AL INICIAR UNA BÚSQUEDA
+            document.getElementById('inputVinculo').value = "";
+
             correlacionActiva = { limsa: "", barras: "", modo: "" };
             document.getElementById('formVinculo').classList.add('hidden');
             document.getElementById('btnEliminarCorr').classList.add('hidden');
@@ -356,7 +357,7 @@
                 } else {
                     msg.innerText = "Vínculo Pendiente"; msg.className = "mt-4 p-3 rounded-xl text-xs font-bold text-center bg-orange-100 text-orange-700";
                     document.getElementById('formVinculo').classList.remove('hidden');
-                    document.getElementById('labelVinculo').innerText = correlacionActiva.modo === "LIMSA" ? "Escanea Código de Barras" : "Escanea Código LIMSA (30...)";
+                    document.getElementById('labelVinculo').innerText = correlacionActiva.modo === "LIMSA" ? "Asignar Código de Barras" : "Asignar Código LIMSA (30...)";
                     setTimeout(() => document.getElementById('inputVinculo').focus(), 300);
                 }
                 document.getElementById('inputCorr').value = "";
@@ -370,26 +371,26 @@
             const b = correlacionActiva.barras || nv;
             try {
                 await fetch(`${SB_URL}almacen_datos?codigo=eq.${l.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo_barra: b }) });
-                // Feedback rápido de éxito
                 const msg = document.getElementById('corrMensaje');
                 msg.innerText = "✅ ¡GUARDADO AUTOMÁTICAMENTE!";
                 msg.className = "mt-4 p-3 rounded-xl text-xs font-bold text-center bg-green-600 text-white animate-pulse";
-                
-                setTimeout(() => {
-                    procesarCorrelacion(l);
-                }, 800);
-            } catch(e) { alert("Error al guardar."); }
+                setTimeout(() => procesarCorrelacion(l), 800);
+            } catch(e) { alert("Error."); }
         }
 
         async function eliminarRelacionTotal() {
             if(!confirm("¿Eliminar vínculo?")) return;
             try {
                 await fetch(`${SB_URL}almacen_datos?codigo=eq.${correlacionActiva.limsa.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo_barra: null }) });
-                alert("Vínculo eliminado."); procesarCorrelacion(correlacionActiva.limsa);
+                
+                // CORRECCIÓN: LIMPIAR EL TEXTO DEL SEGUNDO RECUADRO ANTES DE REFRESCAR
+                document.getElementById('inputVinculo').value = "";
+                
+                alert("Vínculo eliminado."); 
+                procesarCorrelacion(correlacionActiva.limsa);
             } catch(e) { alert("Error."); }
         }
 
-        // --- UTILS ---
         function abrirScanner(t) {
             document.getElementById('modalScanner').classList.remove('hidden');
             html5QrCode = new Html5Qrcode("reader");
@@ -397,16 +398,12 @@
                 cerrarScanner();
                 if(t === 'correlacion') procesarCorrelacion(txt); 
                 else if(t === 'ubicacion') procesarUbicacion(txt); 
-                else if(t === 'vinculo') { 
-                    document.getElementById('inputVinculo').value = txt; 
-                    // AUTO-GUARDADO AL DETECTAR CÓDIGO CON CÁMARA
-                    guardarVinculo();
-                }
+                else if(t === 'vinculo') { document.getElementById('inputVinculo').value = txt; guardarVinculo(); }
                 else procesarSku(txt);
             });
         }
         function cerrarScanner() { if(html5QrCode) html5QrCode.stop().then(() => { document.getElementById('modalScanner').classList.add('hidden'); html5QrCode = null; }); }
-        function limpiarTodo() { skusNuevos = []; renderNuevos(); document.getElementById('btnGuardar').disabled = true; document.getElementById('inputSku').value = ""; document.getElementById('inputCorr').value = ""; document.getElementById('resCorrelacion').classList.add('hidden'); }
+        function limpiarTodo() { skusNuevos = []; renderNuevos(); document.getElementById('btnGuardar').disabled = true; document.getElementById('inputSku').value = ""; document.getElementById('inputCorr').value = ""; document.getElementById('inputVinculo').value = ""; document.getElementById('resCorrelacion').classList.add('hidden'); }
     </script>
 </body>
 </html>
