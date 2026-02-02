@@ -72,7 +72,7 @@
 
         <main class="max-w-md mx-auto p-4 space-y-4 w-full">
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2">1. Ubicación de Destino</label>
+                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2 tracking-wider">1. Ubicación de Destino</label>
                 <div class="flex gap-2">
                     <input type="text" id="inputUbicacion" placeholder="Ej: A08-C" class="flex-1 border border-slate-200 rounded-xl px-4 py-3 uppercase focus:ring-2 focus:ring-blue-500 outline-none">
                     <button onclick="abrirScanner('ubicacion')" class="bg-blue-50 text-blue-600 p-3 rounded-xl border border-blue-100">📷</button>
@@ -91,7 +91,7 @@
             </div>
 
             <div id="cardCaptura" class="hidden bg-white p-5 rounded-2xl shadow-sm border border-slate-200 animate-in">
-                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2">2. Escaneo de Mercancía</label>
+                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2 tracking-wider">2. Escaneo de Mercancía</label>
                 <div class="flex gap-2 mb-4">
                     <input type="text" id="inputSku" placeholder="SKU o EAN..." class="flex-1 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 outline-none">
                     <button onclick="abrirCatalogo('registro')" class="bg-slate-100 p-3 rounded-xl border border-slate-200">🔍</button>
@@ -112,7 +112,7 @@
     <div id="pantallaCorrelacion" class="hidden flex flex-col min-h-screen">
         <header class="bg-white border-b p-4 flex items-center gap-3">
             <button onclick="regresarAlMenuPrincipal()" class="p-2 hover:bg-slate-100 rounded-full"><svg class="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button>
-            <h1 class="text-lg font-bold">Correlación de Códigos</h1>
+            <h1 class="text-lg font-bold">Correlación</h1>
         </header>
 
         <main class="max-w-md mx-auto p-4 space-y-5 w-full">
@@ -128,21 +128,29 @@
             </div>
 
             <div id="resCorrelacion" class="hidden space-y-4 animate-in">
-                <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
-                    <div id="corrNombre" class="mb-3 text-[10px] font-black text-slate-400 uppercase truncate">--</div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><p class="text-[9px] font-bold text-slate-400 uppercase">LIMSA</p><p id="corrLimsa" class="font-black text-lg text-indigo-600 uppercase">--</p></div>
-                        <div><p class="text-[9px] font-bold text-slate-400 uppercase">BARRAS</p><p id="corrBarras" class="font-black text-lg text-slate-800 uppercase">--</p></div>
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                    <div id="corrNombre" class="mb-4 text-xs font-black text-slate-500 uppercase tracking-tighter leading-tight">--</div>
+                    
+                    <div class="flex flex-col gap-4 divide-y divide-slate-100">
+                        <div class="pb-1">
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Código LIMSA</p>
+                            <p id="corrLimsa" class="font-black text-2xl text-indigo-600 uppercase tracking-tight">--</p>
+                        </div>
+                        <div class="pt-3">
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Código de Barras</p>
+                            <p id="corrBarras" class="font-black text-2xl text-slate-800 uppercase tracking-tight">--</p>
+                        </div>
                     </div>
-                    <div id="corrMensaje" class="mt-4 p-3 rounded-xl text-xs font-bold text-center"></div>
+
+                    <div id="corrMensaje" class="mt-6 p-3 rounded-xl text-xs font-bold text-center"></div>
                 </div>
 
-                <div id="formVinculo" class="hidden bg-indigo-50 p-5 rounded-3xl border border-indigo-100 space-y-3">
+                <div id="formVinculo" class="hidden bg-indigo-50 p-6 rounded-3xl border border-indigo-100 space-y-4 animate-in">
                     <p id="labelVinculo" class="text-[10px] font-bold text-indigo-800 uppercase text-center"></p>
-                    <input type="text" id="inputVinculo" class="w-full border border-indigo-200 rounded-xl px-4 py-3 text-center font-black text-indigo-700 uppercase" placeholder="Vincular otro código">
-                    <button onclick="guardarVinculo()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold uppercase text-sm">Guardar Vínculo</button>
+                    <input type="text" id="inputVinculo" class="w-full border border-indigo-200 rounded-xl px-4 py-4 text-center font-black text-indigo-700 uppercase text-lg" placeholder="Escanea el otro código">
+                    <button onclick="guardarVinculo()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold uppercase text-sm shadow-md">Guardar Vínculo</button>
                 </div>
-                <button id="btnEliminarCorr" onclick="eliminarRelacionTotal()" class="hidden w-full bg-red-50 text-red-600 py-3 rounded-xl font-bold text-xs uppercase border border-red-100">Eliminar Relación</button>
+                <button id="btnEliminarCorr" onclick="eliminarRelacionTotal()" class="hidden w-full bg-red-50 text-red-600 py-4 rounded-xl font-bold text-xs uppercase border border-red-100">Eliminar Relación</button>
             </div>
         </main>
     </div>
@@ -154,7 +162,7 @@
 
     <div id="modalCatalogo" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex flex-col">
         <div class="bg-white w-full max-w-md mx-auto mt-10 rounded-t-3xl flex-1 flex flex-col shadow-2xl overflow-hidden animate-in">
-            <header class="p-4 border-b flex justify-between items-center bg-slate-50"><h2 class="font-bold text-slate-800 uppercase text-xs">Buscador Maestro</h2><button onclick="cerrarCatalogo()" class="text-slate-400 p-2 text-2xl">&times;</button></header>
+            <header class="p-4 border-b flex justify-between items-center bg-slate-50"><h2 class="font-bold text-slate-800 uppercase text-xs tracking-widest">Buscador Maestro</h2><button onclick="cerrarCatalogo()" class="text-slate-400 p-2 text-2xl">&times;</button></header>
             <div class="p-4 bg-white shadow-sm"><input type="text" id="busquedaCat" placeholder="Ej: LLANTA MICHELIN..." class="w-full border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"></div>
             <div id="resultadosCat" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50"></div>
         </div>
@@ -174,7 +182,7 @@
 
         // --- NAVEGACIÓN ---
         function irASelectorAlmacen() { document.getElementById('pantallaMenuPrincipal').classList.add('hidden'); document.getElementById('pantallaSelectorAlmacen').classList.remove('hidden'); }
-        function regresarAlMenuPrincipal() { document.getElementById('pantallaSelectorAlmacen').classList.add('hidden'); document.getElementById('pantallaCorrelacion').classList.add('hidden'); document.getElementById('pantallaMenuPrincipal').classList.remove('hidden'); }
+        function regresarAlMenuPrincipal() { document.getElementById('pantallaSelectorAlmacen').classList.add('hidden'); document.getElementById('pantallaCorrelacion').classList.add('hidden'); document.getElementById('pantallaMenuPrincipal').classList.remove('hidden'); limpiarTodo(); }
         function irACorrelacion() { document.getElementById('pantallaMenuPrincipal').classList.add('hidden'); document.getElementById('pantallaCorrelacion').classList.remove('hidden'); }
         function regresarAAlmacenes() { document.getElementById('pantallaApp').classList.add('hidden'); document.getElementById('pantallaSelectorAlmacen').classList.remove('hidden'); }
 
@@ -187,13 +195,12 @@
             grid.appendChild(btn);
         });
 
-        // Eventos de teclado
         document.getElementById('inputUbicacion').addEventListener('keypress', e => { if(e.key === 'Enter') procesarUbicacion(e.target.value); });
         document.getElementById('inputSku').addEventListener('keypress', e => { if(e.key === 'Enter') procesarSku(e.target.value); });
         document.getElementById('inputCorr').addEventListener('keypress', e => { if(e.key === 'Enter') procesarCorrelacion(); });
         document.getElementById('busquedaCat').addEventListener('keypress', e => { if(e.key === 'Enter') ejecutarBusquedaCatalogo(); });
 
-        // --- BUSCADOR MULTI-PALABRA (FUNCIONANDO) ---
+        // --- BUSCADOR MULTI-PALABRA (Mantenido al 100%) ---
         function abrirCatalogo(modo) {
             modoCatalogo = modo;
             document.getElementById('modalCatalogo').classList.remove('hidden');
@@ -232,20 +239,16 @@
             cerrarCatalogo();
         }
 
-        // --- LÓGICA REGISTRO (CORREGIDA) ---
+        // --- LÓGICA REGISTRO (Corregida: Avance con Enter) ---
         async function procesarUbicacion(val) {
             const u = val.toUpperCase().trim();
             if(!u || u.length < 2) { alert("⚠️ Ingresa una ubicación válida."); return; }
-            
             ubicacionActiva = u;
             document.getElementById('valUbicacion').innerText = u;
             document.getElementById('statusUbicacion').classList.remove('hidden');
             document.getElementById('cardCaptura').classList.remove('hidden');
             document.getElementById('footerAcciones').classList.remove('hidden');
-            
             await cargarExistentes(u);
-            
-            // Timeout para asegurar que el inputSku ya no esté oculto por la animación antes de enfocar
             setTimeout(() => document.getElementById('inputSku').focus(), 100);
         }
 
@@ -256,26 +259,20 @@
             try {
                 const res = await fetch(`${SB_URL}almacen_datos?almacen=eq.${almacenActual.toLowerCase()}&or=(ubicacion_1.eq.${u},ubicacion_2.eq.${u},ubicacion_3.eq.${u},ubicacion_4.eq.${u})&select=codigo`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
                 const data = await res.json();
-                
-                if(data.length === 0) {
-                    lista.innerHTML = `<p class="text-xs text-slate-400 text-center py-2 italic">No hay registros previos aquí.</p>`;
-                    return;
-                }
-
+                if(data.length === 0) { lista.innerHTML = `<p class="text-xs text-slate-400 text-center py-2 italic">Sin registros previos.</p>`; return; }
                 const codigos = data.map(d => d.codigo.toLowerCase());
                 const resC = await fetch(`${SB_URL}catalogo_articulos?articulo=in.("${codigos.join('","')}")&select=articulo,nombre`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
                 const cDat = await resC.json();
                 const map = Object.fromEntries(cDat.map(c => [c.articulo.toLowerCase(), c.nombre]));
-
                 lista.innerHTML = data.map(d => `
                     <div class="bg-white p-3 rounded-xl border flex justify-between items-center shadow-sm animate-in">
                         <div class="min-w-0">
                             <p class="font-black text-[11px] text-slate-800 uppercase tracking-tighter">${d.codigo}</p>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase truncate">${map[d.codigo.toLowerCase()] || '--- SIN DESCRIPCIÓN ---'}</p>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase truncate">${map[d.codigo.toLowerCase()] || '---'}</p>
                         </div>
                         <button onclick="eliminarFisico('${d.codigo}')" class="text-red-300 p-2 text-xl">&times;</button>
                     </div>`).join('');
-            } catch(e) { lista.innerHTML = "Error al cargar existentes."; }
+            } catch(e) { lista.innerHTML = "Error."; }
         }
 
         async function procesarSku(val) {
@@ -290,14 +287,13 @@
                 }
                 const res = await fetch(`${SB_URL}catalogo_articulos?articulo=eq.${finalSku.toLowerCase()}&select=nombre`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
                 const data = await res.json();
-                
                 if(!skusNuevos.find(s => s.articulo.toLowerCase() === finalSku.toLowerCase())) {
                     skusNuevos.push({ articulo: finalSku, nombre: data[0]?.nombre || "SIN DESCRIPCIÓN" });
                     renderNuevos(); 
                     document.getElementById('btnGuardar').disabled = false;
                 }
                 document.getElementById('inputSku').value = "";
-            } catch(e) { alert("Error al buscar artículo."); }
+            } catch(e) { alert("Error."); }
             document.getElementById('globalLoader').classList.add('hidden');
         }
 
@@ -308,7 +304,7 @@
                         <p class="font-black text-[11px] text-green-800 uppercase tracking-tighter">${s.articulo}</p>
                         <p class="text-[10px] text-green-600 font-bold uppercase truncate">${s.nombre}</p>
                     </div>
-                    <button onclick="skusNuevos.splice(${i},1);renderNuevos();" class="text-green-800 p-2 font-bold">&times;</button>
+                    <button onclick="skusNuevos.splice(${i},1);renderNuevos();" class="text-green-800 p-2">&times;</button>
                 </div>`).join('');
         }
 
@@ -327,13 +323,13 @@
                         await fetch(`${SB_URL}almacen_datos`, { method: 'POST', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo: item.articulo, almacen: almacenActual, ubicacion_1: ubicacionActiva, estado_1: "OK", fecha_1: now }) });
                     }
                 }
-                alert("✅ Guardado correctamente."); skusNuevos = []; renderNuevos(); await cargarExistentes(ubicacionActiva);
-            } catch (e) { alert("Error al guardar lote."); }
+                alert("✅ Guardado."); skusNuevos = []; renderNuevos(); await cargarExistentes(ubicacionActiva);
+            } catch (e) { alert("Error."); }
             btn.innerText = "Guardar Cambios";
         }
 
         async function eliminarFisico(cod) {
-            if(!confirm(`¿Quitar ${cod.toUpperCase()} de ${ubicacionActiva}?`)) return;
+            if(!confirm(`¿Quitar ${cod.toUpperCase()}?`)) return;
             try {
                 const r = await fetch(`${SB_URL}almacen_datos?codigo=eq.${cod.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
                 const f = (await r.json())[0]; if(!f) return;
@@ -343,7 +339,7 @@
                     await fetch(`${SB_URL}almacen_datos?codigo=eq.${cod.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(p) });
                     await cargarExistentes(ubicacionActiva);
                 }
-            } catch(e) { alert("Error al eliminar."); }
+            } catch(e) { alert("Error."); }
         }
 
         // --- LÓGICA CORRELACIÓN ---
@@ -390,7 +386,7 @@
                     document.getElementById('formVinculo').classList.remove('hidden');
                     document.getElementById('labelVinculo').innerText = correlacionActiva.modo === "LIMSA" ? "Asignar Código de Barras" : "Asignar Código LIMSA (30...)";
                 }
-            } catch(e) { alert("Error en correlación."); }
+            } catch(e) { alert("Error."); }
         }
 
         async function guardarVinculo() {
@@ -401,15 +397,15 @@
             try {
                 await fetch(`${SB_URL}almacen_datos?codigo=eq.${l.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo_barra: b }) });
                 alert("✅ Relación Guardada."); procesarCorrelacion(l);
-            } catch(e) { alert("Error al guardar vínculo."); }
+            } catch(e) { alert("Error."); }
         }
 
         async function eliminarRelacionTotal() {
-            if(!confirm("¿Eliminar vínculo de barras?")) return;
+            if(!confirm("¿Eliminar vínculo?")) return;
             try {
                 await fetch(`${SB_URL}almacen_datos?codigo=eq.${correlacionActiva.limsa.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo_barra: null }) });
-                alert("🗑️ Vínculo eliminado."); procesarCorrelacion(correlacionActiva.limsa);
-            } catch(e) { alert("Error al eliminar vínculo."); }
+                alert("Vínculo eliminado."); procesarCorrelacion(correlacionActiva.limsa);
+            } catch(e) { alert("Error."); }
         }
 
         // --- UTILS ---
@@ -422,13 +418,7 @@
             });
         }
         function cerrarScanner() { if(html5QrCode) html5QrCode.stop().then(() => { document.getElementById('modalScanner').classList.add('hidden'); html5QrCode = null; }); }
-        function limpiarTodo() {
-            skusNuevos = []; renderNuevos(); 
-            document.getElementById('btnGuardar').disabled = true;
-            document.getElementById('inputSku').value = "";
-            document.getElementById('inputCorr').value = "";
-            document.getElementById('resCorrelacion').classList.add('hidden');
-        }
+        function limpiarTodo() { skusNuevos = []; renderNuevos(); document.getElementById('btnGuardar').disabled = true; document.getElementById('inputSku').value = ""; document.getElementById('inputCorr').value = ""; document.getElementById('resCorrelacion').classList.add('hidden'); }
     </script>
 </body>
 </html>
