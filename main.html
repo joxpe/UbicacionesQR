@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LIMSA Cloud Suite</title>
+    <title>LIMSA Cloud Suite - Master</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        .loading-spinner { border-top-color: #3b82f6; animation: spinner 0.6s linear infinite; }
+        .loading-spinner { border-top-color: #f97316; animation: spinner 0.6s linear infinite; }
         @keyframes spinner { to { transform: rotate(360deg); } }
-        .animate-in { animation: fadeIn 0.25s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        input[type="text"], input[type="number"] { font-size: 16px !important; }
-        .card-modulo:active { transform: scale(0.96); transition: 0.1s; }
-        /* Estilos extra para asegurar visibilidad en móviles */
-        .safe-pb { padding-bottom: 5rem; } 
+        .animate-in { animation: fadeIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        input[type="text"], input[type="number"] { font-size: 16px !important; } /* Evita zoom en iOS */
+        .card-modulo:active { transform: scale(0.98); transition: 0.1s; background-color: #f8fafc; }
+        .btn-icon { @apply p-3 rounded-xl border active:scale-95 transition-all; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen font-sans">
@@ -22,54 +21,53 @@
     <div id="pantallaMenuPrincipal" class="max-w-md mx-auto p-6 animate-in">
         <header class="text-center mb-10 mt-6">
             <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight">LIMSA Cloud</h1>
-            <p class="text-slate-500 font-medium mt-2">Gestión Integral de Inventario</p>
+            <p class="text-slate-500 font-medium mt-2">Suite de Gestión v2.0</p>
         </header>
 
         <div class="space-y-4">
             <button onclick="irASelectorAlmacen('auditoria')" class="card-modulo w-full bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center gap-5 text-left">
-                <div class="bg-orange-600 p-4 rounded-2xl text-white shadow-lg shadow-orange-100">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                <div class="bg-orange-500 p-4 rounded-2xl text-white shadow-lg shadow-orange-100">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                 </div>
                 <div>
-                    <h3 class="font-black text-slate-800 uppercase text-sm tracking-tight">Auditoría / Conteo</h3>
-                    <p class="text-xs text-slate-500 mt-1">Revisar ubicaciones, validar y contar stock.</p>
+                    <h3 class="font-black text-slate-800 uppercase text-sm tracking-wide">Auditoría Master</h3>
+                    <p class="text-xs text-slate-500 mt-1">Validar ubicaciones y conteo físico.</p>
                 </div>
             </button>
 
             <button onclick="irASelectorAlmacen('registro')" class="card-modulo w-full bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center gap-5 text-left">
                 <div class="bg-blue-600 p-4 rounded-2xl text-white shadow-lg shadow-blue-100">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
                 </div>
                 <div>
-                    <h3 class="font-black text-slate-800 uppercase text-sm tracking-tight">Registro de SKUs</h3>
-                    <p class="text-xs text-slate-500 mt-1">Asignar artículos a ubicaciones físicas.</p>
+                    <h3 class="font-black text-slate-800 uppercase text-sm tracking-wide">Registro de SKUs</h3>
+                    <p class="text-xs text-slate-500 mt-1">Asignar mercancía a ubicaciones.</p>
                 </div>
             </button>
 
             <button onclick="irACorrelacion()" class="card-modulo w-full bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center gap-5 text-left">
                 <div class="bg-indigo-600 p-4 rounded-2xl text-white shadow-lg shadow-indigo-100">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.828a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.828a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
                 </div>
                 <div>
-                    <h3 class="font-black text-slate-800 uppercase text-sm tracking-tight">Correlación</h3>
-                    <p class="text-xs text-slate-500 mt-1">Vincular Código LIMSA con Barras.</p>
+                    <h3 class="font-black text-slate-800 uppercase text-sm tracking-wide">Correlación</h3>
+                    <p class="text-xs text-slate-500 mt-1">Vincular LIMSA ↔ Código de Barras.</p>
                 </div>
             </button>
         </div>
     </div>
 
     <div id="pantallaSelectorAlmacen" class="max-w-md mx-auto p-6 hidden animate-in">
-        <div class="flex items-center gap-3 mb-8">
-            <button onclick="regresarAlMenuPrincipal()" class="p-2 hover:bg-slate-200 rounded-full transition-colors">
+        <div class="flex items-center gap-4 mb-8">
+            <button onclick="regresarAlMenuPrincipal()" class="p-3 bg-white border border-slate-200 rounded-full text-slate-500 hover:bg-slate-50 transition-colors">
                 <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
             </button>
             <h2 class="text-2xl font-bold text-slate-800">Selecciona Almacén</h2>
         </div>
-        <div class="grid grid-cols-3 gap-3" id="gridAlmacenes">
-            </div>
+        <div class="grid grid-cols-3 gap-3" id="gridAlmacenes"></div>
     </div>
 
-    <div id="pantallaAuditoria" class="hidden flex flex-col min-h-screen safe-pb">
+    <div id="pantallaAuditoria" class="hidden flex flex-col min-h-screen pb-32">
         <header class="bg-white border-b p-4 sticky top-0 z-30 shadow-sm flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <button onclick="regresarAAlmacenes()" class="p-2 hover:bg-slate-100 rounded-full transition-colors">
@@ -77,46 +75,44 @@
                 </button>
                 <div>
                     <p id="audTxtAlmacen" class="text-[10px] bg-orange-600 text-white px-2 py-0.5 rounded-full font-bold inline-block uppercase tracking-widest"></p>
-                    <h1 class="text-lg font-bold block text-slate-800">Auditoría Master</h1>
+                    <h1 class="text-lg font-bold block text-slate-800">Auditoría</h1>
                 </div>
             </div>
-            <div id="globalLoaderAud" class="hidden w-5 h-5 border-2 border-orange-500 rounded-full loading-spinner"></div>
         </header>
 
         <main class="max-w-md mx-auto p-4 space-y-4 w-full">
-            <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200 space-y-4">
+            <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200 space-y-3">
                 <div class="flex gap-2">
-                    <input type="text" id="audInputCodigo" placeholder="Escanea código o EAN..." class="flex-1 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none transition-all">
+                    <input type="text" id="audInputCodigo" placeholder="Escanear código..." class="flex-1 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none transition-all">
                     <button onclick="abrirScanner('auditoria')" class="bg-orange-600 text-white p-3 rounded-xl shadow-md active:scale-95 transition-transform">📷</button>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="abrirCatalogo('auditoria')" class="flex-1 bg-slate-100 py-3 rounded-xl font-bold text-xs uppercase text-slate-600 border border-slate-200 active:bg-slate-200">Catálogo</button>
+                    <button onclick="abrirCatalogo('auditoria')" class="flex-1 bg-slate-50 py-3 rounded-xl font-bold text-xs uppercase text-slate-600 border border-slate-200 active:bg-slate-100">Catálogo</button>
                     <button onclick="buscarArticuloAuditoria()" class="flex-1 bg-orange-600 text-white py-3 rounded-xl font-bold text-xs uppercase shadow-md active:bg-orange-700">Buscar</button>
                 </div>
             </div>
 
             <div id="audResultados" class="hidden space-y-4 animate-in">
                 <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
-                    <div id="audNombreArt" class="mb-2 text-xs font-black text-slate-500 uppercase tracking-tighter leading-tight">--</div>
+                    <div id="audNombreArt" class="mb-3 text-xs font-black text-slate-500 uppercase tracking-tight leading-tight">--</div>
                     
                     <div class="flex justify-between items-end border-b border-slate-100 pb-3 mb-3">
                         <div>
-                            <p class="text-[9px] font-bold text-slate-400 uppercase">Cód. LIMSA</p>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Código LIMSA</p>
                             <p id="audLimsaArt" class="font-black text-xl text-orange-600 uppercase tracking-tight">--</p>
                         </div>
                         <div class="text-right">
-                            <p class="text-[9px] font-bold text-slate-400 uppercase">Barras</p>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Barras</p>
                             <p id="audBarrasArt" class="font-bold text-sm text-slate-800 uppercase">--</p>
                         </div>
                     </div>
 
-                    <div class="space-y-2" id="audListaUbicaciones">
-                        </div>
+                    <div class="space-y-2" id="audListaUbicaciones"></div>
 
                     <div class="mt-4 pt-4 border-t border-slate-100 space-y-2">
                         <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Añadir ubicación física</label>
                         <div class="flex gap-2">
-                            <input type="text" id="audNuevaUbic" placeholder="Ej: A08-C" class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm uppercase outline-none focus:ring-1 focus:ring-slate-400">
+                            <input type="text" id="audNuevaUbic" placeholder="Ej: A08-C" class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm uppercase outline-none focus:ring-1 focus:ring-orange-400">
                             <button onclick="abrirScanner('audNuevaUbic')" class="bg-blue-50 text-blue-600 p-2 px-3 rounded-xl border border-blue-100 active:bg-blue-100">📷</button>
                             <button onclick="agregarUbicacionAuditoria()" class="bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase active:scale-95">+</button>
                         </div>
@@ -124,7 +120,7 @@
                 </div>
 
                 <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Registro de Conteo Real</h3>
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Conteo Físico</h3>
                     <div class="grid grid-cols-2 gap-3">
                         <input type="number" id="audCantidad" placeholder="Cant." class="border border-slate-200 rounded-xl px-4 py-3 text-lg font-bold outline-none focus:ring-2 focus:ring-green-500">
                         <button onclick="sumarConteoAuditoria()" class="bg-green-600 text-white rounded-xl font-black text-xl shadow-md active:scale-95 transition-transform">+</button>
@@ -145,7 +141,7 @@
         </main>
     </div>
 
-    <div id="pantallaApp" class="hidden flex flex-col min-h-screen safe-pb">
+    <div id="pantallaApp" class="hidden flex flex-col min-h-screen pb-32">
         <header class="bg-white border-b p-4 sticky top-0 z-30 shadow-sm flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <button onclick="regresarAAlmacenes()" class="p-2 hover:bg-slate-100 rounded-full transition-colors">
@@ -193,7 +189,7 @@
         <div id="footerAcciones" class="hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t p-4 shadow-lg z-20">
             <div class="max-w-md mx-auto flex gap-3">
                 <button onclick="limpiarTodo()" class="flex-1 py-4 bg-slate-100 rounded-2xl font-bold text-slate-600 uppercase text-sm active:bg-slate-200">Limpiar</button>
-                <button id="btnGuardar" onclick="guardarLote()" disabled class="flex-[2] py-4 bg-blue-600 rounded-2xl font-bold text-white uppercase text-sm shadow-md disabled:bg-slate-300">Guardar Cambios</button>
+                <button id="btnGuardar" onclick="guardarLote()" disabled class="flex-[2] py-4 bg-blue-600 rounded-2xl font-bold text-white uppercase text-sm shadow-md disabled:bg-slate-300 active:scale-95 transition-transform">Guardar Cambios</button>
             </div>
         </div>
     </div>
@@ -210,7 +206,7 @@
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-4">
                 <div class="flex gap-2">
                     <input type="text" id="inputCorr" placeholder="LIMSA o EAN..." class="flex-1 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none">
-                    <button onclick="abrirScanner('correlacion')" class="bg-indigo-600 text-white p-3 rounded-xl shadow-md">📷</button>
+                    <button onclick="abrirScanner('correlacion')" class="bg-indigo-600 text-white p-3 rounded-xl shadow-md active:scale-95">📷</button>
                 </div>
                 <div class="flex gap-2">
                     <button onclick="abrirCatalogo('correlacion')" class="flex-1 bg-slate-100 py-3 rounded-xl font-bold text-xs uppercase text-slate-600 border border-slate-200">Catálogo</button>
@@ -224,11 +220,11 @@
                     
                     <div class="flex flex-col gap-4 divide-y divide-slate-100">
                         <div class="pb-1">
-                            <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Código LIMSA</p>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">LIMSA</p>
                             <p id="corrLimsa" class="font-black text-2xl text-indigo-600 uppercase tracking-tight">--</p>
                         </div>
                         <div class="pt-3">
-                            <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Código de Barras</p>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">BARRAS</p>
                             <p id="corrBarras" class="font-black text-2xl text-slate-800 uppercase tracking-tight">--</p>
                         </div>
                     </div>
@@ -288,10 +284,28 @@
         let auditoriaConteos = [];
 
         // --- NAVEGACIÓN ---
-        function irASelectorAlmacen(mod) { moduloActivo = mod; document.getElementById('pantallaMenuPrincipal').classList.add('hidden'); document.getElementById('pantallaSelectorAlmacen').classList.remove('hidden'); }
-        function regresarAlMenuPrincipal() { document.getElementById('pantallaSelectorAlmacen').classList.add('hidden'); document.getElementById('pantallaCorrelacion').classList.add('hidden'); document.getElementById('pantallaMenuPrincipal').classList.remove('hidden'); limpiarTodo(); }
-        function irACorrelacion() { document.getElementById('pantallaMenuPrincipal').classList.add('hidden'); document.getElementById('pantallaCorrelacion').classList.remove('hidden'); setTimeout(() => document.getElementById('inputCorr').focus(), 300); }
-        function regresarAAlmacenes() { document.getElementById('pantallaApp').classList.add('hidden'); document.getElementById('pantallaAuditoria').classList.add('hidden'); document.getElementById('pantallaSelectorAlmacen').classList.remove('hidden'); limpiarTodo(); }
+        function irASelectorAlmacen(mod) { 
+            moduloActivo = mod; 
+            document.getElementById('pantallaMenuPrincipal').classList.add('hidden'); 
+            document.getElementById('pantallaSelectorAlmacen').classList.remove('hidden'); 
+        }
+        function regresarAlMenuPrincipal() { 
+            document.getElementById('pantallaSelectorAlmacen').classList.add('hidden'); 
+            document.getElementById('pantallaCorrelacion').classList.add('hidden'); 
+            document.getElementById('pantallaMenuPrincipal').classList.remove('hidden'); 
+            limpiarTodo(); 
+        }
+        function irACorrelacion() { 
+            document.getElementById('pantallaMenuPrincipal').classList.add('hidden'); 
+            document.getElementById('pantallaCorrelacion').classList.remove('hidden'); 
+            setTimeout(() => document.getElementById('inputCorr').focus(), 300); 
+        }
+        function regresarAAlmacenes() { 
+            document.getElementById('pantallaApp').classList.add('hidden'); 
+            document.getElementById('pantallaAuditoria').classList.add('hidden'); 
+            document.getElementById('pantallaSelectorAlmacen').classList.remove('hidden'); 
+            limpiarTodo(); 
+        }
 
         const grid = document.getElementById('gridAlmacenes');
         ALMACENES.forEach(alm => {
@@ -324,12 +338,12 @@
         document.getElementById('inputVinculo').addEventListener('keypress', e => { if(e.key === 'Enter') guardarVinculo(); });
         document.getElementById('busquedaCat').addEventListener('keypress', e => { if(e.key === 'Enter') ejecutarBusquedaCatalogo(); });
 
-        // --- BUSCADOR MAESTRO ---
+        // --- BUSCADOR MAESTRO (CON LÓGICA MULTI-PALABRA) ---
         async function ejecutarBusquedaCatalogo() {
             const txt = document.getElementById('busquedaCat').value.trim();
             const incl30x = document.getElementById('check30x').checked;
             const cont = document.getElementById('resultadosCat');
-            if(txt.length < 3) { alert("Escribe al menos 3 letras."); return; }
+            if(txt.length < 3) { alert("Mínimo 3 letras."); return; }
             cont.innerHTML = `<div class="flex justify-center py-10"><div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div></div>`;
             try {
                 const words = txt.split(/\s+/).filter(p => p.length > 0);
@@ -337,20 +351,27 @@
                 const filter = `or=(articulo.ilike.*${p1}*,nombre.ilike.*${p1}*,clave_proveedor.ilike.*${p1}*,proveedor.ilike.*${p1}*)`;
                 const res = await fetch(`${SB_URL}catalogo_articulos?select=articulo,nombre,proveedor,grupo&${filter}&limit=100`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
                 const data = await res.json();
+                
                 const filtered = data.filter(item => {
                     if(!incl30x && item.articulo.toLowerCase().startsWith('30x')) return false;
-                    const h = `${item.articulo} ${item.nombre} ${item.proveedor||''} ${item.grupo||''}`.toLowerCase();
-                    return words.every(w => h.includes(w.toLowerCase()));
+                    const haystack = `${item.articulo} ${item.nombre} ${item.proveedor||''} ${item.grupo||''}`.toLowerCase();
+                    return words.every(w => haystack.includes(w.toLowerCase()));
                 });
+
                 if(!filtered.length) { cont.innerHTML = `<p class="text-center text-slate-500 mt-10 italic">Sin resultados.</p>`; return; }
                 cont.innerHTML = filtered.map(a => `<div onclick="seleccionarArticuloCat('${a.articulo}')" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm active:bg-blue-50 cursor-pointer animate-in"><div class="flex justify-between"><span class="font-black text-blue-700 text-sm tracking-tighter">${a.articulo.toUpperCase()}</span><span class="text-[9px] bg-slate-100 px-2 py-0.5 rounded font-bold uppercase">ART</span></div><p class="text-xs font-bold mt-1 uppercase text-slate-800">${a.nombre}</p></div>`).join('');
-            } catch(e) { cont.innerHTML = "Error."; }
+            } catch(e) { cont.innerHTML = "Error de red."; }
         }
-        function seleccionarArticuloCat(sku) { if(catalogoModo === "registro") procesarSku(sku); else if(catalogoModo === "correlacion") procesarCorrelacion(sku); else buscarArticuloAuditoria(sku); cerrarCatalogo(); }
+        function seleccionarArticuloCat(sku) { 
+            if(catalogoModo === "registro") procesarSku(sku); 
+            else if(catalogoModo === "correlacion") procesarCorrelacion(sku); 
+            else buscarArticuloAuditoria(sku); 
+            cerrarCatalogo(); 
+        }
         function abrirCatalogo(modo) { catalogoModo = modo; document.getElementById('modalCatalogo').classList.remove('hidden'); document.getElementById('busquedaCat').focus(); }
         function cerrarCatalogo() { document.getElementById('modalCatalogo').classList.add('hidden'); }
 
-        // --- AUDITORÍA ---
+        // --- MÓDULO AUDITORÍA (MODO COMPLETO) ---
         async function buscarArticuloAuditoria(manual = null) {
             const val = (manual || document.getElementById('audInputCodigo').value).trim();
             if(!val) return;
@@ -374,6 +395,7 @@
                 auditoriaArticulo = fila; auditoriaConteos = []; renderAuditoria();
             } catch (e) { alert("Error."); }
         }
+
         async function renderAuditoria() {
             const art = auditoriaArticulo;
             document.getElementById('audLimsaArt').innerText = art.codigo.toUpperCase();
@@ -382,30 +404,217 @@
             const dataN = await resN.json();
             document.getElementById('audNombreArt').innerText = dataN[0]?.nombre || "SIN DESCRIPCIÓN";
             const ubi = [{n: art.ubicacion_1, e: art.estado_1, f: art.fecha_1, i: 1},{n: art.ubicacion_2, e: art.estado_2, f: art.fecha_2, i: 2},{n: art.ubicacion_3, e: art.estado_3, f: art.fecha_3, i: 3},{n: art.ubicacion_4, e: art.estado_4, f: art.fecha_4, i: 4}].filter(x => x.n);
-            document.getElementById('audListaUbicaciones').innerHTML = ubi.map(u => `<div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100 animate-in"><div><p class="font-black text-sm text-slate-700 uppercase">${u.n}</p><p class="text-[9px] text-slate-400 font-bold uppercase">${u.e || 'Pendiente'} | ${u.f ? u.f.split('T')[0] : '--'}</p></div><div class="flex gap-2"><button onclick="confirmarUbicacionAud(${u.i})" class="bg-green-100 text-green-700 p-2 rounded-lg text-xs font-black uppercase">OK</button><button onclick="quitarUbicacionAud(${u.i})" class="bg-red-50 text-red-400 p-2 rounded-lg text-xs">✕</button></div></div>`).join('');
+            document.getElementById('audListaUbicaciones').innerHTML = ubi.map(u => `
+                <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100 animate-in">
+                    <div><p class="font-black text-sm text-slate-700 uppercase">${u.n}</p><p class="text-[9px] text-slate-400 font-bold uppercase">${u.e || 'Pendiente'} | ${u.f ? u.f.split('T')[0] : '--'}</p></div>
+                    <div class="flex gap-2">
+                        <button onclick="confirmarUbicacionAud(${u.i})" class="bg-green-100 text-green-700 p-2 rounded-lg text-xs font-black uppercase shadow-sm active:scale-90">OK</button>
+                        <button onclick="quitarUbicacionAud(${u.i})" class="bg-red-50 text-red-400 p-2 rounded-lg text-xs shadow-sm active:scale-90">✕</button>
+                    </div>
+                </div>`).join('');
             renderConteosAuditoria();
             document.getElementById('audResultados').classList.remove('hidden');
             document.getElementById('audInputCodigo').value = "";
         }
-        async function confirmarUbicacionAud(idx) { const now = new Date().toLocaleString('sv-SE').replace('T', ' '); let p = {}; p[`estado_${idx}`] = "OK"; p[`fecha_${idx}`] = now; await fetch(`${SB_URL}almacen_datos?codigo=eq.${auditoriaArticulo.codigo}&almacen=eq.${almacenActual.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(p) }); buscarArticuloAuditoria(auditoriaArticulo.codigo); }
-        async function quitarUbicacionAud(idx) { if(!confirm("¿Quitar?")) return; let p = {}; p[`ubicacion_${idx}`] = null; p[`estado_${idx}`] = null; p[`fecha_${idx}`] = null; await fetch(`${SB_URL}almacen_datos?codigo=eq.${auditoriaArticulo.codigo}&almacen=eq.${almacenActual.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(p) }); buscarArticuloAuditoria(auditoriaArticulo.codigo); }
-        async function agregarUbicacionAuditoria(manual = null) { const u = (manual || document.getElementById('audNuevaUbic').value).trim().toUpperCase(); if(!u) return; let slot = !auditoriaArticulo.ubicacion_1 ? 1 : !auditoriaArticulo.ubicacion_2 ? 2 : !auditoriaArticulo.ubicacion_3 ? 3 : 4; const now = new Date().toLocaleString('sv-SE').replace('T', ' '); let p = {}; p[`ubicacion_${slot}`] = u; p[`estado_${slot}`] = "OK"; p[`fecha_${slot}`] = now; await fetch(`${SB_URL}almacen_datos?codigo=eq.${auditoriaArticulo.codigo}&almacen=eq.${almacenActual.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(p) }); document.getElementById('audNuevaUbic').value = ""; buscarArticuloAuditoria(auditoriaArticulo.codigo); }
-        function sumarConteoAuditoria() { const c = parseFloat(document.getElementById('audCantidad').value); if(isNaN(c) || c <= 0) return; auditoriaConteos.push(c); document.getElementById('audCantidad').value = ""; renderConteosAuditoria(); }
-        function renderConteosAuditoria() { const tot = auditoriaConteos.reduce((a,b) => a+b, 0); document.getElementById('audTotalConteo').innerText = tot.toFixed(2); document.getElementById('audListaConteos').innerHTML = auditoriaConteos.map((v, i) => `<div class="bg-slate-100 px-3 py-1 rounded-full flex items-center gap-2 text-xs font-black shadow-sm">${v}<button onclick="auditoriaConteos.splice(${i},1);renderConteosAuditoria();" class="text-red-500">&times;</button></div>`).join(''); document.getElementById('btnGuardarAud').disabled = auditoriaConteos.length === 0; }
-        async function finalizarAuditoria() { const tot = auditoriaConteos.reduce((a,b) => a+b, 0); const now = new Date().toLocaleString('sv-SE').replace('T', ' '); const payload = { codigo: auditoriaArticulo.codigo, almacen: almacenActual, codigo_barra: auditoriaArticulo.codigo_barra, descripcion: document.getElementById('audNombreArt').innerText, conteo_total: tot, valida: "REVISAR", fecha: now, registro_1: auditoriaConteos[0] || 0, registro_2: auditoriaConteos[1] || 0, registro_3: auditoriaConteos[2] || 0, registro_4: auditoriaConteos[3] || 0, registro_5: auditoriaConteos[4] || 0 }; try { await fetch(`${SB_URL}auditoria_conteos`, { method: 'POST', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(payload) }); alert("✅ Auditoría Guardada."); limpiarTodo(); } catch(e) { alert("Error."); } }
+
+        async function confirmarUbicacionAud(idx) {
+            const now = new Date().toLocaleString('sv-SE').replace('T', ' ');
+            let p = {}; p[`estado_${idx}`] = "OK"; p[`fecha_${idx}`] = now;
+            await fetch(`${SB_URL}almacen_datos?codigo=eq.${auditoriaArticulo.codigo}&almacen=eq.${almacenActual.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(p) });
+            buscarArticuloAuditoria(auditoriaArticulo.codigo);
+        }
+
+        async function quitarUbicacionAud(idx) {
+            if(!confirm("¿Quitar ubicación?")) return;
+            let p = {}; p[`ubicacion_${idx}`] = null; p[`estado_${idx}`] = null; p[`fecha_${idx}`] = null;
+            await fetch(`${SB_URL}almacen_datos?codigo=eq.${auditoriaArticulo.codigo}&almacen=eq.${almacenActual.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(p) });
+            buscarArticuloAuditoria(auditoriaArticulo.codigo);
+        }
+
+        async function agregarUbicacionAuditoria(manual = null) {
+            const u = (manual || document.getElementById('audNuevaUbic').value).trim().toUpperCase();
+            if(!u) return;
+            let slot = !auditoriaArticulo.ubicacion_1 ? 1 : !auditoriaArticulo.ubicacion_2 ? 2 : !auditoriaArticulo.ubicacion_3 ? 3 : 4;
+            const now = new Date().toLocaleString('sv-SE').replace('T', ' ');
+            let p = {}; p[`ubicacion_${slot}`] = u; p[`estado_${slot}`] = "OK"; p[`fecha_${slot}`] = now;
+            await fetch(`${SB_URL}almacen_datos?codigo=eq.${auditoriaArticulo.codigo}&almacen=eq.${almacenActual.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(p) });
+            document.getElementById('audNuevaUbic').value = "";
+            buscarArticuloAuditoria(auditoriaArticulo.codigo);
+        }
+
+        function sumarConteoAuditoria() {
+            const c = parseFloat(document.getElementById('audCantidad').value);
+            if(isNaN(c) || c <= 0) return;
+            auditoriaConteos.push(c);
+            document.getElementById('audCantidad').value = "";
+            renderConteosAuditoria();
+        }
+
+        function renderConteosAuditoria() {
+            const tot = auditoriaConteos.reduce((a,b) => a+b, 0);
+            document.getElementById('audTotalConteo').innerText = tot.toFixed(2);
+            document.getElementById('audListaConteos').innerHTML = auditoriaConteos.map((v, i) => `<div class="bg-slate-100 px-3 py-1 rounded-full flex items-center gap-2 text-xs font-black shadow-sm">${v}<button onclick="auditoriaConteos.splice(${i},1);renderConteosAuditoria();" class="text-red-500 font-bold">&times;</button></div>`).join('');
+            document.getElementById('btnGuardarAud').disabled = auditoriaConteos.length === 0;
+        }
+
+        async function finalizarAuditoria() {
+            const tot = auditoriaConteos.reduce((a,b) => a+b, 0);
+            const now = new Date().toLocaleString('sv-SE').replace('T', ' ');
+            const payload = { 
+                codigo: auditoriaArticulo.codigo, 
+                almacen: almacenActual, 
+                codigo_barra: auditoriaArticulo.codigo_barra, 
+                descripcion: document.getElementById('audNombreArt').innerText, 
+                conteo_total: tot, 
+                valida: "REVISAR", 
+                fecha: now, 
+                registro_1: auditoriaConteos[0] || 0, 
+                registro_2: auditoriaConteos[1] || 0, 
+                registro_3: auditoriaConteos[2] || 0, 
+                registro_4: auditoriaConteos[3] || 0, 
+                registro_5: auditoriaConteos[4] || 0 
+            };
+            try { 
+                await fetch(`${SB_URL}auditoria_conteos`, { method: 'POST', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+                alert("✅ Auditoría Guardada.");
+                limpiarTodo();
+            } catch(e) { alert("Error."); }
+        }
 
         // --- REGISTRO ---
-        async function procesarUbicacion(val) { const u = val.toUpperCase().trim(); if(!u) return; ubicacionActiva = u; document.getElementById('valUbicacion').innerText = u; document.getElementById('statusUbicacion').classList.remove('hidden'); document.getElementById('cardCaptura').classList.remove('hidden'); document.getElementById('footerAcciones').classList.remove('hidden'); await cargarExistentes(u); setTimeout(() => document.getElementById('inputSku').focus(), 150); }
-        async function cargarExistentes(u) { const lista = document.getElementById('listaExistentes'); document.getElementById('cardExistentes').classList.remove('hidden'); try { const res = await fetch(`${SB_URL}almacen_datos?almacen=eq.${almacenActual.toLowerCase()}&or=(ubicacion_1.eq.${u},ubicacion_2.eq.${u},ubicacion_3.eq.${u},ubicacion_4.eq.${u})&select=codigo`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const data = await res.json(); if(data.length === 0) { lista.innerHTML = `<p class="text-xs text-slate-400 text-center py-2 italic">Vacío.</p>`; return; } const codigos = data.map(d => d.codigo.toLowerCase()); const resC = await fetch(`${SB_URL}catalogo_articulos?articulo=in.("${codigos.join('","')}")&select=articulo,nombre`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const cDat = await resC.json(); const map = Object.fromEntries(cDat.map(c => [c.articulo.toLowerCase(), c.nombre])); lista.innerHTML = data.map(d => `<div class="bg-white p-3 rounded-xl border flex justify-between items-center shadow-sm animate-in"><div class="min-w-0"><p class="font-black text-[11px] text-slate-800 uppercase tracking-tighter">${d.codigo}</p><p class="text-[10px] text-slate-400 font-bold uppercase truncate">${map[d.codigo.toLowerCase()] || '---'}</p></div><button onclick="eliminarFisico('${d.codigo}')" class="text-red-400 p-2 text-xl">&times;</button></div>`).join(''); } catch(e) { lista.innerHTML = "Error."; } }
-        async function procesarSku(val) { const raw = val.trim(); if(!raw) return; try { let finalSku = raw; if(!raw.startsWith("30") && /^\d+$/.test(raw)) { const rE = await fetch(`${SB_URL}almacen_datos?codigo_barra=eq.${raw}&select=codigo&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const dE = await rE.json(); if(dE[0]) finalSku = dE[0].codigo; else { alert("❌ EAN no vinculado."); return; } } const res = await fetch(`${SB_URL}catalogo_articulos?articulo=eq.${finalSku.toLowerCase()}&select=nombre`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const data = await res.json(); if(!skusNuevos.find(s => s.articulo.toLowerCase() === finalSku.toLowerCase())) { skusNuevos.push({ articulo: finalSku, nombre: data[0]?.nombre || "SIN DESCRIPCIÓN" }); renderNuevos(); document.getElementById('btnGuardar').disabled = false; } document.getElementById('inputSku').value = ""; } catch(e) { alert("Error."); } }
-        function renderNuevos() { document.getElementById('listaNuevos').innerHTML = skusNuevos.map((s, i) => `<div class="bg-green-50 p-3 rounded-xl border border-green-100 flex justify-between animate-in shadow-sm"><div class="min-w-0"><p class="font-black text-[11px] text-green-800 uppercase tracking-tighter">${s.articulo}</p><p class="text-[10px] text-green-600 font-bold uppercase truncate">${s.nombre}</p></div><button onclick="skusNuevos.splice(${i},1);renderNuevos();" class="text-green-800 p-2">&times;</button></div>`).join(''); }
-        async function guardarLote() { for (const item of skusNuevos) { const r = await fetch(`${SB_URL}almacen_datos?codigo=eq.${item.articulo.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const fila = (await r.json())[0]; const now = new Date().toLocaleString('sv-SE').replace('T', ' '); if(fila) { let s = !fila.ubicacion_1 ? 1 : !fila.ubicacion_2 ? 2 : !fila.ubicacion_3 ? 3 : 4; let p = {}; p[`ubicacion_${s}`] = ubicacionActiva; p[`estado_${s}`] = "OK"; p[`fecha_${s}`] = now; await fetch(`${SB_URL}almacen_datos?codigo=eq.${item.articulo.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(p) }); } else { await fetch(`${SB_URL}almacen_datos`, { method: 'POST', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo: item.articulo, almacen: almacenActual.toLowerCase(), ubicacion_1: ubicacionActiva, estado_1: "OK", fecha_1: now }) }); } } alert("✅ Guardado."); limpiarTodo(); }
-        async function eliminarFisico(cod) { if(!confirm(`¿Quitar ${cod.toUpperCase()}?`)) return; const r = await fetch(`${SB_URL}almacen_datos?codigo=eq.${cod.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const f = (await r.json())[0]; if(!f) return; let s = (f.ubicacion_1===ubicacionActiva)?1:(f.ubicacion_2===ubicacionActiva)?2:(f.ubicacion_3===ubicacionActiva)?3:(f.ubicacion_4===ubicacionActiva)?4:0; if(s>0) { let p = {}; p[`ubicacion_${s}`]=null; p[`estado_${s}`]=null; p[`fecha_${s}`]=null; await fetch(`${SB_URL}almacen_datos?codigo=eq.${cod.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(p) }); await cargarExistentes(ubicacionActiva); } }
+        async function procesarUbicacion(val) {
+            const u = val.toUpperCase().trim(); if(!u) return;
+            ubicacionActiva = u;
+            document.getElementById('valUbicacion').innerText = u;
+            document.getElementById('statusUbicacion').classList.remove('hidden');
+            document.getElementById('cardCaptura').classList.remove('hidden');
+            document.getElementById('footerAcciones').classList.remove('hidden');
+            await cargarExistentes(u);
+            setTimeout(() => document.getElementById('inputSku').focus(), 150);
+        }
+
+        async function cargarExistentes(u) {
+            const lista = document.getElementById('listaExistentes');
+            document.getElementById('cardExistentes').classList.remove('hidden');
+            try { 
+                const res = await fetch(`${SB_URL}almacen_datos?almacen=eq.${almacenActual.toLowerCase()}&or=(ubicacion_1.eq.${u},ubicacion_2.eq.${u},ubicacion_3.eq.${u},ubicacion_4.eq.${u})&select=codigo`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
+                const data = await res.json();
+                if(data.length === 0) { lista.innerHTML = `<p class="text-xs text-slate-400 text-center py-2 italic">Vacío.</p>`; return; }
+                const codigos = data.map(d => d.codigo.toLowerCase());
+                const resC = await fetch(`${SB_URL}catalogo_articulos?articulo=in.("${codigos.join('","')}")&select=articulo,nombre`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
+                const cDat = await resC.json();
+                const map = Object.fromEntries(cDat.map(c => [c.articulo.toLowerCase(), c.nombre]));
+                lista.innerHTML = data.map(d => `<div class="bg-white p-3 rounded-xl border flex justify-between items-center shadow-sm animate-in"><div class="min-w-0"><p class="font-black text-[11px] text-slate-800 uppercase tracking-tighter">${d.codigo}</p><p class="text-[10px] text-slate-400 font-bold uppercase truncate">${map[d.codigo.toLowerCase()] || '---'}</p></div><button onclick="eliminarFisico('${d.codigo}')" class="text-red-400 p-2 text-xl">&times;</button></div>`).join('');
+            } catch(e) { lista.innerHTML = "Error."; }
+        }
+
+        async function procesarSku(val) {
+            const raw = val.trim(); if(!raw) return;
+            try {
+                let finalSku = raw;
+                if(!raw.startsWith("30") && /^\d+$/.test(raw)) {
+                    const rE = await fetch(`${SB_URL}almacen_datos?codigo_barra=eq.${raw}&select=codigo&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
+                    const dE = await rE.json();
+                    if(dE[0]) finalSku = dE[0].codigo; else { alert("❌ EAN no vinculado."); return; }
+                }
+                const res = await fetch(`${SB_URL}catalogo_articulos?articulo=eq.${finalSku.toLowerCase()}&select=nombre`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
+                const data = await res.json();
+                if(!skusNuevos.find(s => s.articulo.toLowerCase() === finalSku.toLowerCase())) {
+                    skusNuevos.push({ articulo: finalSku, nombre: data[0]?.nombre || "SIN DESCRIPCIÓN" });
+                    renderNuevos(); document.getElementById('btnGuardar').disabled = false;
+                }
+                document.getElementById('inputSku').value = "";
+            } catch(e) { alert("Error."); }
+        }
+
+        function renderNuevos() {
+            document.getElementById('listaNuevos').innerHTML = skusNuevos.map((s, i) => `<div class="bg-green-50 p-3 rounded-xl border border-green-100 flex justify-between animate-in shadow-sm"><div class="min-w-0"><p class="font-black text-[11px] text-green-800 uppercase tracking-tighter">${s.articulo}</p><p class="text-[10px] text-green-600 font-bold uppercase truncate">${s.nombre}</p></div><button onclick="skusNuevos.splice(${i},1);renderNuevos();" class="text-green-800 p-2 font-bold">&times;</button></div>`).join('');
+        }
+
+        async function guardarLote() {
+            for (const item of skusNuevos) {
+                const r = await fetch(`${SB_URL}almacen_datos?codigo=eq.${item.articulo.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
+                const fila = (await r.json())[0];
+                const now = new Date().toLocaleString('sv-SE').replace('T', ' ');
+                if(fila) {
+                    let s = !fila.ubicacion_1 ? 1 : !fila.ubicacion_2 ? 2 : !fila.ubicacion_3 ? 3 : 4;
+                    let p = {}; p[`ubicacion_${s}`] = ubicacionActiva; p[`estado_${s}`] = "OK"; p[`fecha_${s}`] = now;
+                    await fetch(`${SB_URL}almacen_datos?codigo=eq.${item.articulo.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(p) });
+                } else {
+                    await fetch(`${SB_URL}almacen_datos`, { method: 'POST', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo: item.articulo, almacen: almacenActual.toLowerCase(), ubicacion_1: ubicacionActiva, estado_1: "OK", fecha_1: now }) });
+                }
+            }
+            alert("✅ Guardado."); limpiarTodo();
+        }
+
+        async function eliminarFisico(cod) {
+            if(!confirm(`¿Quitar ${cod.toUpperCase()}?`)) return;
+            const r = await fetch(`${SB_URL}almacen_datos?codigo=eq.${cod.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
+            const f = (await r.json())[0]; if(!f) return;
+            let s = (f.ubicacion_1===ubicacionActiva)?1:(f.ubicacion_2===ubicacionActiva)?2:(f.ubicacion_3===ubicacionActiva)?3:(f.ubicacion_4===ubicacionActiva)?4:0;
+            if(s>0) {
+                let p = {}; p[`ubicacion_${s}`]=null; p[`estado_${s}`]=null; p[`fecha_${s}`]=null;
+                await fetch(`${SB_URL}almacen_datos?codigo=eq.${cod.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(p) });
+                await cargarExistentes(ubicacionActiva);
+            }
+        }
 
         // --- CORRELACIÓN ---
-        async function procesarCorrelacion(manual = null) { const val = (manual || document.getElementById('inputCorr').value).trim(); if(!val) return; document.getElementById('resCorrelacion').classList.remove('hidden'); document.getElementById('inputVinculo').value = ""; correlacionActiva = { limsa: "", barras: "", modo: "" }; try { let idN = ""; if(val.startsWith("30")) { correlacionActiva.modo = "LIMSA"; correlacionActiva.limsa = val; idN = val; const res = await fetch(`${SB_URL}almacen_datos?codigo=eq.${val.toLowerCase()}&select=codigo_barra&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const data = await res.json(); correlacionActiva.barras = data[0]?.codigo_barra || ""; } else { correlacionActiva.modo = "EAN"; correlacionActiva.barras = val; const res = await fetch(`${SB_URL}almacen_datos?codigo_barra=eq.${val}&select=codigo&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const data = await res.json(); correlacionActiva.limsa = data[0]?.codigo || ""; idN = correlacionActiva.limsa; } if(idN) { const resN = await fetch(`${SB_URL}catalogo_articulos?articulo=eq.${idN.toLowerCase()}&select=nombre`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const dataN = await resN.json(); document.getElementById('corrNombre').innerText = dataN[0]?.nombre || "SIN DESCRIPCIÓN"; } document.getElementById('corrLimsa').innerText = correlacionActiva.limsa.toUpperCase() || "NO ASIGNADO"; document.getElementById('corrBarras').innerText = correlacionActiva.barras || "NO ASIGNADO"; if(correlacionActiva.limsa && correlacionActiva.barras) { document.getElementById('corrMensaje').innerText = "Vínculo Correcto"; document.getElementById('corrMensaje').className = "mt-4 p-3 rounded-xl text-xs font-bold text-center bg-green-100 text-green-700"; } else { document.getElementById('corrMensaje').innerText = "Vínculo Pendiente"; document.getElementById('corrMensaje').className = "mt-4 p-3 rounded-xl text-xs font-bold text-center bg-orange-100 text-orange-700"; document.getElementById('formVinculo').classList.remove('hidden'); setTimeout(() => document.getElementById('inputVinculo').focus(), 300); } document.getElementById('inputCorr').value = ""; } catch(e) { alert("Error."); } }
-        async function guardarVinculo() { const nv = document.getElementById('inputVinculo').value.trim(); if(!nv) return; const l = correlacionActiva.limsa || nv; const b = correlacionActiva.barras || nv; try { await fetch(`${SB_URL}almacen_datos?codigo=eq.${l.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo_barra: b }) }); document.getElementById('corrMensaje').innerText = "✅ ¡GUARDADO!"; setTimeout(() => procesarCorrelacion(l), 800); } catch(e) { alert("Error."); } }
-        async function eliminarRelacionTotal() { if(!confirm("¿Eliminar?")) return; try { await fetch(`${SB_URL}almacen_datos?codigo=eq.${correlacionActiva.limsa.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo_barra: null }) }); document.getElementById('inputVinculo').value = ""; alert("Vínculo eliminado."); procesarCorrelacion(correlacionActiva.limsa); } catch(e) { alert("Error."); } }
+        async function procesarCorrelacion(manual = null) {
+            const val = (manual || document.getElementById('inputCorr').value).trim();
+            if(!val) return;
+            document.getElementById('resCorrelacion').classList.remove('hidden');
+            document.getElementById('inputVinculo').value = "";
+            correlacionActiva = { limsa: "", barras: "", modo: "" };
+            try {
+                let idN = "";
+                if(val.startsWith("30")) {
+                    correlacionActiva.modo = "LIMSA"; correlacionActiva.limsa = val; idN = val;
+                    const res = await fetch(`${SB_URL}almacen_datos?codigo=eq.${val.toLowerCase()}&select=codigo_barra&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
+                    const data = await res.json();
+                    correlacionActiva.barras = data[0]?.codigo_barra || "";
+                } else {
+                    correlacionActiva.modo = "EAN"; correlacionActiva.barras = val;
+                    const res = await fetch(`${SB_URL}almacen_datos?codigo_barra=eq.${val}&select=codigo&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
+                    const data = await res.json();
+                    correlacionActiva.limsa = data[0]?.codigo || ""; idN = correlacionActiva.limsa;
+                }
+                if(idN) {
+                    const resN = await fetch(`${SB_URL}catalogo_articulos?articulo=eq.${idN.toLowerCase()}&select=nombre`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
+                    const dataN = await resN.json();
+                    document.getElementById('corrNombre').innerText = dataN[0]?.nombre || "SIN DESCRIPCIÓN";
+                }
+                document.getElementById('corrLimsa').innerText = correlacionActiva.limsa.toUpperCase() || "NO ASIGNADO";
+                document.getElementById('corrBarras').innerText = correlacionActiva.barras || "NO ASIGNADO";
+                if(correlacionActiva.limsa && correlacionActiva.barras) {
+                    document.getElementById('corrMensaje').innerText = "Vínculo Correcto"; document.getElementById('corrMensaje').className = "mt-4 p-3 rounded-xl text-xs font-bold text-center bg-green-100 text-green-700 shadow-sm animate-pulse";
+                } else {
+                    document.getElementById('corrMensaje').innerText = "Vínculo Pendiente"; document.getElementById('corrMensaje').className = "mt-4 p-3 rounded-xl text-xs font-bold text-center bg-orange-100 text-orange-700 shadow-sm";
+                    document.getElementById('formVinculo').classList.remove('hidden');
+                    setTimeout(() => document.getElementById('inputVinculo').focus(), 300);
+                }
+                document.getElementById('inputCorr').value = "";
+            } catch(e) { alert("Error."); }
+        }
+
+        async function guardarVinculo() {
+            const nv = document.getElementById('inputVinculo').value.trim();
+            if(!nv) return;
+            const l = correlacionActiva.limsa || nv;
+            const b = correlacionActiva.barras || nv;
+            try {
+                await fetch(`${SB_URL}almacen_datos?codigo=eq.${l.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo_barra: b }) });
+                document.getElementById('corrMensaje').innerText = "✅ ¡GUARDADO!"; setTimeout(() => procesarCorrelacion(l), 800);
+            } catch(e) { alert("Error."); }
+        }
+
+        async function eliminarRelacionTotal() {
+            if(!confirm("¿Eliminar?")) return;
+            try {
+                await fetch(`${SB_URL}almacen_datos?codigo=eq.${correlacionActiva.limsa.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo_barra: null }) });
+                document.getElementById('inputVinculo').value = ""; alert("Vínculo eliminado."); procesarCorrelacion(correlacionActiva.limsa);
+            } catch(e) { alert("Error."); }
+        }
 
         // --- UTILS ---
         function abrirScanner(t) {
@@ -414,7 +623,7 @@
             html5QrCode.start({ facingMode: "environment" }, { fps: 20, qrbox: 250 }, (txt) => {
                 cerrarScanner();
                 if(t === 'correlacion') procesarCorrelacion(txt); 
-                else if(t === 'auditoria') buscarArticuloAuditoria(txt); // BÚSQUEDA AUTOMÁTICA
+                else if(t === 'auditoria') buscarArticuloAuditoria(txt);
                 else if(t === 'ubicacion') procesarUbicacion(txt); 
                 else if(t === 'vinculo') { document.getElementById('inputVinculo').value = txt; guardarVinculo(); }
                 else if(t === 'audNuevaUbic') { agregarUbicacionAuditoria(txt); }
@@ -422,8 +631,9 @@
             });
         }
         function cerrarScanner() { if(html5QrCode) html5QrCode.stop().then(() => { document.getElementById('modalScanner').classList.add('hidden'); html5QrCode = null; }); }
+        
         function limpiarTodo() {
-            skusNuevos = []; renderNuevos(); auditoriaArticulo = null; auditoriaConteos = [];
+            skusNuevos = []; ubicacionActiva = ""; renderNuevos(); auditoriaArticulo = null; auditoriaConteos = [];
             document.getElementById('btnGuardar').disabled = true;
             document.getElementById('inputUbicacion').value = "";
             document.getElementById('inputSku').value = "";
@@ -433,7 +643,6 @@
             document.getElementById('audInputCodigo').value = "";
             document.getElementById('audResultados').classList.add('hidden');
             document.getElementById('inputCorr').value = "";
-            document.getElementById('inputVinculo').value = "";
             document.getElementById('resCorrelacion').classList.add('hidden');
             if(!document.getElementById('pantallaApp').classList.contains('hidden')) setTimeout(() => document.getElementById('inputUbicacion').focus(), 300);
             if(!document.getElementById('pantallaAuditoria').classList.contains('hidden')) setTimeout(() => document.getElementById('audInputCodigo').focus(), 300);
