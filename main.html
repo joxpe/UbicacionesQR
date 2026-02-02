@@ -112,7 +112,7 @@
     <div id="pantallaCorrelacion" class="hidden flex flex-col min-h-screen">
         <header class="bg-white border-b p-4 flex items-center gap-3">
             <button onclick="regresarAlMenuPrincipal()" class="p-2 hover:bg-slate-100 rounded-full"><svg class="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button>
-            <h1 class="text-lg font-bold">Correlación de Códigos</h1>
+            <h1 class="text-lg font-bold">Correlación</h1>
         </header>
 
         <main class="max-w-md mx-auto p-4 space-y-5 w-full">
@@ -128,7 +128,7 @@
             </div>
 
             <div id="resCorrelacion" class="hidden space-y-4 animate-in">
-                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
                     <div id="corrNombre" class="mb-4 text-xs font-black text-slate-500 uppercase leading-tight">--</div>
                     <div class="flex flex-col gap-4 divide-y divide-slate-100">
                         <div class="pb-1"><p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Código LIMSA</p><p id="corrLimsa" class="font-black text-2xl text-indigo-600 uppercase tracking-tight">--</p></div>
@@ -176,10 +176,29 @@
         let correlacionActiva = { limsa: "", barras: "", modo: "" };
 
         // --- NAVEGACIÓN MODULAR ---
-        function irASelectorAlmacen() { document.getElementById('pantallaMenuPrincipal').classList.add('hidden'); document.getElementById('pantallaSelectorAlmacen').classList.remove('hidden'); }
-        function regresarAlMenuPrincipal() { document.getElementById('pantallaSelectorAlmacen').classList.add('hidden'); document.getElementById('pantallaCorrelacion').classList.add('hidden'); document.getElementById('pantallaMenuPrincipal').classList.remove('hidden'); limpiarTodo(); }
-        function irACorrelacion() { document.getElementById('pantallaMenuPrincipal').classList.add('hidden'); document.getElementById('pantallaCorrelacion').classList.remove('hidden'); setTimeout(() => document.getElementById('inputCorr').focus(), 300); }
-        function regresarAAlmacenes() { document.getElementById('pantallaApp').classList.add('hidden'); document.getElementById('pantallaSelectorAlmacen').classList.remove('hidden'); }
+        function irASelectorAlmacen() { 
+            document.getElementById('pantallaMenuPrincipal').classList.add('hidden'); 
+            document.getElementById('pantallaSelectorAlmacen').classList.remove('hidden'); 
+        }
+        
+        function regresarAlMenuPrincipal() { 
+            document.getElementById('pantallaSelectorAlmacen').classList.add('hidden'); 
+            document.getElementById('pantallaCorrelacion').classList.add('hidden'); 
+            document.getElementById('pantallaMenuPrincipal').classList.remove('hidden'); 
+            limpiarTodo(); 
+        }
+        
+        function irACorrelacion() { 
+            document.getElementById('pantallaMenuPrincipal').classList.add('hidden'); 
+            document.getElementById('pantallaCorrelacion').classList.remove('hidden'); 
+            setTimeout(() => document.getElementById('inputCorr').focus(), 300); 
+        }
+        
+        function regresarAAlmacenes() { 
+            document.getElementById('pantallaApp').classList.add('hidden'); 
+            document.getElementById('pantallaSelectorAlmacen').classList.remove('hidden');
+            limpiarTodo(); // LIMPIEZA AL SALIR DEL ALMACÉN
+        }
 
         const grid = document.getElementById('gridAlmacenes');
         ALMACENES.forEach(alm => {
@@ -192,7 +211,8 @@
                 document.getElementById('pantallaSelectorAlmacen').classList.add('hidden'); 
                 document.getElementById('pantallaApp').classList.remove('hidden');
                 
-                // AJUSTE: AUTO-FOCUS EN UBICACIÓN AL ENTRAR AL ALMACÉN
+                // RESET TOTAL AL ENTRAR A UN NUEVO ALMACÉN
+                limpiarTodo();
                 setTimeout(() => document.getElementById('inputUbicacion').focus(), 300);
             };
             grid.appendChild(btn);
@@ -204,7 +224,7 @@
         document.getElementById('inputVinculo').addEventListener('keypress', e => { if(e.key === 'Enter') guardarVinculo(); });
         document.getElementById('busquedaCat').addEventListener('keypress', e => { if(e.key === 'Enter') ejecutarBusquedaCatalogo(); });
 
-        // --- BUSCADOR MAESTRO (MULTI-PALABRA) ---
+        // --- BUSCADOR MAESTRO ---
         function abrirCatalogo(modo) { modoCatalogo = modo; document.getElementById('modalCatalogo').classList.remove('hidden'); document.getElementById('busquedaCat').focus(); }
         function cerrarCatalogo() { document.getElementById('modalCatalogo').classList.add('hidden'); }
         async function ejecutarBusquedaCatalogo() {
@@ -384,6 +404,7 @@
             } catch(e) { alert("Error."); }
         }
 
+        // --- UTILS ---
         function abrirScanner(t) {
             document.getElementById('modalScanner').classList.remove('hidden');
             html5QrCode = new Html5Qrcode("reader");
@@ -396,7 +417,28 @@
             });
         }
         function cerrarScanner() { if(html5QrCode) html5QrCode.stop().then(() => { document.getElementById('modalScanner').classList.add('hidden'); html5QrCode = null; }); }
-        function limpiarTodo() { skusNuevos = []; renderNuevos(); document.getElementById('btnGuardar').disabled = true; document.getElementById('inputSku').value = ""; document.getElementById('inputCorr').value = ""; document.getElementById('inputVinculo').value = ""; document.getElementById('resCorrelacion').classList.add('hidden'); }
+        
+        function limpiarTodo() {
+            // ESTADO
+            skusNuevos = [];
+            ubicacionActiva = "";
+            renderNuevos();
+
+            // UI REGISTRO
+            document.getElementById('btnGuardar').disabled = true;
+            document.getElementById('inputUbicacion').value = "";
+            document.getElementById('inputSku').value = "";
+            document.getElementById('valUbicacion').innerText = "";
+            document.getElementById('statusUbicacion').classList.add('hidden');
+            document.getElementById('cardExistentes').classList.add('hidden');
+            document.getElementById('cardCaptura').classList.add('hidden');
+            document.getElementById('footerAcciones').classList.add('hidden');
+
+            // UI CORRELACIÓN
+            document.getElementById('inputCorr').value = "";
+            document.getElementById('inputVinculo').value = "";
+            document.getElementById('resCorrelacion').classList.add('hidden');
+        }
     </script>
 </body>
 </html>
