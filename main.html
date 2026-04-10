@@ -231,6 +231,29 @@
                         <input type="text" id="inputVinculo" class="flex-1 border border-indigo-200 rounded-xl px-4 py-4 text-center font-black text-indigo-700 uppercase text-lg" placeholder="Vincular código">
                         <button onclick="abrirScanner('vinculo')" class="bg-indigo-600 text-white p-4 rounded-xl shadow-sm">📷</button>
                     </div>
+
+                    <div class="grid grid-cols-[1fr_auto] gap-x-3 gap-y-2 items-center">
+                        <input type="text" inputmode="decimal" id="corrLargo" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Largo">
+                        <span class="text-xs font-bold uppercase text-slate-500">cm</span>
+
+                        <input type="text" inputmode="decimal" id="corrAncho" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Ancho">
+                        <span class="text-xs font-bold uppercase text-slate-500">cm</span>
+
+                        <input type="text" inputmode="decimal" id="corrAlto" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Alto">
+                        <span class="text-xs font-bold uppercase text-slate-500">cm</span>
+                    </div>
+
+                    <div class="border-t border-indigo-100 pt-3 grid grid-cols-[1fr_auto] gap-x-3 gap-y-2 items-center">
+                        <input type="text" inputmode="decimal" id="corrPeso" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Peso">
+                        <span class="text-xs font-bold uppercase text-slate-500">gr</span>
+
+                        <input type="text" inputmode="decimal" id="corrUndCajaBolsa" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Unidades">
+                        <span class="text-xs font-bold uppercase text-slate-500">Und por caja/bolsa</span>
+
+                        <input type="text" inputmode="decimal" id="corrUndTarima" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Unidades">
+                        <span class="text-xs font-bold uppercase text-slate-500">Und por tarima</span>
+                    </div>
+
                     <button onclick="guardarVinculo()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold uppercase text-sm shadow-md">Guardar Vínculo</button>
                 </div>
                 
@@ -273,7 +296,7 @@
         let skusNuevos = [];
         let html5QrCode = null;
         let catalogoModo = "registro";
-        let correlacionActiva = { limsa: "", barras: "", modo: "" };
+        let correlacionActiva = { limsa: "", barras: "", modo: "", ancho: "", largo: "", alto: "", peso: "", unidadesCajaBolsa: "", unidadesTarima: "" };
         let auditoriaArticulo = null;
         let auditoriaConteos = [];
 
@@ -330,6 +353,13 @@
         document.getElementById('inputSku').addEventListener('keypress', e => { if(e.key === 'Enter') procesarSku(e.target.value); });
         document.getElementById('inputCorr').addEventListener('keypress', e => { if(e.key === 'Enter') procesarCorrelacion(); });
         document.getElementById('inputVinculo').addEventListener('keypress', e => { if(e.key === 'Enter') guardarVinculo(); });
+        function corrVal(id) { return (document.getElementById(id)?.value || '').trim(); }
+        function setCorrVal(id, value) { const el = document.getElementById(id); if(el) el.value = value || ''; }
+        function limpiarCamposCorrelacion() { ['corrLargo','corrAncho','corrAlto','corrPeso','corrUndCajaBolsa','corrUndTarima'].forEach(id => setCorrVal(id, '')); }
+        function valorCajaVigente(v) { const t = String(v || '').trim(); return t !== '' && t !== '0' && t !== '0.0'; }
+        async function fetchJsonOrThrow(url, options = {}) { const res = await fetch(url, options); const raw = await res.text(); let data = null; try { data = raw ? JSON.parse(raw) : null; } catch(_) { data = raw; } if(!res.ok) { throw new Error(typeof data === 'string' ? data : JSON.stringify(data)); } return data; }
+        async function obtenerFactorCatalogo(codigo) { if(!codigo) return ''; const data = await fetchJsonOrThrow(`${SB_URL}catalogo_articulos?articulo=eq.${codigo.toLowerCase()}&select=factor&limit=1`, { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` } }); const factor = data?.[0]?.factor; return factor == null ? '' : String(factor).trim(); }
+
         document.getElementById('busquedaCat').addEventListener('keypress', e => { if(e.key === 'Enter') ejecutarBusquedaCatalogo(); });
 
         // --- BUSCADOR MAESTRO ---
@@ -411,9 +441,25 @@
         async function eliminarFisico(cod) { if(!confirm(`¿Quitar ${cod.toUpperCase()}?`)) return; const r = await fetch(`${SB_URL}almacen_datos?codigo=eq.${cod.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const f = (await r.json())[0]; if(!f) return; let s = (f.ubicacion_1===ubicacionActiva)?1:(f.ubicacion_2===ubicacionActiva)?2:(f.ubicacion_3===ubicacionActiva)?3:(f.ubicacion_4===ubicacionActiva)?4:0; if(s>0) { let p = {}; p[`ubicacion_${s}`]=null; p[`estado_${s}`]=null; p[`fecha_${s}`]=null; await fetch(`${SB_URL}almacen_datos?codigo=eq.${cod.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(p) }); await cargarExistentes(ubicacionActiva); } }
 
         // --- CORRELACIÓN ---
-        async function procesarCorrelacion(manual = null) { const val = (manual || document.getElementById('inputCorr').value).trim(); if(!val) return; document.getElementById('resCorrelacion').classList.remove('hidden'); document.getElementById('inputVinculo').value = ""; correlacionActiva = { limsa: "", barras: "", modo: "" }; document.getElementById('formVinculo').classList.add('hidden'); document.getElementById('btnEliminarCorr').classList.add('hidden'); try { let idN = ""; if(val.startsWith("30")) { correlacionActiva.modo = "LIMSA"; correlacionActiva.limsa = val; idN = val; const res = await fetch(`${SB_URL}almacen_datos?codigo=eq.${val.toLowerCase()}&select=codigo_barra&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const data = await res.json(); correlacionActiva.barras = data[0]?.codigo_barra || ""; } else { correlacionActiva.modo = "EAN"; correlacionActiva.barras = val; const res = await fetch(`${SB_URL}almacen_datos?codigo_barra=eq.${val}&select=codigo&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const data = await res.json(); correlacionActiva.limsa = data[0]?.codigo || ""; idN = correlacionActiva.limsa; } if(idN) { const resN = await fetch(`${SB_URL}catalogo_articulos?articulo=eq.${idN.toLowerCase()}&select=nombre`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const dataN = await resN.json(); document.getElementById('corrNombre').innerText = dataN[0]?.nombre || "SIN DESCRIPCIÓN"; } document.getElementById('corrLimsa').innerText = correlacionActiva.limsa.toUpperCase() || "NO ASIGNADO"; document.getElementById('corrBarras').innerText = correlacionActiva.barras || "NO ASIGNADO"; if(correlacionActiva.limsa && correlacionActiva.barras) { document.getElementById('corrMensaje').innerText = "Vínculo Correcto"; document.getElementById('corrMensaje').className = "mt-4 p-3 rounded-xl text-xs font-bold text-center bg-green-100 text-green-700"; document.getElementById('btnEliminarCorr').classList.remove('hidden'); } else { document.getElementById('corrMensaje').innerText = "Vínculo Pendiente"; document.getElementById('corrMensaje').className = "mt-4 p-3 rounded-xl text-xs font-bold text-center bg-orange-100 text-orange-700"; document.getElementById('formVinculo').classList.remove('hidden'); setTimeout(() => document.getElementById('inputVinculo').focus(), 300); } document.getElementById('inputCorr').value = ""; } catch(e) { alert("Error."); } }
-        async function guardarVinculo() { const nv = document.getElementById('inputVinculo').value.trim(); if(!nv) return; const l = correlacionActiva.limsa || nv; const b = correlacionActiva.barras || nv; try { await fetch(`${SB_URL}almacen_datos?codigo=eq.${l.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo_barra: b }) }); document.getElementById('corrMensaje').innerText = "✅ ¡GUARDADO!"; setTimeout(() => procesarCorrelacion(l), 800); } catch(e) { alert("Error."); } }
-        async function eliminarRelacionTotal() { if(!confirm("¿Eliminar?")) return; try { await fetch(`${SB_URL}almacen_datos?codigo=eq.${correlacionActiva.limsa.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo_barra: null }) }); document.getElementById('inputVinculo').value = ""; alert("Vínculo eliminado."); procesarCorrelacion(correlacionActiva.limsa); } catch(e) { alert("Error."); } }
+        async function procesarCorrelacion(manual = null) { const val = (manual || document.getElementById('inputCorr').value).trim(); if(!val) return; document.getElementById('resCorrelacion').classList.remove('hidden'); document.getElementById('inputVinculo').value = ""; limpiarCamposCorrelacion(); correlacionActiva = { limsa: "", barras: "", modo: "", ancho: "", largo: "", alto: "", peso: "", unidadesCajaBolsa: "", unidadesTarima: "" }; document.getElementById('formVinculo').classList.add('hidden'); document.getElementById('btnEliminarCorr').classList.add('hidden'); try { let idN = ""; let fila = null; if(val.startsWith("30")) { correlacionActiva.modo = "LIMSA"; correlacionActiva.limsa = val; idN = val; const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${val.toLowerCase()}&select=codigo,codigo_barra,ancho,largo,alto,peso,unidades_caja_bolsa,unidades_tarima&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); fila = data?.[0] || null; correlacionActiva.barras = fila?.codigo_barra || ""; } else { correlacionActiva.modo = "EAN"; correlacionActiva.barras = val; const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo_barra=eq.${val}&select=codigo,codigo_barra,ancho,largo,alto,peso,unidades_caja_bolsa,unidades_tarima&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); fila = data?.[0] || null; correlacionActiva.limsa = fila?.codigo || ""; idN = correlacionActiva.limsa; } if(idN) { const dataN = await fetchJsonOrThrow(`${SB_URL}catalogo_articulos?articulo=eq.${idN.toLowerCase()}&select=nombre&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); document.getElementById('corrNombre').innerText = dataN?.[0]?.nombre || "SIN DESCRIPCIÓN"; } else { document.getElementById('corrNombre').innerText = "SIN DESCRIPCIÓN"; }
+            correlacionActiva.ancho = fila?.ancho || "";
+            correlacionActiva.largo = fila?.largo || "";
+            correlacionActiva.alto = fila?.alto || "";
+            correlacionActiva.peso = fila?.peso || "";
+            correlacionActiva.unidadesCajaBolsa = fila?.unidades_caja_bolsa || "";
+            correlacionActiva.unidadesTarima = fila?.unidades_tarima || "";
+            if ((!valorCajaVigente(correlacionActiva.unidadesCajaBolsa)) && idN) {
+                correlacionActiva.unidadesCajaBolsa = await obtenerFactorCatalogo(idN);
+            }
+            setCorrVal('corrLargo', correlacionActiva.largo);
+            setCorrVal('corrAncho', correlacionActiva.ancho);
+            setCorrVal('corrAlto', correlacionActiva.alto);
+            setCorrVal('corrPeso', correlacionActiva.peso);
+            setCorrVal('corrUndCajaBolsa', correlacionActiva.unidadesCajaBolsa);
+            setCorrVal('corrUndTarima', correlacionActiva.unidadesTarima);
+            document.getElementById('corrLimsa').innerText = correlacionActiva.limsa.toUpperCase() || "NO ASIGNADO"; document.getElementById('corrBarras').innerText = correlacionActiva.barras || "NO ASIGNADO"; if(correlacionActiva.limsa && correlacionActiva.barras) { document.getElementById('corrMensaje').innerText = "Vínculo Correcto"; document.getElementById('corrMensaje').className = "mt-4 p-3 rounded-xl text-xs font-bold text-center bg-green-100 text-green-700"; document.getElementById('btnEliminarCorr').classList.remove('hidden'); } else { document.getElementById('corrMensaje').innerText = "Vínculo Pendiente"; document.getElementById('corrMensaje').className = "mt-4 p-3 rounded-xl text-xs font-bold text-center bg-orange-100 text-orange-700"; document.getElementById('formVinculo').classList.remove('hidden'); setTimeout(() => document.getElementById('inputVinculo').focus(), 300); } document.getElementById('inputCorr').value = ""; } catch(e) { alert(`Error al cargar correlación: ${e.message || e}`); } }
+        async function guardarVinculo() { const nv = document.getElementById('inputVinculo').value.trim(); if(!nv && !correlacionActiva.limsa && !correlacionActiva.barras) return; const l = correlacionActiva.limsa || (nv.startsWith('30') ? nv : ''); const b = correlacionActiva.barras || (!nv.startsWith('30') ? nv : ''); if(!l) { alert('Necesitas un código LIMSA para guardar.'); return; } const payload = { codigo_barra: b || null, largo: corrVal('corrLargo') || null, ancho: corrVal('corrAncho') || null, alto: corrVal('corrAlto') || null, peso: corrVal('corrPeso') || null, unidades_caja_bolsa: corrVal('corrUndCajaBolsa') || null, unidades_tarima: corrVal('corrUndTarima') || null }; try { const query = `${SB_URL}almacen_datos?codigo=eq.${l.toLowerCase()}`; const rows = await fetchJsonOrThrow(`${query}&select=codigo&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); if(Array.isArray(rows) && rows.length > 0) { await fetchJsonOrThrow(query, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json", "Prefer": "return=representation" }, body: JSON.stringify(payload) }); } else { await fetchJsonOrThrow(`${SB_URL}almacen_datos`, { method: 'POST', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json", "Prefer": "return=representation" }, body: JSON.stringify({ codigo: l.toLowerCase(), ...payload }) }); } document.getElementById('corrMensaje').innerText = '✅ ¡GUARDADO!'; document.getElementById('corrMensaje').className = 'mt-4 p-3 rounded-xl text-xs font-bold text-center bg-green-100 text-green-700'; setTimeout(() => procesarCorrelacion(l), 500); } catch(e) { alert(`Error al guardar: ${e.message || e}`); } }
+        async function eliminarRelacionTotal() { if(!confirm("¿Eliminar?")) return; try { await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${correlacionActiva.limsa.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo_barra: null }) }); document.getElementById('inputVinculo').value = ""; alert("Vínculo eliminado."); procesarCorrelacion(correlacionActiva.limsa); } catch(e) { alert(`Error al eliminar: ${e.message || e}`); } }
 
         // --- UTILS ---
         function abrirScanner(t) {
@@ -442,6 +488,7 @@
             document.getElementById('audResultados').classList.add('hidden');
             document.getElementById('inputCorr').value = "";
             document.getElementById('inputVinculo').value = "";
+            limpiarCamposCorrelacion();
             document.getElementById('resCorrelacion').classList.add('hidden');
             if(!document.getElementById('pantallaApp').classList.contains('hidden')) setTimeout(() => document.getElementById('inputUbicacion').focus(), 300);
             if(!document.getElementById('pantallaAuditoria').classList.contains('hidden')) setTimeout(() => document.getElementById('audInputCodigo').focus(), 300);
