@@ -50,8 +50,8 @@
                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.828a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
                 </div>
                 <div>
-                    <h3 class="font-black text-slate-800 uppercase text-sm tracking-tight">Correlación</h3>
-                    <p class="text-xs text-slate-500 mt-1">Vincular Código LIMSA con Barras.</p>
+                    <h3 class="font-black text-slate-800 uppercase text-sm tracking-tight">Correlación de Skus</h3>
+                    <p class="text-xs text-slate-500 mt-1">Vincular Código LIMSA con Código de Barras y Unidades y Volumetrías.</p>
                 </div>
             </button>
         </div>
@@ -348,17 +348,70 @@
         });
 
         // --- EVENTOS DE TECLADO ---
-        document.getElementById('audInputCodigo').addEventListener('keypress', e => { if(e.key === 'Enter') buscarArticuloAuditoria(); });
-        document.getElementById('inputUbicacion').addEventListener('keypress', e => { if(e.key === 'Enter') procesarUbicacion(e.target.value); });
-        document.getElementById('inputSku').addEventListener('keypress', e => { if(e.key === 'Enter') procesarSku(e.target.value); });
-        document.getElementById('inputCorr').addEventListener('keypress', e => { if(e.key === 'Enter') procesarCorrelacion(); });
-        document.getElementById('inputVinculo').addEventListener('keypress', e => { if(e.key === 'Enter') guardarVinculo(); });
+        bindScanAwareInput('audInputCodigo', value => buscarArticuloAuditoria(value));
+        bindScanAwareInput('inputUbicacion', value => procesarUbicacion(value), { idleMs: 100 });
+        bindScanAwareInput('inputSku', value => procesarSku(value));
+        bindScanAwareInput('inputCorr', value => procesarCorrelacion(value));
+        bindScanAwareInput('inputVinculo', () => guardarVinculo());
         function corrVal(id) { return (document.getElementById(id)?.value || '').trim(); }
         function setCorrVal(id, value) { const el = document.getElementById(id); if(el) el.value = value || ''; }
         function limpiarCamposCorrelacion() { ['corrLargo','corrAncho','corrAlto','corrPeso','corrUndCajaBolsa','corrUndTarima'].forEach(id => setCorrVal(id, '')); }
         function valorCajaVigente(v) { const t = String(v || '').trim(); return t !== '' && t !== '0' && t !== '0.0'; }
         async function fetchJsonOrThrow(url, options = {}) { const res = await fetch(url, options); const raw = await res.text(); let data = null; try { data = raw ? JSON.parse(raw) : null; } catch(_) { data = raw; } if(!res.ok) { throw new Error(typeof data === 'string' ? data : JSON.stringify(data)); } return data; }
         async function obtenerFactorCatalogo(codigo) { if(!codigo) return ''; const data = await fetchJsonOrThrow(`${SB_URL}catalogo_articulos?articulo=eq.${codigo.toLowerCase()}&select=factor&limit=1`, { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` } }); const factor = data?.[0]?.factor; return factor == null ? '' : String(factor).trim(); }
+
+        function bindScanAwareInput(inputId, submitFn, options = {}) {
+            const el = document.getElementById(inputId);
+            if (!el) return;
+            const idleMs = options.idleMs || 80;
+            const rapidThresholdMs = options.rapidThresholdMs || 35;
+            let lastInputAt = 0;
+            let scanMode = false;
+            let timer = null;
+            let lastSubmittedValue = "";
+            let lastSubmittedAt = 0;
+
+            const normalizedValue = () => (el.value || '').trim();
+
+            const submitCurrent = () => {
+                const value = normalizedValue();
+                if (!value) return;
+                const now = Date.now();
+                if (value === lastSubmittedValue && (now - lastSubmittedAt) < 400) return;
+                lastSubmittedValue = value;
+                lastSubmittedAt = now;
+                submitFn(value);
+            };
+
+            el.addEventListener('input', () => {
+                const now = Date.now();
+                if (lastInputAt && (now - lastInputAt) <= rapidThresholdMs) {
+                    scanMode = true;
+                }
+                lastInputAt = now;
+                if (timer) clearTimeout(timer);
+                if (scanMode) {
+                    timer = setTimeout(() => {
+                        submitCurrent();
+                        scanMode = false;
+                    }, idleMs);
+                }
+            });
+
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (timer) clearTimeout(timer);
+                    setTimeout(() => submitCurrent(), 20);
+                    scanMode = false;
+                }
+            });
+
+            el.addEventListener('blur', () => {
+                if (timer) clearTimeout(timer);
+                scanMode = false;
+            });
+        }
 
         document.getElementById('busquedaCat').addEventListener('keypress', e => { if(e.key === 'Enter') ejecutarBusquedaCatalogo(); });
 
