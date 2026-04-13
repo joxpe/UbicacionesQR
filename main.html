@@ -846,7 +846,13 @@
 
                 document.getElementById('corrMensaje').innerText = '✅ ¡GUARDADO!';
                 document.getElementById('corrMensaje').className = 'mt-4 p-3 rounded-xl text-xs font-bold text-center bg-green-100 text-green-700';
-                setTimeout(() => procesarCorrelacion(l), 500);
+                setTimeout(() => {
+                    procesarCorrelacion(l);
+                    setTimeout(() => {
+                        const inputCorr = document.getElementById('inputCorr');
+                        if (inputCorr) inputCorr.focus();
+                    }, 250);
+                }, 500);
             } catch(e) {
                 alert(`Error al guardar: ${e.message || e}`);
             }
