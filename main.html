@@ -21,7 +21,7 @@
 
     <div id="pantallaMenuPrincipal" class="max-w-md mx-auto p-6 animate-in">
         <header class="text-center mb-10 mt-6">
-            <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight">LIMSA Cloud</h1>
+            <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight">LIMSA</h1>
             <p class="text-slate-500 font-medium mt-2">Gestión de Inventario</p>
         </header>
 
@@ -242,65 +242,73 @@
                     </div>
 
                     <div class="space-y-4">
-                        <div class="border border-indigo-100 rounded-2xl p-4 bg-white/70">
-                            <p class="text-[10px] font-black text-indigo-700 uppercase tracking-widest mb-3">Por unidad</p>
-                            <div class="grid grid-cols-[1fr_auto] gap-x-3 gap-y-2 items-center">
-                                <input type="text" inputmode="decimal" id="corrLargoUnidad" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Largo">
-                                <span class="text-xs font-bold uppercase text-slate-500">cm</span>
-
-                                <input type="text" inputmode="decimal" id="corrAnchoUnidad" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Ancho">
-                                <span class="text-xs font-bold uppercase text-slate-500">cm</span>
-
-                                <input type="text" inputmode="decimal" id="corrAltoUnidad" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Alto">
-                                <span class="text-xs font-bold uppercase text-slate-500">cm</span>
-
-                                <input type="text" inputmode="decimal" id="corrPesoUnidad" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Peso">
-                                <span class="text-xs font-bold uppercase text-slate-500">kg</span>
+                        <div class="bg-white/80 border border-indigo-100 rounded-3xl overflow-hidden shadow-sm">
+                            <button type="button" onclick="toggleLogisticaSection('unidad')" class="w-full flex items-center justify-between px-4 py-4 text-left">
+                                <div>
+                                    <p class="text-[10px] font-black text-indigo-700 uppercase tracking-widest">📦 Unidad</p>
+                                    <p class="text-[11px] text-slate-500 font-bold">Captura principal</p>
+                                </div>
+                                <span id="iconUnidad" class="text-indigo-600 font-black text-lg">−</span>
+                            </button>
+                            <div id="bodyUnidad" class="px-4 pb-4 space-y-3">
+                                <div class="grid grid-cols-2 gap-3">
+                                    <input type="text" inputmode="decimal" id="corrLargoUnidad" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Largo (cm)">
+                                    <input type="text" inputmode="decimal" id="corrAnchoUnidad" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Ancho (cm)">
+                                    <input type="text" inputmode="decimal" id="corrAltoUnidad" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Alto (cm)">
+                                    <input type="text" inputmode="decimal" id="corrPesoUnidad" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Peso (kg)">
+                                </div>
                             </div>
                         </div>
 
-                        <div class="border border-indigo-100 rounded-2xl p-4 bg-white/70">
-                            <p class="text-[10px] font-black text-indigo-700 uppercase tracking-widest mb-3">Por bolsa/caja</p>
-                            <div class="grid grid-cols-[1fr_auto] gap-x-3 gap-y-2 items-center">
-                                <input type="text" inputmode="decimal" id="corrUndCajaBolsa" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Unidades">
-                                <span class="text-xs font-bold uppercase text-slate-500">Und por caja/bolsa</span>
-
-                                <input type="text" inputmode="decimal" id="corrLargoCajaBolsa" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Largo">
-                                <span class="text-xs font-bold uppercase text-slate-500">cm</span>
-
-                                <input type="text" inputmode="decimal" id="corrAnchoCajaBolsa" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Ancho">
-                                <span class="text-xs font-bold uppercase text-slate-500">cm</span>
-
-                                <input type="text" inputmode="decimal" id="corrAltoCajaBolsa" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Alto">
-                                <span class="text-xs font-bold uppercase text-slate-500">cm</span>
-
-                                <input type="text" inputmode="decimal" id="corrPesoCajaBolsa" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Peso">
-                                <span class="text-xs font-bold uppercase text-slate-500">kg</span>
+                        <div class="bg-white/80 border border-indigo-100 rounded-3xl overflow-hidden shadow-sm">
+                            <button type="button" onclick="toggleLogisticaSection('caja')" class="w-full flex items-center justify-between px-4 py-4 text-left">
+                                <div>
+                                    <p class="text-[10px] font-black text-indigo-700 uppercase tracking-widest">📦 Caja / Bolsa</p>
+                                    <p class="text-[11px] text-slate-500 font-bold">Unidades y medidas del empaque</p>
+                                </div>
+                                <span id="iconCaja" class="text-indigo-600 font-black text-lg">+</span>
+                            </button>
+                            <div id="bodyCaja" class="hidden px-4 pb-4 space-y-3">
+                                <input type="text" inputmode="decimal" id="corrUndCajaBolsa" class="w-full border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Unidades por caja / bolsa">
+                                <div class="grid grid-cols-2 gap-3">
+                                    <input type="text" inputmode="decimal" id="corrLargoCajaBolsa" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Largo (cm)">
+                                    <input type="text" inputmode="decimal" id="corrAnchoCajaBolsa" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Ancho (cm)">
+                                    <input type="text" inputmode="decimal" id="corrAltoCajaBolsa" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Alto (cm)">
+                                    <input type="text" inputmode="decimal" id="corrPesoCajaBolsa" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Peso (kg)">
+                                </div>
                             </div>
                         </div>
 
-                        <div class="border border-indigo-100 rounded-2xl p-4 bg-white/70">
-                            <p class="text-[10px] font-black text-indigo-700 uppercase tracking-widest mb-3">Por tarima</p>
-                            <div class="grid grid-cols-[1fr_auto] gap-x-3 gap-y-2 items-center">
-                                <input type="text" inputmode="decimal" id="corrUndTarima" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Unidades">
-                                <span class="text-xs font-bold uppercase text-slate-500">Und por tarima</span>
-
-                                <input type="text" inputmode="decimal" id="corrLargoTarima" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Largo">
-                                <span class="text-xs font-bold uppercase text-slate-500">cm</span>
-
-                                <input type="text" inputmode="decimal" id="corrAnchoTarima" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Ancho">
-                                <span class="text-xs font-bold uppercase text-slate-500">cm</span>
-
-                                <input type="text" inputmode="decimal" id="corrAltoTarima" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Alto">
-                                <span class="text-xs font-bold uppercase text-slate-500">cm</span>
-
-                                <input type="text" inputmode="decimal" id="corrPesoTarima" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Peso">
-                                <span class="text-xs font-bold uppercase text-slate-500">kg</span>
+                        <div class="bg-white/80 border border-indigo-100 rounded-3xl overflow-hidden shadow-sm">
+                            <button type="button" onclick="toggleLogisticaSection('tarima')" class="w-full flex items-center justify-between px-4 py-4 text-left">
+                                <div>
+                                    <p class="text-[10px] font-black text-indigo-700 uppercase tracking-widest">🧱 Tarima</p>
+                                    <p class="text-[11px] text-slate-500 font-bold">Unidades y medidas logísticas</p>
+                                </div>
+                                <span id="iconTarima" class="text-indigo-600 font-black text-lg">+</span>
+                            </button>
+                            <div id="bodyTarima" class="hidden px-4 pb-4 space-y-3">
+                                <input type="text" inputmode="decimal" id="corrUndTarima" class="w-full border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Unidades por tarima">
+                                <div class="grid grid-cols-2 gap-3">
+                                    <input type="text" inputmode="decimal" id="corrLargoTarima" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Largo (cm)">
+                                    <input type="text" inputmode="decimal" id="corrAnchoTarima" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Ancho (cm)">
+                                    <input type="text" inputmode="decimal" id="corrAltoTarima" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Alto (cm)">
+                                    <input type="text" inputmode="decimal" id="corrPesoTarima" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Peso (kg)">
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <button onclick="guardarVinculo()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold uppercase text-sm shadow-md">Guardar Vínculo</button>
+                    <div class="bg-white/80 border border-indigo-100 rounded-3xl p-4 space-y-2">
+                        <p class="text-[10px] font-black text-indigo-700 uppercase tracking-widest">Resumen</p>
+                        <div class="grid grid-cols-1 gap-2 text-xs font-bold text-slate-600">
+                            <div class="flex justify-between bg-slate-50 rounded-xl px-3 py-2"><span>Unidad</span><span id="corrResumenUnidad">--</span></div>
+                            <div class="flex justify-between bg-slate-50 rounded-xl px-3 py-2"><span>Caja / Bolsa</span><span id="corrResumenCaja">--</span></div>
+                            <div class="flex justify-between bg-slate-50 rounded-xl px-3 py-2"><span>Tarima</span><span id="corrResumenTarima">--</span></div>
+                        </div>
+                    </div>
+
+                    <button onclick="guardarVinculo()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold uppercase text-sm shadow-md">Guardar</button>
                 </div>
                 
                 <button id="btnEliminarCorr" onclick="eliminarRelacionTotal()" class="hidden w-full bg-red-50 text-red-600 py-4 rounded-xl font-bold text-xs uppercase border border-red-100 shadow-sm active:bg-red-100">Eliminar Relación</button>
@@ -435,6 +443,58 @@
         bindScanAwareInput('inputVinculo', () => guardarVinculo());
         function corrVal(id) { return (document.getElementById(id)?.value || '').trim(); }
         function setCorrVal(id, value) { const el = document.getElementById(id); if(el) el.value = value || ''; }
+        function toggleLogisticaSection(seccion) {
+            const map = {
+                unidad: ['bodyUnidad', 'iconUnidad'],
+                caja: ['bodyCaja', 'iconCaja'],
+                tarima: ['bodyTarima', 'iconTarima']
+            };
+            const conf = map[seccion];
+            if(!conf) return;
+            const body = document.getElementById(conf[0]);
+            const icon = document.getElementById(conf[1]);
+            if(!body || !icon) return;
+            const hidden = body.classList.contains('hidden');
+            body.classList.toggle('hidden', !hidden);
+            icon.innerText = hidden ? '−' : '+';
+        }
+        function copiarMedidasUnidadACaja() {
+            setCorrVal('corrLargoCajaBolsa', corrVal('corrLargoUnidad'));
+            setCorrVal('corrAnchoCajaBolsa', corrVal('corrAnchoUnidad'));
+            setCorrVal('corrAltoCajaBolsa', corrVal('corrAltoUnidad'));
+            setCorrVal('corrPesoCajaBolsa', corrVal('corrPesoUnidad'));
+            actualizarResumenCorrelacion();
+        }
+        function copiarMedidasCajaATarima() {
+            setCorrVal('corrLargoTarima', corrVal('corrLargoCajaBolsa'));
+            setCorrVal('corrAnchoTarima', corrVal('corrAnchoCajaBolsa'));
+            setCorrVal('corrAltoTarima', corrVal('corrAltoCajaBolsa'));
+            setCorrVal('corrPesoTarima', corrVal('corrPesoCajaBolsa'));
+            actualizarResumenCorrelacion();
+        }
+        function textoResumenMedidas(prefix) {
+            const largo = corrVal('corrLargo' + prefix);
+            const ancho = corrVal('corrAncho' + prefix);
+            const alto = corrVal('corrAlto' + prefix);
+            const peso = corrVal('corrPeso' + prefix);
+            const partes = [];
+            if(largo || ancho || alto) partes.push(`${largo || '-'}x${ancho || '-'}x${alto || '-'} cm`);
+            if(peso) partes.push(`${peso} kg`);
+            return partes.join(' | ') || '--';
+        }
+        function actualizarResumenCorrelacion() {
+            const unidad = textoResumenMedidas('Unidad');
+            const cajaUnd = corrVal('corrUndCajaBolsa');
+            const tarimaUnd = corrVal('corrUndTarima');
+            const caja = [cajaUnd ? `${cajaUnd} und` : '', textoResumenMedidas('CajaBolsa')].filter(Boolean).join(' | ') || '--';
+            const tarima = [tarimaUnd ? `${tarimaUnd} und` : '', textoResumenMedidas('Tarima')].filter(Boolean).join(' | ') || '--';
+            const ru = document.getElementById('corrResumenUnidad');
+            const rc = document.getElementById('corrResumenCaja');
+            const rt = document.getElementById('corrResumenTarima');
+            if(ru) ru.innerText = unidad;
+            if(rc) rc.innerText = caja;
+            if(rt) rt.innerText = tarima;
+        }
         function limpiarCamposCorrelacion() {
             [
                 'corrLargoUnidad','corrAnchoUnidad','corrAltoUnidad','corrPesoUnidad',
@@ -500,6 +560,14 @@
         }
 
         document.getElementById('busquedaCat').addEventListener('keypress', e => { if(e.key === 'Enter') ejecutarBusquedaCatalogo(); });
+        [
+            'corrLargoUnidad','corrAnchoUnidad','corrAltoUnidad','corrPesoUnidad',
+            'corrUndCajaBolsa','corrLargoCajaBolsa','corrAnchoCajaBolsa','corrAltoCajaBolsa','corrPesoCajaBolsa',
+            'corrUndTarima','corrLargoTarima','corrAnchoTarima','corrAltoTarima','corrPesoTarima'
+        ].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.addEventListener('input', actualizarResumenCorrelacion);
+        });
 
         // --- BUSCADOR MAESTRO ---
         async function ejecutarBusquedaCatalogo() {
@@ -669,6 +737,13 @@
 
                 document.getElementById('corrLimsa').innerText = correlacionActiva.limsa.toUpperCase() || "NO ASIGNADO";
                 document.getElementById('corrBarras').innerText = correlacionActiva.barras || "NO ASIGNADO";
+                document.getElementById('bodyUnidad')?.classList.remove('hidden');
+                document.getElementById('iconUnidad').innerText = '−';
+                document.getElementById('bodyCaja')?.classList.add('hidden');
+                document.getElementById('iconCaja').innerText = '+';
+                document.getElementById('bodyTarima')?.classList.add('hidden');
+                document.getElementById('iconTarima').innerText = '+';
+                actualizarResumenCorrelacion();
 
                 if(correlacionActiva.limsa && correlacionActiva.barras) {
                     document.getElementById('corrMensaje').innerText = "Vínculo Correcto";
@@ -795,6 +870,7 @@
             document.getElementById('inputCorr').value = "";
             document.getElementById('inputVinculo').value = "";
             limpiarCamposCorrelacion();
+            actualizarResumenCorrelacion();
             document.getElementById('resCorrelacion').classList.add('hidden');
             if(!document.getElementById('pantallaApp').classList.contains('hidden')) setTimeout(() => document.getElementById('inputUbicacion').focus(), 300);
             if(!document.getElementById('pantallaAuditoria').classList.contains('hidden')) setTimeout(() => document.getElementById('audInputCodigo').focus(), 300);
