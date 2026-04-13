@@ -58,7 +58,7 @@
         </div>
 
         <div class="mt-10 text-center">
-            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">Compartir página</p>
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">Compartir app</p>
             <div class="bg-white inline-flex flex-col items-center p-4 rounded-3xl shadow-sm border border-slate-200">
                 <div id="qrCompartirPagina" class="mx-auto"></div>
                 <p class="mt-3 text-[10px] text-slate-500 break-all max-w-[220px]">https://joxpe.github.io/UbicacionesQR/main.html</p>
@@ -228,7 +228,14 @@
                         </div>
                         <div class="pt-3">
                             <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">CÓDIGO DE BARRAS</p>
-                            <p id="corrBarras" class="font-black text-2xl text-slate-800 uppercase tracking-tight">--</p>
+                            <div class="flex items-center justify-between gap-3">
+                                <p id="corrBarras" class="font-black text-2xl text-slate-800 uppercase tracking-tight break-all">--</p>
+                                <button id="btnEliminarCorrMini"
+                                    onclick="eliminarRelacionTotal()"
+                                    class="hidden shrink-0 bg-red-50 text-red-500 border border-red-100 px-3 py-2 rounded-xl text-[10px] font-bold uppercase active:bg-red-100">
+                                    ✕
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div id="corrMensaje" class="mt-6 p-3 rounded-xl text-xs font-bold text-center"></div>
@@ -236,7 +243,7 @@
 
                 <div id="formVinculo" class="hidden bg-indigo-50 p-6 rounded-3xl border border-indigo-100 space-y-4 animate-in">
                     <p id="labelVinculo" class="text-[10px] font-bold text-indigo-800 uppercase text-center"></p>
-                    <div class="flex gap-2">
+                    <div id="rowVinculo" class="flex gap-2">
                         <input type="text" id="inputVinculo" class="flex-1 border border-indigo-200 rounded-xl px-4 py-4 text-center font-black text-indigo-700 uppercase text-lg" placeholder="Vincular código de barras">
                         <button onclick="abrirScanner('vinculo')" class="bg-indigo-600 text-white p-4 rounded-xl shadow-sm">📷</button>
                     </div>
@@ -311,7 +318,6 @@
                     <button onclick="guardarVinculo()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold uppercase text-sm shadow-md">Guardar</button>
                 </div>
                 
-                <button id="btnEliminarCorr" onclick="eliminarRelacionTotal()" class="hidden w-full bg-red-50 text-red-600 py-4 rounded-xl font-bold text-xs uppercase border border-red-100 shadow-sm active:bg-red-100">Eliminar Relación</button>
             </div>
         </main>
     </div>
@@ -349,6 +355,7 @@
         let moduloActivo = "registro";
         let skusNuevos = [];
         let html5QrCode = null;
+        let scannerTargetActual = null;
         let catalogoModo = "registro";
         let correlacionActiva = {
             limsa: "", barras: "", modo: "",
@@ -439,8 +446,8 @@
         bindScanAwareInput('audInputCodigo', value => buscarArticuloAuditoria(value));
         bindScanAwareInput('inputUbicacion', value => procesarUbicacion(value), { idleMs: 100 });
         bindScanAwareInput('inputSku', value => procesarSku(value));
-        bindScanAwareInput('inputCorr', value => procesarCorrelacion(value), { idleMs: 150, rapidThresholdMs: 80 });
-        bindScanAwareInput('inputVinculo', () => guardarVinculo(), { idleMs: 150, rapidThresholdMs: 80 });
+        bindScanAwareInput('inputCorr', value => procesarCorrelacion(value));
+        bindScanAwareInput('inputVinculo', () => guardarVinculo());
         function corrVal(id) { return (document.getElementById(id)?.value || '').trim(); }
         function setCorrVal(id, value) { const el = document.getElementById(id); if(el) el.value = value || ''; }
         function toggleLogisticaSection(seccion) {
@@ -509,9 +516,8 @@
         function bindScanAwareInput(inputId, submitFn, options = {}) {
             const el = document.getElementById(inputId);
             if (!el) return;
-
-            const idleMs = options.idleMs || 120;
-            const rapidThresholdMs = options.rapidThresholdMs || 50;
+            const idleMs = options.idleMs || 80;
+            const rapidThresholdMs = options.rapidThresholdMs || 35;
             let lastInputAt = 0;
             let scanMode = false;
             let timer = null;
@@ -523,10 +529,8 @@
             const submitCurrent = () => {
                 const value = normalizedValue();
                 if (!value) return;
-
                 const now = Date.now();
-                if (value === lastSubmittedValue && (now - lastSubmittedAt) < 500) return;
-
+                if (value === lastSubmittedValue && (now - lastSubmittedAt) < 400) return;
                 lastSubmittedValue = value;
                 lastSubmittedAt = now;
                 submitFn(value);
@@ -534,28 +538,15 @@
 
             el.addEventListener('input', () => {
                 const now = Date.now();
-                const value = normalizedValue();
-                const delta = lastInputAt ? (now - lastInputAt) : 9999;
-
-                if (delta <= rapidThresholdMs) {
+                if (lastInputAt && (now - lastInputAt) <= rapidThresholdMs) {
                     scanMode = true;
                 }
-
                 lastInputAt = now;
-
                 if (timer) clearTimeout(timer);
-
                 if (scanMode) {
                     timer = setTimeout(() => {
                         submitCurrent();
                         scanMode = false;
-                    }, idleMs);
-                    return;
-                }
-
-                if (value.length >= 8) {
-                    timer = setTimeout(() => {
-                        submitCurrent();
                     }, idleMs);
                 }
             });
@@ -564,14 +555,9 @@
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     if (timer) clearTimeout(timer);
-                    submitCurrent();
+                    setTimeout(() => submitCurrent(), 20);
                     scanMode = false;
                 }
-            });
-
-            el.addEventListener('paste', () => {
-                if (timer) clearTimeout(timer);
-                timer = setTimeout(() => submitCurrent(), 30);
             });
 
             el.addEventListener('blur', () => {
@@ -624,7 +610,7 @@
             try {
                 let finalSku = val;
                 if(/^\d+$/.test(val) && val.length >= 8) {
-                    const rE = await fetch(`${SB_URL}almacen_datos?codigo_barra=eq.${valorProcesado}&select=codigo&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
+                    const rE = await fetch(`${SB_URL}almacen_datos?codigo_barra=eq.${val}&select=codigo&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
                     const dE = await rE.json();
                     if(dE[0]) finalSku = dE[0].codigo; else { alert("❌ EAN no vinculado."); return; }
                 }
@@ -670,9 +656,8 @@
 
         // --- CORRELACIÓN ---
         async function procesarCorrelacion(manual = null) {
-            const val = String(manual || document.getElementById('inputCorr').value || '').trim();
+            const val = (manual || document.getElementById('inputCorr').value).trim();
             if(!val) return;
-            const valorProcesado = val;
 
             document.getElementById('resCorrelacion').classList.remove('hidden');
             document.getElementById('inputVinculo').value = "";
@@ -684,25 +669,25 @@
                 unidadesTarima: "", largoTarima: "", anchoTarima: "", altoTarima: "", pesoTarima: ""
             };
             document.getElementById('formVinculo').classList.add('hidden');
-            document.getElementById('btnEliminarCorr').classList.add('hidden');
+            document.getElementById('btnEliminarCorrMini').classList.add('hidden');
 
             try {
                 let idN = "";
                 let fila = null;
 
-                if(valorProcesado.startsWith("30")) {
+                if(val.startsWith("30")) {
                     correlacionActiva.modo = "LIMSA";
-                    correlacionActiva.limsa = valorProcesado;
-                    idN = valorProcesado;
-                    const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${valorProcesado.toLowerCase()}&select=codigo,codigo_barra,largo,ancho,alto,peso,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima&limit=1`, {
+                    correlacionActiva.limsa = val;
+                    idN = val;
+                    const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${val.toLowerCase()}&select=codigo,codigo_barra,largo,ancho,alto,peso,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima&limit=1`, {
                         headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` }
                     });
                     fila = data?.[0] || null;
                     correlacionActiva.barras = fila?.codigo_barra || "";
                 } else {
                     correlacionActiva.modo = "EAN";
-                    correlacionActiva.barras = valorProcesado;
-                    const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo_barra=eq.${valorProcesado}&select=codigo,codigo_barra,largo,ancho,alto,peso,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima&limit=1`, {
+                    correlacionActiva.barras = val;
+                    const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo_barra=eq.${val}&select=codigo,codigo_barra,largo,ancho,alto,peso,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima&limit=1`, {
                         headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` }
                     });
                     fila = data?.[0] || null;
@@ -767,14 +752,18 @@
                 document.getElementById('iconTarima').innerText = '+';
                 actualizarResumenCorrelacion();
 
+                document.getElementById('formVinculo').classList.remove('hidden');
+                const rowVinculo = document.getElementById('rowVinculo');
+
                 if(correlacionActiva.limsa && correlacionActiva.barras) {
                     document.getElementById('corrMensaje').innerText = "Vínculo Correcto";
                     document.getElementById('corrMensaje').className = "mt-4 p-3 rounded-xl text-xs font-bold text-center bg-green-100 text-green-700";
-                    document.getElementById('btnEliminarCorr').classList.remove('hidden');
+                    document.getElementById('btnEliminarCorrMini').classList.remove('hidden');
+                    rowVinculo?.classList.add('hidden');
                 } else {
                     document.getElementById('corrMensaje').innerText = "Vínculo Pendiente";
                     document.getElementById('corrMensaje').className = "mt-4 p-3 rounded-xl text-xs font-bold text-center bg-orange-100 text-orange-700";
-                    document.getElementById('formVinculo').classList.remove('hidden');
+                    rowVinculo?.classList.remove('hidden');
                     setTimeout(() => document.getElementById('inputVinculo').focus(), 300);
                 }
 
@@ -862,26 +851,129 @@
                 alert(`Error al guardar: ${e.message || e}`);
             }
         }
-        async function eliminarRelacionTotal() { if(!confirm("¿Eliminar?")) return; try { await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${correlacionActiva.limsa.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo_barra: null }) }); document.getElementById('inputVinculo').value = ""; alert("Vínculo eliminado."); procesarCorrelacion(correlacionActiva.limsa); } catch(e) { alert(`Error al eliminar: ${e.message || e}`); } }
+        async function eliminarRelacionTotal() { if(!confirm("¿Quitar solo el código de barras de este artículo?")) return; try { await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${correlacionActiva.limsa.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo_barra: null }) }); document.getElementById('inputVinculo').value = ""; alert("Vínculo eliminado."); procesarCorrelacion(correlacionActiva.limsa); } catch(e) { alert(`Error al eliminar: ${e.message || e}`); } }
 
         // --- UTILS ---
-        function abrirScanner(t) {
-            document.getElementById('modalScanner').classList.remove('hidden');
-            html5QrCode = new Html5Qrcode("reader");
-            html5QrCode.start({ facingMode: "environment" }, { fps: 20, qrbox: 250 }, (txt) => {
-                cerrarScanner();
-                if(t === 'correlacion') {
-                    document.getElementById('inputCorr').value = txt;
-                    setTimeout(() => procesarCorrelacion(txt), 30);
-                }
-                else if(t === 'auditoria') buscarArticuloAuditoria(txt); // BÚSQUEDA AUTO
-                else if(t === 'ubicacion') procesarUbicacion(txt); 
-                else if(t === 'vinculo') { document.getElementById('inputVinculo').value = txt; guardarVinculo(); }
-                else if(t === 'audNuevaUbic') { agregarUbicacionAuditoria(txt); }
-                else procesarSku(txt);
-            });
+        function aplicarResultadoEscaneo(t, txt) {
+            if(t === 'correlacion') {
+                document.getElementById('inputCorr').value = txt;
+                procesarCorrelacion(txt);
+            }
+            else if(t === 'auditoria') buscarArticuloAuditoria(txt);
+            else if(t === 'ubicacion') procesarUbicacion(txt);
+            else if(t === 'vinculo') {
+                document.getElementById('inputVinculo').value = txt;
+                guardarVinculo();
+            }
+            else if(t === 'audNuevaUbic') {
+                agregarUbicacionAuditoria(txt);
+            }
+            else {
+                document.getElementById('inputSku').value = txt;
+                procesarSku(txt);
+            }
         }
-        function cerrarScanner() { if(html5QrCode) html5QrCode.stop().then(() => { document.getElementById('modalScanner').classList.add('hidden'); html5QrCode = null; }); }
+
+        function getScannerFormats() {
+            if (typeof Html5QrcodeSupportedFormats === 'undefined') return undefined;
+            return [
+                Html5QrcodeSupportedFormats.QR_CODE,
+                Html5QrcodeSupportedFormats.EAN_13,
+                Html5QrcodeSupportedFormats.EAN_8,
+                Html5QrcodeSupportedFormats.CODE_128,
+                Html5QrcodeSupportedFormats.CODE_39,
+                Html5QrcodeSupportedFormats.UPC_A,
+                Html5QrcodeSupportedFormats.UPC_E,
+                Html5QrcodeSupportedFormats.ITF
+            ];
+        }
+
+        function getScannerConfig() {
+            return {
+                fps: 10,
+                aspectRatio: 4 / 3,
+                disableFlip: false,
+                rememberLastUsedCamera: true,
+                supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
+                formatsToSupport: getScannerFormats(),
+                videoConstraints: {
+                    facingMode: { ideal: 'environment' }
+                }
+            };
+        }
+
+        async function startScannerWithConfig() {
+            const config = getScannerConfig();
+            const cameraConfig = { facingMode: { exact: 'environment' } };
+
+            try {
+                await html5QrCode.start(cameraConfig, config, (txt) => {
+                    const target = scannerTargetActual;
+                    cerrarScanner();
+                    aplicarResultadoEscaneo(target, txt);
+                });
+                return;
+            } catch (firstError) {
+                try {
+                    const cameras = await Html5Qrcode.getCameras();
+                    const rearCamera = (cameras || []).find(c => /back|rear|environment|wide/i.test(c.label || '')) || (cameras || [])[0];
+                    if (!rearCamera?.id) throw firstError;
+
+                    await html5QrCode.start(
+                        { deviceId: { exact: rearCamera.id } },
+                        config,
+                        (txt) => {
+                            const target = scannerTargetActual;
+                            cerrarScanner();
+                            aplicarResultadoEscaneo(target, txt);
+                        }
+                    );
+                    return;
+                } catch (secondError) {
+                    console.error('Error al iniciar escáner', firstError, secondError);
+                    cerrarScanner(true);
+                    alert('No se pudo iniciar la cámara en este dispositivo. En iPhone prueba abrir la página en Safari normal, no desde pantalla de inicio, y vuelve a permitir cámara.');
+                }
+            }
+        }
+
+        function abrirScanner(t) {
+            scannerTargetActual = t;
+            document.getElementById('modalScanner').classList.remove('hidden');
+            document.getElementById('reader').innerHTML = '';
+            html5QrCode = new Html5Qrcode('reader', { verbose: false });
+            startScannerWithConfig();
+        }
+
+        function cerrarScanner(forceClose = false) {
+            const closeUi = () => {
+                document.getElementById('modalScanner').classList.add('hidden');
+                document.getElementById('reader').innerHTML = '';
+                html5QrCode = null;
+                scannerTargetActual = null;
+            };
+
+            if(!html5QrCode) {
+                closeUi();
+                return;
+            }
+
+            if (forceClose) {
+                try { html5QrCode.clear(); } catch(_) {}
+                closeUi();
+                return;
+            }
+
+            html5QrCode.stop()
+                .then(() => {
+                    try { html5QrCode.clear(); } catch(_) {}
+                    closeUi();
+                })
+                .catch(() => {
+                    try { html5QrCode.clear(); } catch(_) {}
+                    closeUi();
+                });
+        }
         function limpiarTodo() {
             skusNuevos = []; renderNuevos(); auditoriaArticulo = null; auditoriaConteos = [];
             document.getElementById('btnGuardar').disabled = true;
