@@ -439,8 +439,8 @@
         bindScanAwareInput('audInputCodigo', value => buscarArticuloAuditoria(value));
         bindScanAwareInput('inputUbicacion', value => procesarUbicacion(value), { idleMs: 100 });
         bindScanAwareInput('inputSku', value => procesarSku(value));
-        bindScanAwareInput('inputCorr', value => procesarCorrelacion(value));
-        bindScanAwareInput('inputVinculo', () => guardarVinculo());
+        bindScanAwareInput('inputCorr', value => procesarCorrelacion(value), { idleMs: 150, rapidThresholdMs: 80 });
+        bindScanAwareInput('inputVinculo', () => guardarVinculo(), { idleMs: 150, rapidThresholdMs: 80 });
         function corrVal(id) { return (document.getElementById(id)?.value || '').trim(); }
         function setCorrVal(id, value) { const el = document.getElementById(id); if(el) el.value = value || ''; }
         function toggleLogisticaSection(seccion) {
@@ -505,93 +505,13 @@
         function valorCajaVigente(v) { const t = String(v || '').trim(); return t !== '' && t !== '0' && t !== '0.0'; }
         async function fetchJsonOrThrow(url, options = {}) { const res = await fetch(url, options); const raw = await res.text(); let data = null; try { data = raw ? JSON.parse(raw) : null; } catch(_) { data = raw; } if(!res.ok) { throw new Error(typeof data === 'string' ? data : JSON.stringify(data)); } return data; }
         async function obtenerFactorCatalogo(codigo) { if(!codigo) return ''; const data = await fetchJsonOrThrow(`${SB_URL}catalogo_articulos?articulo=eq.${codigo.toLowerCase()}&select=factor&limit=1`, { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` } }); const factor = data?.[0]?.factor; return factor == null ? '' : String(factor).trim(); }
-        function normalizarCodigoEscaneado(valor) {
-            let v = String(valor || '').replace(/[\u0000-\u001F\u007F]/g, '').trim();
-            if(!v) return '';
-            v = v.replace(/\s+/g, '');
-            try {
-                if (/^https?:\/\//i.test(v)) {
-                    const url = new URL(v);
-                    const posibles = [
-                        url.searchParams.get('codigo'),
-                        url.searchParams.get('sku'),
-                        url.searchParams.get('ean'),
-                        url.searchParams.get('barcode'),
-                        url.searchParams.get('code')
-                    ].filter(Boolean);
-                    if (posibles.length) return String(posibles[0]).trim();
-                    const segmentos = url.pathname.split('/').filter(Boolean);
-                    if (segmentos.length) return decodeURIComponent(segmentos[segmentos.length - 1]).trim();
-                }
-            } catch(_) {}
-            return v;
-        }
-        async function resolverArticuloDesdeEntrada(entrada) {
-            const valor = normalizarCodigoEscaneado(entrada);
-            if(!valor) return { entrada: '', codigo: '', fila: null };
-
-            const codigoRows = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${valor.toLowerCase()}&select=codigo,codigo_barra,largo,ancho,alto,peso,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima&limit=1`, {
-                headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
-            });
-            if (Array.isArray(codigoRows) && codigoRows[0]) {
-                return { entrada: valor, codigo: codigoRows[0].codigo, fila: codigoRows[0] };
-            }
-
-            const barraRows = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo_barra=eq.${encodeURIComponent(valor)}&select=codigo,codigo_barra,largo,ancho,alto,peso,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima&limit=1`, {
-                headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
-            });
-            if (Array.isArray(barraRows) && barraRows[0]) {
-                return { entrada: valor, codigo: barraRows[0].codigo, fila: barraRows[0] };
-            }
-
-            return { entrada: valor, codigo: valor, fila: null };
-        }
-        function obtenerConfigScanner() {
-            return {
-                fps: 15,
-                qrbox: (viewfinderWidth, viewfinderHeight) => {
-                    const ancho = Math.max(220, Math.floor(viewfinderWidth * 0.9));
-                    const alto = Math.max(140, Math.floor(Math.min(viewfinderHeight * 0.35, 220)));
-                    return { width: ancho, height: alto };
-                },
-                aspectRatio: 1.333334,
-                disableFlip: false,
-                experimentalFeatures: { useBarCodeDetectorIfSupported: true }
-            };
-        }
-        async function iniciarScannerConFallback(instancia, onSuccess) {
-            const config = obtenerConfigScanner();
-            const intentos = [
-                { facingMode: 'environment' },
-                { facingMode: { exact: 'environment' } },
-                { facingMode: 'user' }
-            ];
-            let ultimoError = null;
-            for (const camara of intentos) {
-                try {
-                    await instancia.start(camara, config, onSuccess);
-                    return;
-                } catch (e) {
-                    ultimoError = e;
-                }
-            }
-            try {
-                const cams = await Html5Qrcode.getCameras();
-                if (cams?.length) {
-                    await instancia.start(cams[0].id, config, onSuccess);
-                    return;
-                }
-            } catch (e) {
-                ultimoError = e;
-            }
-            throw ultimoError || new Error('No fue posible iniciar la cámara.');
-        }
 
         function bindScanAwareInput(inputId, submitFn, options = {}) {
             const el = document.getElementById(inputId);
             if (!el) return;
-            const idleMs = options.idleMs || 80;
-            const rapidThresholdMs = options.rapidThresholdMs || 35;
+
+            const idleMs = options.idleMs || 120;
+            const rapidThresholdMs = options.rapidThresholdMs || 50;
             let lastInputAt = 0;
             let scanMode = false;
             let timer = null;
@@ -603,8 +523,10 @@
             const submitCurrent = () => {
                 const value = normalizedValue();
                 if (!value) return;
+
                 const now = Date.now();
-                if (value === lastSubmittedValue && (now - lastSubmittedAt) < 400) return;
+                if (value === lastSubmittedValue && (now - lastSubmittedAt) < 500) return;
+
                 lastSubmittedValue = value;
                 lastSubmittedAt = now;
                 submitFn(value);
@@ -612,15 +534,28 @@
 
             el.addEventListener('input', () => {
                 const now = Date.now();
-                if (lastInputAt && (now - lastInputAt) <= rapidThresholdMs) {
+                const value = normalizedValue();
+                const delta = lastInputAt ? (now - lastInputAt) : 9999;
+
+                if (delta <= rapidThresholdMs) {
                     scanMode = true;
                 }
+
                 lastInputAt = now;
+
                 if (timer) clearTimeout(timer);
+
                 if (scanMode) {
                     timer = setTimeout(() => {
                         submitCurrent();
                         scanMode = false;
+                    }, idleMs);
+                    return;
+                }
+
+                if (value.length >= 8) {
+                    timer = setTimeout(() => {
+                        submitCurrent();
                     }, idleMs);
                 }
             });
@@ -629,9 +564,14 @@
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     if (timer) clearTimeout(timer);
-                    setTimeout(() => submitCurrent(), 20);
+                    submitCurrent();
                     scanMode = false;
                 }
+            });
+
+            el.addEventListener('paste', () => {
+                if (timer) clearTimeout(timer);
+                timer = setTimeout(() => submitCurrent(), 30);
             });
 
             el.addEventListener('blur', () => {
@@ -678,23 +618,27 @@
 
         // --- MÓDULO AUDITORÍA ---
         async function buscarArticuloAuditoria(manual = null) {
-            const val = normalizarCodigoEscaneado(manual || document.getElementById('audInputCodigo').value);
+            const val = (manual || document.getElementById('audInputCodigo').value).trim();
             if(!val) return;
             document.getElementById('audResultados').classList.add('hidden');
             try {
-                const resuelto = await resolverArticuloDesdeEntrada(val);
-                const finalSku = (resuelto.codigo || val).toLowerCase();
-                const res = await fetch(`${SB_URL}almacen_datos?codigo=eq.${finalSku}&almacen=eq.${almacenActual.toLowerCase()}`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
+                let finalSku = val;
+                if(/^\d+$/.test(val) && val.length >= 8) {
+                    const rE = await fetch(`${SB_URL}almacen_datos?codigo_barra=eq.${valorProcesado}&select=codigo&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
+                    const dE = await rE.json();
+                    if(dE[0]) finalSku = dE[0].codigo; else { alert("❌ EAN no vinculado."); return; }
+                }
+                const res = await fetch(`${SB_URL}almacen_datos?codigo=eq.${finalSku.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
                 const fila = (await res.json())[0];
-                if(!fila) {
+                if(!fila) { 
                     if(confirm("Código no existe en este almacén. ¿Crear?")) {
-                        await fetch(`${SB_URL}almacen_datos`, { method: 'POST', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo: finalSku, almacen: almacenActual.toLowerCase() }) });
+                        await fetch(`${SB_URL}almacen_datos`, { method: 'POST', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo: finalSku.toLowerCase(), almacen: almacenActual.toLowerCase() }) });
                         buscarArticuloAuditoria(finalSku);
                     }
-                    return;
+                    return; 
                 }
                 auditoriaArticulo = fila; auditoriaConteos = []; renderAuditoria();
-            } catch (e) { alert(`Error: ${e.message || e}`); }
+            } catch (e) { alert("Error."); }
         }
         async function renderAuditoria() {
             const art = auditoriaArticulo;
@@ -719,34 +663,16 @@
         // --- REGISTRO ---
         async function procesarUbicacion(val) { const u = val.toUpperCase().trim(); if(!u) return; ubicacionActiva = u; document.getElementById('valUbicacion').innerText = u; document.getElementById('statusUbicacion').classList.remove('hidden'); document.getElementById('cardCaptura').classList.remove('hidden'); document.getElementById('footerAcciones').classList.remove('hidden'); await cargarExistentes(u); setTimeout(() => document.getElementById('inputSku').focus(), 150); }
         async function cargarExistentes(u) { const lista = document.getElementById('listaExistentes'); document.getElementById('cardExistentes').classList.remove('hidden'); try { const res = await fetch(`${SB_URL}almacen_datos?almacen=eq.${almacenActual.toLowerCase()}&or=(ubicacion_1.eq.${u},ubicacion_2.eq.${u},ubicacion_3.eq.${u},ubicacion_4.eq.${u})&select=codigo`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const data = await res.json(); if(data.length === 0) { lista.innerHTML = `<p class="text-xs text-slate-400 text-center py-2 italic">Vacío.</p>`; return; } const codigos = data.map(d => d.codigo.toLowerCase()); const resC = await fetch(`${SB_URL}catalogo_articulos?articulo=in.("${codigos.join('","')}")&select=articulo,nombre`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const cDat = await resC.json(); const map = Object.fromEntries(cDat.map(c => [c.articulo.toLowerCase(), c.nombre])); lista.innerHTML = data.map(d => `<div class="bg-white p-3 rounded-xl border flex justify-between items-center shadow-sm animate-in"><div class="min-w-0"><p class="font-black text-[11px] text-slate-800 uppercase tracking-tighter">${d.codigo}</p><p class="text-[10px] text-slate-400 font-bold uppercase truncate">${map[d.codigo.toLowerCase()] || '---'}</p></div><button onclick="eliminarFisico('${d.codigo}')" class="text-red-400 p-2 text-xl">&times;</button></div>`).join(''); } catch(e) { lista.innerHTML = "Error."; } }
-        async function procesarSku(val) {
-            const raw = normalizarCodigoEscaneado(val);
-            if(!raw) return;
-            try {
-                const resuelto = await resolverArticuloDesdeEntrada(raw);
-                const finalSku = (resuelto.codigo || raw).toLowerCase();
-                const res = await fetch(`${SB_URL}catalogo_articulos?articulo=eq.${finalSku}&select=nombre`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
-                const data = await res.json();
-                if(!data?.[0] && !resuelto.fila) {
-                    alert("❌ Código no encontrado ni vinculado.");
-                    return;
-                }
-                if(!skusNuevos.find(s => s.articulo.toLowerCase() === finalSku)) {
-                    skusNuevos.push({ articulo: finalSku, nombre: data[0]?.nombre || "SIN DESCRIPCIÓN" });
-                    renderNuevos();
-                    document.getElementById('btnGuardar').disabled = false;
-                }
-                document.getElementById('inputSku').value = "";
-            } catch(e) { alert(`Error: ${e.message || e}`); }
-        }
+        async function procesarSku(val) { const raw = val.trim(); if(!raw) return; try { let finalSku = raw; if(!raw.startsWith("30") && /^\d+$/.test(raw)) { const rE = await fetch(`${SB_URL}almacen_datos?codigo_barra=eq.${raw}&select=codigo&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const dE = await rE.json(); if(dE[0]) finalSku = dE[0].codigo; else { alert("❌ EAN no vinculado."); return; } } const res = await fetch(`${SB_URL}catalogo_articulos?articulo=eq.${finalSku.toLowerCase()}&select=nombre`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const data = await res.json(); if(!skusNuevos.find(s => s.articulo.toLowerCase() === finalSku.toLowerCase())) { skusNuevos.push({ articulo: finalSku, nombre: data[0]?.nombre || "SIN DESCRIPCIÓN" }); renderNuevos(); document.getElementById('btnGuardar').disabled = false; } document.getElementById('inputSku').value = ""; } catch(e) { alert("Error."); } }
         function renderNuevos() { document.getElementById('listaNuevos').innerHTML = skusNuevos.map((s, i) => `<div class="bg-green-50 p-3 rounded-xl border border-green-100 flex justify-between animate-in shadow-sm"><div class="min-w-0"><p class="font-black text-[11px] text-green-800 uppercase tracking-tighter">${s.articulo}</p><p class="text-[10px] text-green-600 font-bold uppercase truncate">${s.nombre}</p></div><button onclick="skusNuevos.splice(${i},1);renderNuevos();" class="text-green-800 p-2">&times;</button></div>`).join(''); }
         async function guardarLote() { for (const item of skusNuevos) { const r = await fetch(`${SB_URL}almacen_datos?codigo=eq.${item.articulo.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const fila = (await r.json())[0]; const now = new Date().toLocaleString('sv-SE').replace('T', ' '); if(fila) { let s = !fila.ubicacion_1 ? 1 : !fila.ubicacion_2 ? 2 : !fila.ubicacion_3 ? 3 : 4; let p = {}; p[`ubicacion_${s}`] = ubicacionActiva; p[`estado_${s}`] = "OK"; p[`fecha_${s}`] = now; await fetch(`${SB_URL}almacen_datos?codigo=eq.${item.articulo.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(p) }); } else { await fetch(`${SB_URL}almacen_datos`, { method: 'POST', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo: item.articulo, almacen: almacenActual.toLowerCase(), ubicacion_1: ubicacionActiva, estado_1: "OK", fecha_1: now }) }); } } alert("✅ Guardado."); limpiarTodo(); }
         async function eliminarFisico(cod) { if(!confirm(`¿Quitar ${cod.toUpperCase()}?`)) return; const r = await fetch(`${SB_URL}almacen_datos?codigo=eq.${cod.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const f = (await r.json())[0]; if(!f) return; let s = (f.ubicacion_1===ubicacionActiva)?1:(f.ubicacion_2===ubicacionActiva)?2:(f.ubicacion_3===ubicacionActiva)?3:(f.ubicacion_4===ubicacionActiva)?4:0; if(s>0) { let p = {}; p[`ubicacion_${s}`]=null; p[`estado_${s}`]=null; p[`fecha_${s}`]=null; await fetch(`${SB_URL}almacen_datos?codigo=eq.${cod.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(p) }); await cargarExistentes(ubicacionActiva); } }
 
         // --- CORRELACIÓN ---
         async function procesarCorrelacion(manual = null) {
-            const val = normalizarCodigoEscaneado(manual || document.getElementById('inputCorr').value);
+            const val = String(manual || document.getElementById('inputCorr').value || '').trim();
             if(!val) return;
+            const valorProcesado = val;
 
             document.getElementById('resCorrelacion').classList.remove('hidden');
             document.getElementById('inputVinculo').value = "";
@@ -761,13 +687,28 @@
             document.getElementById('btnEliminarCorr').classList.add('hidden');
 
             try {
-                const resuelto = await resolverArticuloDesdeEntrada(val);
-                const fila = resuelto.fila || null;
-                const idN = fila?.codigo || (val.startsWith('30') ? val : '');
+                let idN = "";
+                let fila = null;
 
-                correlacionActiva.modo = fila?.codigo_barra === val || (!idN && /^\d+$/.test(val)) ? 'EAN' : 'LIMSA';
-                correlacionActiva.limsa = fila?.codigo || (correlacionActiva.modo === 'LIMSA' ? val : '');
-                correlacionActiva.barras = fila?.codigo_barra || (correlacionActiva.modo === 'EAN' ? val : '');
+                if(valorProcesado.startsWith("30")) {
+                    correlacionActiva.modo = "LIMSA";
+                    correlacionActiva.limsa = valorProcesado;
+                    idN = valorProcesado;
+                    const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${valorProcesado.toLowerCase()}&select=codigo,codigo_barra,largo,ancho,alto,peso,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima&limit=1`, {
+                        headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` }
+                    });
+                    fila = data?.[0] || null;
+                    correlacionActiva.barras = fila?.codigo_barra || "";
+                } else {
+                    correlacionActiva.modo = "EAN";
+                    correlacionActiva.barras = valorProcesado;
+                    const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo_barra=eq.${valorProcesado}&select=codigo,codigo_barra,largo,ancho,alto,peso,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima&limit=1`, {
+                        headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` }
+                    });
+                    fila = data?.[0] || null;
+                    correlacionActiva.limsa = fila?.codigo || "";
+                    idN = correlacionActiva.limsa;
+                }
 
                 if(idN) {
                     const dataN = await fetchJsonOrThrow(`${SB_URL}catalogo_articulos?articulo=eq.${idN.toLowerCase()}&select=nombre&limit=1`, {
@@ -831,7 +772,7 @@
                     document.getElementById('corrMensaje').className = "mt-4 p-3 rounded-xl text-xs font-bold text-center bg-green-100 text-green-700";
                     document.getElementById('btnEliminarCorr').classList.remove('hidden');
                 } else {
-                    document.getElementById('corrMensaje').innerText = fila ? "Vínculo Pendiente" : "Código leído, sin relación guardada";
+                    document.getElementById('corrMensaje').innerText = "Vínculo Pendiente";
                     document.getElementById('corrMensaje').className = "mt-4 p-3 rounded-xl text-xs font-bold text-center bg-orange-100 text-orange-700";
                     document.getElementById('formVinculo').classList.remove('hidden');
                     setTimeout(() => document.getElementById('inputVinculo').focus(), 300);
@@ -926,43 +867,21 @@
         // --- UTILS ---
         function abrirScanner(t) {
             document.getElementById('modalScanner').classList.remove('hidden');
-            html5QrCode = new Html5Qrcode("reader", {
-                formatsToSupport: [
-                    Html5QrcodeSupportedFormats.QR_CODE,
-                    Html5QrcodeSupportedFormats.CODE_128,
-                    Html5QrcodeSupportedFormats.CODE_39,
-                    Html5QrcodeSupportedFormats.EAN_13,
-                    Html5QrcodeSupportedFormats.EAN_8,
-                    Html5QrcodeSupportedFormats.UPC_A,
-                    Html5QrcodeSupportedFormats.UPC_E,
-                    Html5QrcodeSupportedFormats.ITF
-                ]
-            });
-            iniciarScannerConFallback(html5QrCode, (txt) => {
-                const limpio = normalizarCodigoEscaneado(txt);
+            html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start({ facingMode: "environment" }, { fps: 20, qrbox: 250 }, (txt) => {
                 cerrarScanner();
-                if(t === 'correlacion') procesarCorrelacion(limpio);
-                else if(t === 'auditoria') buscarArticuloAuditoria(limpio);
-                else if(t === 'ubicacion') procesarUbicacion(limpio);
-                else if(t === 'vinculo') { document.getElementById('inputVinculo').value = limpio; guardarVinculo(); }
-                else if(t === 'audNuevaUbic') { agregarUbicacionAuditoria(limpio); }
-                else procesarSku(limpio);
-            }).catch(err => {
-                document.getElementById('modalScanner').classList.add('hidden');
-                html5QrCode = null;
-                alert(`No se pudo abrir la cámara: ${err?.message || err}`);
+                if(t === 'correlacion') {
+                    document.getElementById('inputCorr').value = txt;
+                    setTimeout(() => procesarCorrelacion(txt), 30);
+                }
+                else if(t === 'auditoria') buscarArticuloAuditoria(txt); // BÚSQUEDA AUTO
+                else if(t === 'ubicacion') procesarUbicacion(txt); 
+                else if(t === 'vinculo') { document.getElementById('inputVinculo').value = txt; guardarVinculo(); }
+                else if(t === 'audNuevaUbic') { agregarUbicacionAuditoria(txt); }
+                else procesarSku(txt);
             });
         }
-        function cerrarScanner() {
-            if(html5QrCode) {
-                html5QrCode.stop().catch(() => {}).finally(() => {
-                    document.getElementById('modalScanner').classList.add('hidden');
-                    html5QrCode = null;
-                });
-                return;
-            }
-            document.getElementById('modalScanner').classList.add('hidden');
-        }
+        function cerrarScanner() { if(html5QrCode) html5QrCode.stop().then(() => { document.getElementById('modalScanner').classList.add('hidden'); html5QrCode = null; }); }
         function limpiarTodo() {
             skusNuevos = []; renderNuevos(); auditoriaArticulo = null; auditoriaConteos = [];
             document.getElementById('btnGuardar').disabled = true;
