@@ -23,6 +23,7 @@
         <header class="text-center mb-10 mt-6">
             <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight">LIMSA</h1>
             <p class="text-slate-500 font-medium mt-2">Gestión de Inventario</p>
+            <p id="appVersion" class="text-[11px] text-slate-400 font-bold mt-1"></p>
         </header>
 
         <div class="space-y-4">
@@ -346,6 +347,7 @@
     </div>
 
     <script>
+        const APP_VERSION = "2026.04.13.2";
         const SB_URL = "https://smlalagqfphliastgjbh.supabase.co/rest/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtbGFsYWdxZnBobGlhc3RnamJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExODc3ODIsImV4cCI6MjA3Njc2Mzc4Mn0.L4bp6sGzzjiNsGSY1fTYolSLxvVoJh1ENon9Prw1CZA";
         const ALMACENES_FALLBACK = ["aa","ab","ac","ad","ag","ah","ai","aj","al","am","as","at","cb","cc","cd","cg","ch","ci","cj","cl","cm","cr","cs","ct"];
@@ -434,6 +436,7 @@
         }
 
         cargarAlmacenesDesdeSupabase();
+        document.getElementById("appVersion").innerText = `Versión ${APP_VERSION}`;
 
         new QRCode(document.getElementById("qrCompartirPagina"), {
             text: "https://joxpe.github.io/UbicacionesQR/main.html",
