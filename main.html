@@ -6,6 +6,7 @@
     <title>LIMSA Cloud Suite</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         .loading-spinner { border-top-color: #3b82f6; animation: spinner 0.6s linear infinite; }
         @keyframes spinner { to { transform: rotate(360deg); } }
@@ -54,6 +55,14 @@
                     <p class="text-xs text-slate-500 mt-1">Vincular Código LIMSA con Código de Barras, Unidades y Volumetrías.</p>
                 </div>
             </button>
+        </div>
+
+        <div class="mt-10 text-center">
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">Compartir página</p>
+            <div class="bg-white inline-flex flex-col items-center p-4 rounded-3xl shadow-sm border border-slate-200">
+                <div id="qrCompartirPagina" class="mx-auto"></div>
+                <p class="mt-3 text-[10px] text-slate-500 break-all max-w-[220px]">https://joxpe.github.io/UbicacionesQR/main.html</p>
+            </div>
         </div>
     </div>
 
@@ -410,6 +419,13 @@
         }
 
         cargarAlmacenesDesdeSupabase();
+
+        new QRCode(document.getElementById("qrCompartirPagina"), {
+            text: "https://joxpe.github.io/UbicacionesQR/main.html",
+            width: 180,
+            height: 180,
+            correctLevel: QRCode.CorrectLevel.H
+        });
 
         // --- EVENTOS DE TECLADO ---
         bindScanAwareInput('audInputCodigo', value => buscarArticuloAuditoria(value));
