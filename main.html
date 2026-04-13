@@ -23,7 +23,6 @@
         <header class="text-center mb-10 mt-6">
             <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight">LIMSA</h1>
             <p class="text-slate-500 font-medium mt-2">Gestión de Inventario</p>
-            <p id="appVersion" class="text-[11px] text-slate-400 font-bold mt-1"></p>
         </header>
 
         <div class="space-y-4">
@@ -132,7 +131,7 @@
                 <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
                     <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Registro de Conteo Real</h3>
                     <div class="grid grid-cols-2 gap-3">
-                        <input type="number" id="audCantidad" placeholder="Cant." class="border border-slate-200 rounded-xl px-4 py-3 text-lg font-bold outline-none focus:ring-2 focus:ring-green-500">
+                        <input type="number" id="audCantidad" placeholder="Cant." class="border border-slate-200 rounded-xl px-4 py-3 text-lg font-bold outline-none focus:ring-2 focus:ring-green-500" readonly inputmode="none" onclick="abrirTecladoNumerico('audCantidad')" onfocus="abrirTecladoNumerico('audCantidad')">
                         <button onclick="sumarConteoAuditoria()" class="bg-green-600 text-white rounded-xl font-black text-xl shadow-md active:scale-95 transition-transform">+</button>
                     </div>
                     <div id="audListaConteos" class="flex flex-wrap gap-2"></div>
@@ -260,10 +259,10 @@
                             </button>
                             <div id="bodyUnidad" class="px-4 pb-4 space-y-3">
                                 <div class="grid grid-cols-2 gap-3">
-                                    <input type="text" inputmode="decimal" id="corrLargoUnidad" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Largo (cm)">
-                                    <input type="text" inputmode="decimal" id="corrAnchoUnidad" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Ancho (cm)">
-                                    <input type="text" inputmode="decimal" id="corrAltoUnidad" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Alto (cm)">
-                                    <input type="text" inputmode="decimal" id="corrPesoUnidad" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Peso (kg)">
+                                    <input type="text" inputmode="decimal" id="corrLargoUnidad" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Largo (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrLargoUnidad')" onfocus="abrirTecladoNumerico('corrLargoUnidad')">
+                                    <input type="text" inputmode="decimal" id="corrAnchoUnidad" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Ancho (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrAnchoUnidad')" onfocus="abrirTecladoNumerico('corrAnchoUnidad')">
+                                    <input type="text" inputmode="decimal" id="corrAltoUnidad" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Alto (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrAltoUnidad')" onfocus="abrirTecladoNumerico('corrAltoUnidad')">
+                                    <input type="text" inputmode="decimal" id="corrPesoUnidad" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Peso (kg)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrPesoUnidad')" onfocus="abrirTecladoNumerico('corrPesoUnidad')">
                                 </div>
                             </div>
                         </div>
@@ -277,12 +276,12 @@
                                 <span id="iconCaja" class="text-indigo-600 font-black text-lg">+</span>
                             </button>
                             <div id="bodyCaja" class="hidden px-4 pb-4 space-y-3">
-                                <input type="text" inputmode="decimal" id="corrUndCajaBolsa" class="w-full border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Unidades por caja / bolsa">
+                                <input type="text" inputmode="decimal" id="corrUndCajaBolsa" class="w-full border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Unidades por caja / bolsa" readonly inputmode="none" onclick="abrirTecladoNumerico('corrUndCajaBolsa')" onfocus="abrirTecladoNumerico('corrUndCajaBolsa')">
                                 <div class="grid grid-cols-2 gap-3">
-                                    <input type="text" inputmode="decimal" id="corrLargoCajaBolsa" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Largo (cm)">
-                                    <input type="text" inputmode="decimal" id="corrAnchoCajaBolsa" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Ancho (cm)">
-                                    <input type="text" inputmode="decimal" id="corrAltoCajaBolsa" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Alto (cm)">
-                                    <input type="text" inputmode="decimal" id="corrPesoCajaBolsa" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Peso (kg)">
+                                    <input type="text" inputmode="decimal" id="corrLargoCajaBolsa" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Largo (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrLargoCajaBolsa')" onfocus="abrirTecladoNumerico('corrLargoCajaBolsa')">
+                                    <input type="text" inputmode="decimal" id="corrAnchoCajaBolsa" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Ancho (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrAnchoCajaBolsa')" onfocus="abrirTecladoNumerico('corrAnchoCajaBolsa')">
+                                    <input type="text" inputmode="decimal" id="corrAltoCajaBolsa" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Alto (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrAltoCajaBolsa')" onfocus="abrirTecladoNumerico('corrAltoCajaBolsa')">
+                                    <input type="text" inputmode="decimal" id="corrPesoCajaBolsa" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Peso (kg)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrPesoCajaBolsa')" onfocus="abrirTecladoNumerico('corrPesoCajaBolsa')">
                                 </div>
                             </div>
                         </div>
@@ -296,12 +295,12 @@
                                 <span id="iconTarima" class="text-indigo-600 font-black text-lg">+</span>
                             </button>
                             <div id="bodyTarima" class="hidden px-4 pb-4 space-y-3">
-                                <input type="text" inputmode="decimal" id="corrUndTarima" class="w-full border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Unidades por tarima">
+                                <input type="text" inputmode="decimal" id="corrUndTarima" class="w-full border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Unidades por tarima" readonly inputmode="none" onclick="abrirTecladoNumerico('corrUndTarima')" onfocus="abrirTecladoNumerico('corrUndTarima')">
                                 <div class="grid grid-cols-2 gap-3">
-                                    <input type="text" inputmode="decimal" id="corrLargoTarima" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Largo (cm)">
-                                    <input type="text" inputmode="decimal" id="corrAnchoTarima" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Ancho (cm)">
-                                    <input type="text" inputmode="decimal" id="corrAltoTarima" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Alto (cm)">
-                                    <input type="text" inputmode="decimal" id="corrPesoTarima" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Peso (kg)">
+                                    <input type="text" inputmode="decimal" id="corrLargoTarima" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Largo (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrLargoTarima')" onfocus="abrirTecladoNumerico('corrLargoTarima')">
+                                    <input type="text" inputmode="decimal" id="corrAnchoTarima" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Ancho (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrAnchoTarima')" onfocus="abrirTecladoNumerico('corrAnchoTarima')">
+                                    <input type="text" inputmode="decimal" id="corrAltoTarima" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Alto (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrAltoTarima')" onfocus="abrirTecladoNumerico('corrAltoTarima')">
+                                    <input type="text" inputmode="decimal" id="corrPesoTarima" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Peso (kg)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrPesoTarima')" onfocus="abrirTecladoNumerico('corrPesoTarima')">
                                 </div>
                             </div>
                         </div>
@@ -347,7 +346,6 @@
     </div>
 
     <script>
-        const APP_VERSION = "2026.04.13.2";
         const SB_URL = "https://smlalagqfphliastgjbh.supabase.co/rest/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtbGFsYWdxZnBobGlhc3RnamJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExODc3ODIsImV4cCI6MjA3Njc2Mzc4Mn0.L4bp6sGzzjiNsGSY1fTYolSLxvVoJh1ENon9Prw1CZA";
         const ALMACENES_FALLBACK = ["aa","ab","ac","ad","ag","ah","ai","aj","al","am","as","at","cb","cc","cd","cg","ch","ci","cj","cl","cm","cr","cs","ct"];
@@ -436,7 +434,6 @@
         }
 
         cargarAlmacenesDesdeSupabase();
-        document.getElementById("appVersion").innerText = `Versión ${APP_VERSION}`;
 
         new QRCode(document.getElementById("qrCompartirPagina"), {
             text: "https://joxpe.github.io/UbicacionesQR/main.html",
@@ -981,6 +978,88 @@
                     closeUi();
                 });
         }
+
+        let inputNumericoActivo = null;
+
+        function nombreCampoNumerico(id) {
+            const mapa = {
+                audCantidad: 'Cantidad',
+                corrLargoUnidad: 'Largo unidad',
+                corrAnchoUnidad: 'Ancho unidad',
+                corrAltoUnidad: 'Alto unidad',
+                corrPesoUnidad: 'Peso unidad',
+                corrUndCajaBolsa: 'Unidades caja / bolsa',
+                corrLargoCajaBolsa: 'Largo caja / bolsa',
+                corrAnchoCajaBolsa: 'Ancho caja / bolsa',
+                corrAltoCajaBolsa: 'Alto caja / bolsa',
+                corrPesoCajaBolsa: 'Peso caja / bolsa',
+                corrUndTarima: 'Unidades tarima',
+                corrLargoTarima: 'Largo tarima',
+                corrAnchoTarima: 'Ancho tarima',
+                corrAltoTarima: 'Alto tarima',
+                corrPesoTarima: 'Peso tarima'
+            };
+            return mapa[id] || 'Captura numérica';
+        }
+
+        function abrirTecladoNumerico(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            inputNumericoActivo = id;
+            document.activeElement?.blur?.();
+            document.getElementById('tecladoNumericoLabel').innerText = nombreCampoNumerico(id);
+            document.getElementById('tecladoNumericoValor').innerText = (el.value || '').trim() || '0';
+            const modal = document.getElementById('modalTecladoNumerico');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function cerrarTecladoNumerico() {
+            const modal = document.getElementById('modalTecladoNumerico');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function valorTecladoActual() {
+            return document.getElementById('tecladoNumericoValor').innerText.trim();
+        }
+
+        function setValorTeclado(v) {
+            document.getElementById('tecladoNumericoValor').innerText = v || '0';
+        }
+
+        function teclaNumerica(char) {
+            let actual = valorTecladoActual();
+            if (actual === '0' && char !== '.') actual = '';
+            if (char === '.' && actual.includes('.')) return;
+            setValorTeclado(actual + char);
+        }
+
+        function borrarTeclaNumerica() {
+            let actual = valorTecladoActual();
+            actual = actual.slice(0, -1);
+            setValorTeclado(actual || '0');
+        }
+
+        function limpiarTecladoNumerico() {
+            setValorTeclado('0');
+        }
+
+        function aceptarTecladoNumerico() {
+            if (!inputNumericoActivo) return cerrarTecladoNumerico();
+            const el = document.getElementById(inputNumericoActivo);
+            if (!el) return cerrarTecladoNumerico();
+            const nuevoValor = valorTecladoActual() === '0' ? '' : valorTecladoActual();
+            el.value = nuevoValor;
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            cerrarTecladoNumerico();
+
+            if (inputNumericoActivo === 'audCantidad') {
+                setTimeout(() => document.getElementById('btnGuardarAud')?.scrollIntoView?.({ behavior: 'smooth', block: 'nearest' }), 50);
+            }
+        }
+
+
         function limpiarTodo() {
             skusNuevos = []; renderNuevos(); auditoriaArticulo = null; auditoriaConteos = [];
             document.getElementById('btnGuardar').disabled = true;
@@ -1000,5 +1079,43 @@
             if(!document.getElementById('pantallaAuditoria').classList.contains('hidden')) setTimeout(() => document.getElementById('audInputCodigo').focus(), 300);
         }
     </script>
+
+    <div id="modalTecladoNumerico" class="fixed inset-0 bg-slate-900/40 z-50 hidden items-end justify-center">
+        <div class="w-full max-w-md bg-white rounded-t-3xl shadow-2xl p-4 space-y-3">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Captura numérica</p>
+                    <p id="tecladoNumericoLabel" class="text-sm font-black text-slate-700">--</p>
+                </div>
+                <button onclick="cerrarTecladoNumerico()" class="text-slate-400 text-2xl leading-none px-2">&times;</button>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-right">
+                <span id="tecladoNumericoValor" class="text-2xl font-black text-slate-800">0</span>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+                <button onclick="teclaNumerica('1')" class="bg-white border border-slate-200 rounded-2xl py-4 text-xl font-black text-slate-700 active:bg-slate-100">1</button>
+                <button onclick="teclaNumerica('2')" class="bg-white border border-slate-200 rounded-2xl py-4 text-xl font-black text-slate-700 active:bg-slate-100">2</button>
+                <button onclick="teclaNumerica('3')" class="bg-white border border-slate-200 rounded-2xl py-4 text-xl font-black text-slate-700 active:bg-slate-100">3</button>
+                <button onclick="teclaNumerica('4')" class="bg-white border border-slate-200 rounded-2xl py-4 text-xl font-black text-slate-700 active:bg-slate-100">4</button>
+                <button onclick="teclaNumerica('5')" class="bg-white border border-slate-200 rounded-2xl py-4 text-xl font-black text-slate-700 active:bg-slate-100">5</button>
+                <button onclick="teclaNumerica('6')" class="bg-white border border-slate-200 rounded-2xl py-4 text-xl font-black text-slate-700 active:bg-slate-100">6</button>
+                <button onclick="teclaNumerica('7')" class="bg-white border border-slate-200 rounded-2xl py-4 text-xl font-black text-slate-700 active:bg-slate-100">7</button>
+                <button onclick="teclaNumerica('8')" class="bg-white border border-slate-200 rounded-2xl py-4 text-xl font-black text-slate-700 active:bg-slate-100">8</button>
+                <button onclick="teclaNumerica('9')" class="bg-white border border-slate-200 rounded-2xl py-4 text-xl font-black text-slate-700 active:bg-slate-100">9</button>
+                <button onclick="borrarTeclaNumerica()" class="bg-red-50 border border-red-100 rounded-2xl py-4 text-sm font-black text-red-600 active:bg-red-100">Borrar</button>
+                <button onclick="teclaNumerica('0')" class="bg-white border border-slate-200 rounded-2xl py-4 text-xl font-black text-slate-700 active:bg-slate-100">0</button>
+                <button onclick="teclaNumerica('.')" class="bg-white border border-slate-200 rounded-2xl py-4 text-xl font-black text-slate-700 active:bg-slate-100">.</button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-1">
+                <button onclick="limpiarTecladoNumerico()" class="bg-slate-100 text-slate-700 rounded-2xl py-4 text-sm font-bold uppercase active:bg-slate-200">Limpiar</button>
+                <button onclick="aceptarTecladoNumerico()" class="bg-blue-600 text-white rounded-2xl py-4 text-sm font-bold uppercase active:bg-blue-700">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+
 </body>
 </html>
