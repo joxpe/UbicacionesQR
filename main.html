@@ -889,9 +889,13 @@
         }
 
         function getScannerConfig() {
+            const side = Math.min(window.innerWidth || 320, 320);
+            const boxSize = Math.max(190, Math.min(240, Math.floor(side * 0.62)));
+
             return {
                 fps: 10,
                 aspectRatio: 4 / 3,
+                qrbox: { width: boxSize, height: boxSize },
                 disableFlip: false,
                 rememberLastUsedCamera: true,
                 supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
