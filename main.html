@@ -51,7 +51,7 @@
                 </div>
                 <div>
                     <h3 class="font-black text-slate-800 uppercase text-sm tracking-tight">Correlación de Skus</h3>
-                    <p class="text-xs text-slate-500 mt-1">Vincular Código LIMSA con Código de Barras y Unidades y Volumetrías.</p>
+                    <p class="text-xs text-slate-500 mt-1">Vincular Código LIMSA con Código de Barras, Unidades y Volumetrías.</p>
                 </div>
             </button>
         </div>
@@ -102,7 +102,7 @@
                             <p id="audLimsaArt" class="font-black text-xl text-orange-600 uppercase tracking-tight">--</p>
                         </div>
                         <div class="text-right">
-                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Barras</p>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Código de Barras</p>
                             <p id="audBarrasArt" class="font-bold text-sm text-slate-800 uppercase">--</p>
                         </div>
                     </div>
@@ -194,7 +194,7 @@
             <button onclick="regresarAlMenuPrincipal()" class="p-2 hover:bg-slate-100 rounded-full">
                 <svg class="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
             </button>
-            <h1 class="text-lg font-bold text-slate-800">Correlación</h1>
+            <h1 class="text-lg font-bold text-slate-800">Correlación de Skus</h1>
         </header>
 
         <main class="max-w-md mx-auto p-4 space-y-5 w-full">
@@ -214,11 +214,11 @@
                     <div id="corrNombre" class="mb-4 text-xs font-black text-slate-500 uppercase leading-tight">--</div>
                     <div class="flex flex-col gap-4 divide-y divide-slate-100">
                         <div class="pb-1">
-                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">LIMSA</p>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">CÓDIGO LIMSA</p>
                             <p id="corrLimsa" class="font-black text-2xl text-indigo-600 uppercase tracking-tight">--</p>
                         </div>
                         <div class="pt-3">
-                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">BARRAS</p>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">CÓDIGO DE BARRAS</p>
                             <p id="corrBarras" class="font-black text-2xl text-slate-800 uppercase tracking-tight">--</p>
                         </div>
                     </div>
@@ -228,30 +228,67 @@
                 <div id="formVinculo" class="hidden bg-indigo-50 p-6 rounded-3xl border border-indigo-100 space-y-4 animate-in">
                     <p id="labelVinculo" class="text-[10px] font-bold text-indigo-800 uppercase text-center"></p>
                     <div class="flex gap-2">
-                        <input type="text" id="inputVinculo" class="flex-1 border border-indigo-200 rounded-xl px-4 py-4 text-center font-black text-indigo-700 uppercase text-lg" placeholder="Vincular código">
+                        <input type="text" id="inputVinculo" class="flex-1 border border-indigo-200 rounded-xl px-4 py-4 text-center font-black text-indigo-700 uppercase text-lg" placeholder="Vincular código de barras">
                         <button onclick="abrirScanner('vinculo')" class="bg-indigo-600 text-white p-4 rounded-xl shadow-sm">📷</button>
                     </div>
 
-                    <div class="grid grid-cols-[1fr_auto] gap-x-3 gap-y-2 items-center">
-                        <input type="text" inputmode="decimal" id="corrLargo" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Largo">
-                        <span class="text-xs font-bold uppercase text-slate-500">cm</span>
+                    <div class="space-y-4">
+                        <div class="border border-indigo-100 rounded-2xl p-4 bg-white/70">
+                            <p class="text-[10px] font-black text-indigo-700 uppercase tracking-widest mb-3">Por unidad</p>
+                            <div class="grid grid-cols-[1fr_auto] gap-x-3 gap-y-2 items-center">
+                                <input type="text" inputmode="decimal" id="corrLargoUnidad" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Largo">
+                                <span class="text-xs font-bold uppercase text-slate-500">cm</span>
 
-                        <input type="text" inputmode="decimal" id="corrAncho" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Ancho">
-                        <span class="text-xs font-bold uppercase text-slate-500">cm</span>
+                                <input type="text" inputmode="decimal" id="corrAnchoUnidad" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Ancho">
+                                <span class="text-xs font-bold uppercase text-slate-500">cm</span>
 
-                        <input type="text" inputmode="decimal" id="corrAlto" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Alto">
-                        <span class="text-xs font-bold uppercase text-slate-500">cm</span>
-                    </div>
+                                <input type="text" inputmode="decimal" id="corrAltoUnidad" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Alto">
+                                <span class="text-xs font-bold uppercase text-slate-500">cm</span>
 
-                    <div class="border-t border-indigo-100 pt-3 grid grid-cols-[1fr_auto] gap-x-3 gap-y-2 items-center">
-                        <input type="text" inputmode="decimal" id="corrPeso" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Peso">
-                        <span class="text-xs font-bold uppercase text-slate-500">gr</span>
+                                <input type="text" inputmode="decimal" id="corrPesoUnidad" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Peso">
+                                <span class="text-xs font-bold uppercase text-slate-500">kg</span>
+                            </div>
+                        </div>
 
-                        <input type="text" inputmode="decimal" id="corrUndCajaBolsa" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Unidades">
-                        <span class="text-xs font-bold uppercase text-slate-500">Und por caja/bolsa</span>
+                        <div class="border border-indigo-100 rounded-2xl p-4 bg-white/70">
+                            <p class="text-[10px] font-black text-indigo-700 uppercase tracking-widest mb-3">Por bolsa/caja</p>
+                            <div class="grid grid-cols-[1fr_auto] gap-x-3 gap-y-2 items-center">
+                                <input type="text" inputmode="decimal" id="corrUndCajaBolsa" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Unidades">
+                                <span class="text-xs font-bold uppercase text-slate-500">Und por caja/bolsa</span>
 
-                        <input type="text" inputmode="decimal" id="corrUndTarima" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Unidades">
-                        <span class="text-xs font-bold uppercase text-slate-500">Und por tarima</span>
+                                <input type="text" inputmode="decimal" id="corrLargoCajaBolsa" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Largo">
+                                <span class="text-xs font-bold uppercase text-slate-500">cm</span>
+
+                                <input type="text" inputmode="decimal" id="corrAnchoCajaBolsa" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Ancho">
+                                <span class="text-xs font-bold uppercase text-slate-500">cm</span>
+
+                                <input type="text" inputmode="decimal" id="corrAltoCajaBolsa" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Alto">
+                                <span class="text-xs font-bold uppercase text-slate-500">cm</span>
+
+                                <input type="text" inputmode="decimal" id="corrPesoCajaBolsa" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Peso">
+                                <span class="text-xs font-bold uppercase text-slate-500">kg</span>
+                            </div>
+                        </div>
+
+                        <div class="border border-indigo-100 rounded-2xl p-4 bg-white/70">
+                            <p class="text-[10px] font-black text-indigo-700 uppercase tracking-widest mb-3">Por tarima</p>
+                            <div class="grid grid-cols-[1fr_auto] gap-x-3 gap-y-2 items-center">
+                                <input type="text" inputmode="decimal" id="corrUndTarima" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Unidades">
+                                <span class="text-xs font-bold uppercase text-slate-500">Und por tarima</span>
+
+                                <input type="text" inputmode="decimal" id="corrLargoTarima" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Largo">
+                                <span class="text-xs font-bold uppercase text-slate-500">cm</span>
+
+                                <input type="text" inputmode="decimal" id="corrAnchoTarima" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Ancho">
+                                <span class="text-xs font-bold uppercase text-slate-500">cm</span>
+
+                                <input type="text" inputmode="decimal" id="corrAltoTarima" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Alto">
+                                <span class="text-xs font-bold uppercase text-slate-500">cm</span>
+
+                                <input type="text" inputmode="decimal" id="corrPesoTarima" class="border border-indigo-200 rounded-xl px-4 py-3 text-base font-bold text-slate-700" placeholder="Peso">
+                                <span class="text-xs font-bold uppercase text-slate-500">kg</span>
+                            </div>
+                        </div>
                     </div>
 
                     <button onclick="guardarVinculo()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold uppercase text-sm shadow-md">Guardar Vínculo</button>
@@ -288,7 +325,7 @@
     <script>
         const SB_URL = "https://smlalagqfphliastgjbh.supabase.co/rest/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtbGFsYWdxZnBobGlhc3RnamJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExODc3ODIsImV4cCI6MjA3Njc2Mzc4Mn0.L4bp6sGzzjiNsGSY1fTYolSLxvVoJh1ENon9Prw1CZA";
-        const ALMACENES = ["ai","ac","as","at","am","al","ab","ag","aa","ad","ah","aj"];
+        const ALMACENES_FALLBACK = ["aa","ab","ac","ad","ag","ah","ai","aj","al","am","as","at","cb","cc","cd","cg","ch","ci","cj","cl","cm","cr","cs","ct"];
 
         let almacenActual = "";
         let ubicacionActiva = "";
@@ -296,7 +333,12 @@
         let skusNuevos = [];
         let html5QrCode = null;
         let catalogoModo = "registro";
-        let correlacionActiva = { limsa: "", barras: "", modo: "", ancho: "", largo: "", alto: "", peso: "", unidadesCajaBolsa: "", unidadesTarima: "" };
+        let correlacionActiva = {
+            limsa: "", barras: "", modo: "",
+            largoUnidad: "", anchoUnidad: "", altoUnidad: "", pesoUnidad: "",
+            unidadesCajaBolsa: "", largoCajaBolsa: "", anchoCajaBolsa: "", altoCajaBolsa: "", pesoCajaBolsa: "",
+            unidadesTarima: "", largoTarima: "", anchoTarima: "", altoTarima: "", pesoTarima: ""
+        };
         let auditoriaArticulo = null;
         let auditoriaConteos = [];
 
@@ -325,27 +367,49 @@
         }
 
         const grid = document.getElementById('gridAlmacenes');
-        ALMACENES.forEach(alm => {
-            const btn = document.createElement('button');
-            btn.className = "bg-white border border-slate-200 p-4 rounded-2xl font-extrabold text-lg text-slate-700 active:bg-blue-600 active:text-white uppercase transition-all shadow-sm";
-            btn.innerText = alm;
-            btn.onclick = () => {
-                almacenActual = alm;
-                if(moduloActivo === 'registro') {
-                    document.getElementById('txtAlmacen').innerText = alm;
-                    document.getElementById('pantallaSelectorAlmacen').classList.add('hidden');
-                    document.getElementById('pantallaApp').classList.remove('hidden');
-                    setTimeout(() => document.getElementById('inputUbicacion').focus(), 300);
-                } else {
-                    document.getElementById('audTxtAlmacen').innerText = alm;
-                    document.getElementById('pantallaSelectorAlmacen').classList.add('hidden');
-                    document.getElementById('pantallaAuditoria').classList.remove('hidden');
-                    setTimeout(() => document.getElementById('audInputCodigo').focus(), 300);
-                }
-                limpiarTodo();
-            };
-            grid.appendChild(btn);
-        });
+
+        function seleccionarAlmacen(alm) {
+            almacenActual = alm;
+            if(moduloActivo === 'registro') {
+                document.getElementById('txtAlmacen').innerText = alm;
+                document.getElementById('pantallaSelectorAlmacen').classList.add('hidden');
+                document.getElementById('pantallaApp').classList.remove('hidden');
+                setTimeout(() => document.getElementById('inputUbicacion').focus(), 300);
+            } else {
+                document.getElementById('audTxtAlmacen').innerText = alm;
+                document.getElementById('pantallaSelectorAlmacen').classList.add('hidden');
+                document.getElementById('pantallaAuditoria').classList.remove('hidden');
+                setTimeout(() => document.getElementById('audInputCodigo').focus(), 300);
+            }
+            limpiarTodo();
+        }
+
+        function renderAlmacenes(lista) {
+            grid.innerHTML = '';
+            lista.forEach(alm => {
+                const btn = document.createElement('button');
+                btn.className = "bg-white border border-slate-200 p-4 rounded-2xl font-extrabold text-lg text-slate-700 active:bg-blue-600 active:text-white uppercase transition-all shadow-sm";
+                btn.innerText = alm;
+                btn.onclick = () => seleccionarAlmacen(alm);
+                grid.appendChild(btn);
+            });
+        }
+
+        async function cargarAlmacenesDesdeSupabase() {
+            try {
+                const data = await fetchJsonOrThrow(`${SB_URL}almacenes?select=nombre&order=nombre.asc`, {
+                    headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` }
+                });
+                const lista = Array.isArray(data)
+                    ? data.map(x => String(x.nombre || '').trim().toLowerCase()).filter(Boolean)
+                    : [];
+                renderAlmacenes(lista.length ? lista : ALMACENES_FALLBACK);
+            } catch (_) {
+                renderAlmacenes(ALMACENES_FALLBACK);
+            }
+        }
+
+        cargarAlmacenesDesdeSupabase();
 
         // --- EVENTOS DE TECLADO ---
         bindScanAwareInput('audInputCodigo', value => buscarArticuloAuditoria(value));
@@ -355,7 +419,13 @@
         bindScanAwareInput('inputVinculo', () => guardarVinculo());
         function corrVal(id) { return (document.getElementById(id)?.value || '').trim(); }
         function setCorrVal(id, value) { const el = document.getElementById(id); if(el) el.value = value || ''; }
-        function limpiarCamposCorrelacion() { ['corrLargo','corrAncho','corrAlto','corrPeso','corrUndCajaBolsa','corrUndTarima'].forEach(id => setCorrVal(id, '')); }
+        function limpiarCamposCorrelacion() {
+            [
+                'corrLargoUnidad','corrAnchoUnidad','corrAltoUnidad','corrPesoUnidad',
+                'corrUndCajaBolsa','corrLargoCajaBolsa','corrAnchoCajaBolsa','corrAltoCajaBolsa','corrPesoCajaBolsa',
+                'corrUndTarima','corrLargoTarima','corrAnchoTarima','corrAltoTarima','corrPesoTarima'
+            ].forEach(id => setCorrVal(id, ''));
+        }
         function valorCajaVigente(v) { const t = String(v || '').trim(); return t !== '' && t !== '0' && t !== '0.0'; }
         async function fetchJsonOrThrow(url, options = {}) { const res = await fetch(url, options); const raw = await res.text(); let data = null; try { data = raw ? JSON.parse(raw) : null; } catch(_) { data = raw; } if(!res.ok) { throw new Error(typeof data === 'string' ? data : JSON.stringify(data)); } return data; }
         async function obtenerFactorCatalogo(codigo) { if(!codigo) return ''; const data = await fetchJsonOrThrow(`${SB_URL}catalogo_articulos?articulo=eq.${codigo.toLowerCase()}&select=factor&limit=1`, { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` } }); const factor = data?.[0]?.factor; return factor == null ? '' : String(factor).trim(); }
@@ -494,24 +564,191 @@
         async function eliminarFisico(cod) { if(!confirm(`¿Quitar ${cod.toUpperCase()}?`)) return; const r = await fetch(`${SB_URL}almacen_datos?codigo=eq.${cod.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const f = (await r.json())[0]; if(!f) return; let s = (f.ubicacion_1===ubicacionActiva)?1:(f.ubicacion_2===ubicacionActiva)?2:(f.ubicacion_3===ubicacionActiva)?3:(f.ubicacion_4===ubicacionActiva)?4:0; if(s>0) { let p = {}; p[`ubicacion_${s}`]=null; p[`estado_${s}`]=null; p[`fecha_${s}`]=null; await fetch(`${SB_URL}almacen_datos?codigo=eq.${cod.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(p) }); await cargarExistentes(ubicacionActiva); } }
 
         // --- CORRELACIÓN ---
-        async function procesarCorrelacion(manual = null) { const val = (manual || document.getElementById('inputCorr').value).trim(); if(!val) return; document.getElementById('resCorrelacion').classList.remove('hidden'); document.getElementById('inputVinculo').value = ""; limpiarCamposCorrelacion(); correlacionActiva = { limsa: "", barras: "", modo: "", ancho: "", largo: "", alto: "", peso: "", unidadesCajaBolsa: "", unidadesTarima: "" }; document.getElementById('formVinculo').classList.add('hidden'); document.getElementById('btnEliminarCorr').classList.add('hidden'); try { let idN = ""; let fila = null; if(val.startsWith("30")) { correlacionActiva.modo = "LIMSA"; correlacionActiva.limsa = val; idN = val; const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${val.toLowerCase()}&select=codigo,codigo_barra,ancho,largo,alto,peso,unidades_caja_bolsa,unidades_tarima&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); fila = data?.[0] || null; correlacionActiva.barras = fila?.codigo_barra || ""; } else { correlacionActiva.modo = "EAN"; correlacionActiva.barras = val; const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo_barra=eq.${val}&select=codigo,codigo_barra,ancho,largo,alto,peso,unidades_caja_bolsa,unidades_tarima&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); fila = data?.[0] || null; correlacionActiva.limsa = fila?.codigo || ""; idN = correlacionActiva.limsa; } if(idN) { const dataN = await fetchJsonOrThrow(`${SB_URL}catalogo_articulos?articulo=eq.${idN.toLowerCase()}&select=nombre&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); document.getElementById('corrNombre').innerText = dataN?.[0]?.nombre || "SIN DESCRIPCIÓN"; } else { document.getElementById('corrNombre').innerText = "SIN DESCRIPCIÓN"; }
-            correlacionActiva.ancho = fila?.ancho || "";
-            correlacionActiva.largo = fila?.largo || "";
-            correlacionActiva.alto = fila?.alto || "";
-            correlacionActiva.peso = fila?.peso || "";
-            correlacionActiva.unidadesCajaBolsa = fila?.unidades_caja_bolsa || "";
-            correlacionActiva.unidadesTarima = fila?.unidades_tarima || "";
-            if ((!valorCajaVigente(correlacionActiva.unidadesCajaBolsa)) && idN) {
-                correlacionActiva.unidadesCajaBolsa = await obtenerFactorCatalogo(idN);
+        async function procesarCorrelacion(manual = null) {
+            const val = (manual || document.getElementById('inputCorr').value).trim();
+            if(!val) return;
+
+            document.getElementById('resCorrelacion').classList.remove('hidden');
+            document.getElementById('inputVinculo').value = "";
+            limpiarCamposCorrelacion();
+            correlacionActiva = {
+                limsa: "", barras: "", modo: "",
+                largoUnidad: "", anchoUnidad: "", altoUnidad: "", pesoUnidad: "",
+                unidadesCajaBolsa: "", largoCajaBolsa: "", anchoCajaBolsa: "", altoCajaBolsa: "", pesoCajaBolsa: "",
+                unidadesTarima: "", largoTarima: "", anchoTarima: "", altoTarima: "", pesoTarima: ""
+            };
+            document.getElementById('formVinculo').classList.add('hidden');
+            document.getElementById('btnEliminarCorr').classList.add('hidden');
+
+            try {
+                let idN = "";
+                let fila = null;
+
+                if(val.startsWith("30")) {
+                    correlacionActiva.modo = "LIMSA";
+                    correlacionActiva.limsa = val;
+                    idN = val;
+                    const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${val.toLowerCase()}&select=codigo,codigo_barra,largo,ancho,alto,peso,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima&limit=1`, {
+                        headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` }
+                    });
+                    fila = data?.[0] || null;
+                    correlacionActiva.barras = fila?.codigo_barra || "";
+                } else {
+                    correlacionActiva.modo = "EAN";
+                    correlacionActiva.barras = val;
+                    const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo_barra=eq.${val}&select=codigo,codigo_barra,largo,ancho,alto,peso,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima&limit=1`, {
+                        headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` }
+                    });
+                    fila = data?.[0] || null;
+                    correlacionActiva.limsa = fila?.codigo || "";
+                    idN = correlacionActiva.limsa;
+                }
+
+                if(idN) {
+                    const dataN = await fetchJsonOrThrow(`${SB_URL}catalogo_articulos?articulo=eq.${idN.toLowerCase()}&select=nombre&limit=1`, {
+                        headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` }
+                    });
+                    document.getElementById('corrNombre').innerText = dataN?.[0]?.nombre || "SIN DESCRIPCIÓN";
+                } else {
+                    document.getElementById('corrNombre').innerText = "SIN DESCRIPCIÓN";
+                }
+
+                correlacionActiva.largoUnidad = fila?.largo_unidad || fila?.largo || "";
+                correlacionActiva.anchoUnidad = fila?.ancho_unidad || fila?.ancho || "";
+                correlacionActiva.altoUnidad = fila?.alto_unidad || fila?.alto || "";
+                correlacionActiva.pesoUnidad = fila?.peso_unidad || fila?.peso || "";
+
+                correlacionActiva.unidadesCajaBolsa = fila?.unidades_caja_bolsa || "";
+                correlacionActiva.largoCajaBolsa = fila?.largo_caja_bolsa || "";
+                correlacionActiva.anchoCajaBolsa = fila?.ancho_caja_bolsa || "";
+                correlacionActiva.altoCajaBolsa = fila?.alto_caja_bolsa || "";
+                correlacionActiva.pesoCajaBolsa = fila?.peso_caja_bolsa || "";
+
+                correlacionActiva.unidadesTarima = fila?.unidades_tarima || "";
+                correlacionActiva.largoTarima = fila?.largo_tarima || "";
+                correlacionActiva.anchoTarima = fila?.ancho_tarima || "";
+                correlacionActiva.altoTarima = fila?.alto_tarima || "";
+                correlacionActiva.pesoTarima = fila?.peso_tarima || "";
+
+                if ((!valorCajaVigente(correlacionActiva.unidadesCajaBolsa)) && idN) {
+                    correlacionActiva.unidadesCajaBolsa = await obtenerFactorCatalogo(idN);
+                }
+
+                setCorrVal('corrLargoUnidad', correlacionActiva.largoUnidad);
+                setCorrVal('corrAnchoUnidad', correlacionActiva.anchoUnidad);
+                setCorrVal('corrAltoUnidad', correlacionActiva.altoUnidad);
+                setCorrVal('corrPesoUnidad', correlacionActiva.pesoUnidad);
+
+                setCorrVal('corrUndCajaBolsa', correlacionActiva.unidadesCajaBolsa);
+                setCorrVal('corrLargoCajaBolsa', correlacionActiva.largoCajaBolsa);
+                setCorrVal('corrAnchoCajaBolsa', correlacionActiva.anchoCajaBolsa);
+                setCorrVal('corrAltoCajaBolsa', correlacionActiva.altoCajaBolsa);
+                setCorrVal('corrPesoCajaBolsa', correlacionActiva.pesoCajaBolsa);
+
+                setCorrVal('corrUndTarima', correlacionActiva.unidadesTarima);
+                setCorrVal('corrLargoTarima', correlacionActiva.largoTarima);
+                setCorrVal('corrAnchoTarima', correlacionActiva.anchoTarima);
+                setCorrVal('corrAltoTarima', correlacionActiva.altoTarima);
+                setCorrVal('corrPesoTarima', correlacionActiva.pesoTarima);
+
+                document.getElementById('corrLimsa').innerText = correlacionActiva.limsa.toUpperCase() || "NO ASIGNADO";
+                document.getElementById('corrBarras').innerText = correlacionActiva.barras || "NO ASIGNADO";
+
+                if(correlacionActiva.limsa && correlacionActiva.barras) {
+                    document.getElementById('corrMensaje').innerText = "Vínculo Correcto";
+                    document.getElementById('corrMensaje').className = "mt-4 p-3 rounded-xl text-xs font-bold text-center bg-green-100 text-green-700";
+                    document.getElementById('btnEliminarCorr').classList.remove('hidden');
+                } else {
+                    document.getElementById('corrMensaje').innerText = "Vínculo Pendiente";
+                    document.getElementById('corrMensaje').className = "mt-4 p-3 rounded-xl text-xs font-bold text-center bg-orange-100 text-orange-700";
+                    document.getElementById('formVinculo').classList.remove('hidden');
+                    setTimeout(() => document.getElementById('inputVinculo').focus(), 300);
+                }
+
+                document.getElementById('inputCorr').value = "";
+            } catch(e) {
+                alert(`Error al cargar correlación: ${e.message || e}`);
             }
-            setCorrVal('corrLargo', correlacionActiva.largo);
-            setCorrVal('corrAncho', correlacionActiva.ancho);
-            setCorrVal('corrAlto', correlacionActiva.alto);
-            setCorrVal('corrPeso', correlacionActiva.peso);
-            setCorrVal('corrUndCajaBolsa', correlacionActiva.unidadesCajaBolsa);
-            setCorrVal('corrUndTarima', correlacionActiva.unidadesTarima);
-            document.getElementById('corrLimsa').innerText = correlacionActiva.limsa.toUpperCase() || "NO ASIGNADO"; document.getElementById('corrBarras').innerText = correlacionActiva.barras || "NO ASIGNADO"; if(correlacionActiva.limsa && correlacionActiva.barras) { document.getElementById('corrMensaje').innerText = "Vínculo Correcto"; document.getElementById('corrMensaje').className = "mt-4 p-3 rounded-xl text-xs font-bold text-center bg-green-100 text-green-700"; document.getElementById('btnEliminarCorr').classList.remove('hidden'); } else { document.getElementById('corrMensaje').innerText = "Vínculo Pendiente"; document.getElementById('corrMensaje').className = "mt-4 p-3 rounded-xl text-xs font-bold text-center bg-orange-100 text-orange-700"; document.getElementById('formVinculo').classList.remove('hidden'); setTimeout(() => document.getElementById('inputVinculo').focus(), 300); } document.getElementById('inputCorr').value = ""; } catch(e) { alert(`Error al cargar correlación: ${e.message || e}`); } }
-        async function guardarVinculo() { const nv = document.getElementById('inputVinculo').value.trim(); if(!nv && !correlacionActiva.limsa && !correlacionActiva.barras) return; const l = correlacionActiva.limsa || (nv.startsWith('30') ? nv : ''); const b = correlacionActiva.barras || (!nv.startsWith('30') ? nv : ''); if(!l) { alert('Necesitas un código LIMSA para guardar.'); return; } const payload = { codigo_barra: b || null, largo: corrVal('corrLargo') || null, ancho: corrVal('corrAncho') || null, alto: corrVal('corrAlto') || null, peso: corrVal('corrPeso') || null, unidades_caja_bolsa: corrVal('corrUndCajaBolsa') || null, unidades_tarima: corrVal('corrUndTarima') || null }; try { const query = `${SB_URL}almacen_datos?codigo=eq.${l.toLowerCase()}`; const rows = await fetchJsonOrThrow(`${query}&select=codigo&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); if(Array.isArray(rows) && rows.length > 0) { await fetchJsonOrThrow(query, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json", "Prefer": "return=representation" }, body: JSON.stringify(payload) }); } else { await fetchJsonOrThrow(`${SB_URL}almacen_datos`, { method: 'POST', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json", "Prefer": "return=representation" }, body: JSON.stringify({ codigo: l.toLowerCase(), ...payload }) }); } document.getElementById('corrMensaje').innerText = '✅ ¡GUARDADO!'; document.getElementById('corrMensaje').className = 'mt-4 p-3 rounded-xl text-xs font-bold text-center bg-green-100 text-green-700'; setTimeout(() => procesarCorrelacion(l), 500); } catch(e) { alert(`Error al guardar: ${e.message || e}`); } }
+        }
+
+        async function guardarVinculo() {
+            const nv = document.getElementById('inputVinculo').value.trim();
+            if(!nv && !correlacionActiva.limsa && !correlacionActiva.barras) return;
+
+            const l = correlacionActiva.limsa || (nv.startsWith('30') ? nv : '');
+            const b = correlacionActiva.barras || (!nv.startsWith('30') ? nv : '');
+
+            if(!l) {
+                alert('Necesitas un código LIMSA para guardar.');
+                return;
+            }
+
+            const largoUnidad = corrVal('corrLargoUnidad') || null;
+            const anchoUnidad = corrVal('corrAnchoUnidad') || null;
+            const altoUnidad = corrVal('corrAltoUnidad') || null;
+            const pesoUnidad = corrVal('corrPesoUnidad') || null;
+
+            const payload = {
+                codigo_barra: b || null,
+                largo: largoUnidad,
+                ancho: anchoUnidad,
+                alto: altoUnidad,
+                peso: pesoUnidad,
+                largo_unidad: largoUnidad,
+                ancho_unidad: anchoUnidad,
+                alto_unidad: altoUnidad,
+                peso_unidad: pesoUnidad,
+
+                unidades_caja_bolsa: corrVal('corrUndCajaBolsa') || null,
+                largo_caja_bolsa: corrVal('corrLargoCajaBolsa') || null,
+                ancho_caja_bolsa: corrVal('corrAnchoCajaBolsa') || null,
+                alto_caja_bolsa: corrVal('corrAltoCajaBolsa') || null,
+                peso_caja_bolsa: corrVal('corrPesoCajaBolsa') || null,
+
+                unidades_tarima: corrVal('corrUndTarima') || null,
+                largo_tarima: corrVal('corrLargoTarima') || null,
+                ancho_tarima: corrVal('corrAnchoTarima') || null,
+                alto_tarima: corrVal('corrAltoTarima') || null,
+                peso_tarima: corrVal('corrPesoTarima') || null
+            };
+
+            try {
+                const query = `${SB_URL}almacen_datos?codigo=eq.${l.toLowerCase()}`;
+                const rows = await fetchJsonOrThrow(`${query}&select=codigo&limit=1`, {
+                    headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` }
+                });
+
+                if(Array.isArray(rows) && rows.length > 0) {
+                    await fetchJsonOrThrow(query, {
+                        method: 'PATCH',
+                        headers: {
+                            "apikey": SB_KEY,
+                            "Authorization": `Bearer ${SB_KEY}`,
+                            "Content-Type": "application/json",
+                            "Prefer": "return=representation"
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    await fetchJsonOrThrow(`${SB_URL}almacen_datos`, {
+                        method: 'POST',
+                        headers: {
+                            "apikey": SB_KEY,
+                            "Authorization": `Bearer ${SB_KEY}`,
+                            "Content-Type": "application/json",
+                            "Prefer": "return=representation"
+                        },
+                        body: JSON.stringify({ codigo: l.toLowerCase(), ...payload })
+                    });
+                }
+
+                document.getElementById('corrMensaje').innerText = '✅ ¡GUARDADO!';
+                document.getElementById('corrMensaje').className = 'mt-4 p-3 rounded-xl text-xs font-bold text-center bg-green-100 text-green-700';
+                setTimeout(() => procesarCorrelacion(l), 500);
+            } catch(e) {
+                alert(`Error al guardar: ${e.message || e}`);
+            }
+        }
         async function eliminarRelacionTotal() { if(!confirm("¿Eliminar?")) return; try { await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${correlacionActiva.limsa.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo_barra: null }) }); document.getElementById('inputVinculo').value = ""; alert("Vínculo eliminado."); procesarCorrelacion(correlacionActiva.limsa); } catch(e) { alert(`Error al eliminar: ${e.message || e}`); } }
 
         // --- UTILS ---
