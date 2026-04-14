@@ -682,7 +682,7 @@
                     correlacionActiva.modo = "LIMSA";
                     correlacionActiva.limsa = val;
                     idN = val;
-                    const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${val.toLowerCase()}&select=codigo,codigo_barra,largo,ancho,alto,peso,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima&limit=1`, {
+                    const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${val.toLowerCase()}&select=codigo,codigo_barra,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima&limit=1`, {
                         headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` }
                     });
                     fila = data?.[0] || null;
@@ -690,7 +690,7 @@
                 } else {
                     correlacionActiva.modo = "EAN";
                     correlacionActiva.barras = val;
-                    const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo_barra=eq.${val}&select=codigo,codigo_barra,largo,ancho,alto,peso,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima&limit=1`, {
+                    const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo_barra=eq.${val}&select=codigo,codigo_barra,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima&limit=1`, {
                         headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` }
                     });
                     fila = data?.[0] || null;
@@ -707,10 +707,10 @@
                     document.getElementById('corrNombre').innerText = "SIN DESCRIPCIÓN";
                 }
 
-                correlacionActiva.largoUnidad = fila?.largo_unidad || fila?.largo || "";
-                correlacionActiva.anchoUnidad = fila?.ancho_unidad || fila?.ancho || "";
-                correlacionActiva.altoUnidad = fila?.alto_unidad || fila?.alto || "";
-                correlacionActiva.pesoUnidad = fila?.peso_unidad || fila?.peso || "";
+                correlacionActiva.largoUnidad = fila?.largo_unidad || "";
+                correlacionActiva.anchoUnidad = fila?.ancho_unidad || "";
+                correlacionActiva.altoUnidad = fila?.alto_unidad || "";
+                correlacionActiva.pesoUnidad = fila?.peso_unidad || "";
 
                 correlacionActiva.unidadesCajaBolsa = fila?.unidades_caja_bolsa || "";
                 correlacionActiva.largoCajaBolsa = fila?.largo_caja_bolsa || "";
@@ -795,10 +795,6 @@
 
             const payload = {
                 codigo_barra: b || null,
-                largo: largoUnidad,
-                ancho: anchoUnidad,
-                alto: altoUnidad,
-                peso: pesoUnidad,
                 largo_unidad: largoUnidad,
                 ancho_unidad: anchoUnidad,
                 alto_unidad: altoUnidad,
