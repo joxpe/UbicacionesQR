@@ -652,7 +652,28 @@
         // --- REGISTRO ---
         async function procesarUbicacion(val) { const u = val.toUpperCase().trim(); if(!u) return; ubicacionActiva = u; document.getElementById('valUbicacion').innerText = u; document.getElementById('statusUbicacion').classList.remove('hidden'); document.getElementById('cardCaptura').classList.remove('hidden'); document.getElementById('footerAcciones').classList.remove('hidden'); await cargarExistentes(u); setTimeout(() => document.getElementById('inputSku').focus(), 150); }
         async function cargarExistentes(u) { const lista = document.getElementById('listaExistentes'); document.getElementById('cardExistentes').classList.remove('hidden'); try { const res = await fetch(`${SB_URL}almacen_datos?almacen=eq.${almacenActual.toLowerCase()}&or=(ubicacion_1.eq.${u},ubicacion_2.eq.${u},ubicacion_3.eq.${u},ubicacion_4.eq.${u})&select=codigo`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const data = await res.json(); if(data.length === 0) { lista.innerHTML = `<p class="text-xs text-slate-400 text-center py-2 italic">Vacío.</p>`; return; } const codigos = data.map(d => d.codigo.toLowerCase()); const resC = await fetch(`${SB_URL}catalogo_articulos?articulo=in.("${codigos.join('","')}")&select=articulo,nombre`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const cDat = await resC.json(); const map = Object.fromEntries(cDat.map(c => [c.articulo.toLowerCase(), c.nombre])); lista.innerHTML = data.map(d => `<div class="bg-white p-3 rounded-xl border flex justify-between items-center shadow-sm animate-in"><div class="min-w-0"><p class="font-black text-[11px] text-slate-800 uppercase tracking-tighter">${d.codigo}</p><p class="text-[10px] text-slate-400 font-bold uppercase truncate">${map[d.codigo.toLowerCase()] || '---'}</p></div><button onclick="eliminarFisico('${d.codigo}')" class="text-red-400 p-2 text-xl">&times;</button></div>`).join(''); } catch(e) { lista.innerHTML = "Error."; } }
-        async function procesarSku(val) { const raw = val.trim(); if(!raw) return; try { let finalSku = raw; if(!raw.startsWith("30") && /^\d+$/.test(raw)) { const rE = await fetch(`${SB_URL}almacen_datos?codigo_barra=eq.${raw}&select=codigo&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const dE = await rE.json(); if(dE[0]) finalSku = dE[0].codigo; else { alert("❌ EAN no vinculado."); return; } } const res = await fetch(`${SB_URL}catalogo_articulos?articulo=eq.${finalSku.toLowerCase()}&select=nombre`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const data = await res.json(); if(!skusNuevos.find(s => s.articulo.toLowerCase() === finalSku.toLowerCase())) { skusNuevos.push({ articulo: finalSku, nombre: data[0]?.nombre || "SIN DESCRIPCIÓN" }); renderNuevos(); document.getElementById('btnGuardar').disabled = false; } document.getElementById('inputSku').value = ""; } catch(e) { alert("Error."); } }
+        async function procesarSku(val) {
+            const raw = val.trim();
+            if(!raw) return;
+            try {
+                let finalSku = raw;
+                if(/^\d+$/.test(raw) && raw.length >= 8) {
+                    const rE = await fetch(`${SB_URL}almacen_datos?codigo_barra=eq.${raw}&select=codigo&limit=1`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
+                    const dE = await rE.json();
+                    if(dE[0]?.codigo) finalSku = dE[0].codigo;
+                }
+                const res = await fetch(`${SB_URL}catalogo_articulos?articulo=eq.${finalSku.toLowerCase()}&select=nombre`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } });
+                const data = await res.json();
+                if(!skusNuevos.find(s => s.articulo.toLowerCase() === finalSku.toLowerCase())) {
+                    skusNuevos.push({ articulo: finalSku, nombre: data[0]?.nombre || "SIN DESCRIPCIÓN" });
+                    renderNuevos();
+                    document.getElementById('btnGuardar').disabled = false;
+                }
+                document.getElementById('inputSku').value = "";
+            } catch(e) {
+                alert("Error.");
+            }
+        }
         function renderNuevos() { document.getElementById('listaNuevos').innerHTML = skusNuevos.map((s, i) => `<div class="bg-green-50 p-3 rounded-xl border border-green-100 flex justify-between animate-in shadow-sm"><div class="min-w-0"><p class="font-black text-[11px] text-green-800 uppercase tracking-tighter">${s.articulo}</p><p class="text-[10px] text-green-600 font-bold uppercase truncate">${s.nombre}</p></div><button onclick="skusNuevos.splice(${i},1);renderNuevos();" class="text-green-800 p-2">&times;</button></div>`).join(''); }
         async function guardarLote() { for (const item of skusNuevos) { const r = await fetch(`${SB_URL}almacen_datos?codigo=eq.${item.articulo.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const fila = (await r.json())[0]; const now = new Date().toLocaleString('sv-SE').replace('T', ' '); if(fila) { let s = !fila.ubicacion_1 ? 1 : !fila.ubicacion_2 ? 2 : !fila.ubicacion_3 ? 3 : 4; let p = {}; p[`ubicacion_${s}`] = ubicacionActiva; p[`estado_${s}`] = "OK"; p[`fecha_${s}`] = now; await fetch(`${SB_URL}almacen_datos?codigo=eq.${item.articulo.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(p) }); } else { await fetch(`${SB_URL}almacen_datos`, { method: 'POST', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo: item.articulo, almacen: almacenActual.toLowerCase(), ubicacion_1: ubicacionActiva, estado_1: "OK", fecha_1: now }) }); } } alert("✅ Guardado."); limpiarTodo(); }
         async function eliminarFisico(cod) { if(!confirm(`¿Quitar ${cod.toUpperCase()}?`)) return; const r = await fetch(`${SB_URL}almacen_datos?codigo=eq.${cod.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` } }); const f = (await r.json())[0]; if(!f) return; let s = (f.ubicacion_1===ubicacionActiva)?1:(f.ubicacion_2===ubicacionActiva)?2:(f.ubicacion_3===ubicacionActiva)?3:(f.ubicacion_4===ubicacionActiva)?4:0; if(s>0) { let p = {}; p[`ubicacion_${s}`]=null; p[`estado_${s}`]=null; p[`fecha_${s}`]=null; await fetch(`${SB_URL}almacen_datos?codigo=eq.${cod.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" }, body: JSON.stringify(p) }); await cargarExistentes(ubicacionActiva); } }
@@ -678,16 +699,9 @@
                 let idN = "";
                 let fila = null;
 
-                if(val.startsWith("30")) {
-                    correlacionActiva.modo = "LIMSA";
-                    correlacionActiva.limsa = val;
-                    idN = val;
-                    const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${val.toLowerCase()}&select=codigo,codigo_barra,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima&limit=1`, {
-                        headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` }
-                    });
-                    fila = data?.[0] || null;
-                    correlacionActiva.barras = fila?.codigo_barra || "";
-                } else {
+                const esNumerico = /^\d+$/.test(val);
+
+                if(esNumerico && val.length >= 8) {
                     correlacionActiva.modo = "EAN";
                     correlacionActiva.barras = val;
                     const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo_barra=eq.${val}&select=codigo,codigo_barra,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima&limit=1`, {
@@ -696,6 +710,15 @@
                     fila = data?.[0] || null;
                     correlacionActiva.limsa = fila?.codigo || "";
                     idN = correlacionActiva.limsa;
+                } else {
+                    correlacionActiva.modo = "LIMSA";
+                    correlacionActiva.limsa = val;
+                    idN = val;
+                    const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${val.toLowerCase()}&select=codigo,codigo_barra,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima&limit=1`, {
+                        headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` }
+                    });
+                    fila = data?.[0] || null;
+                    correlacionActiva.barras = fila?.codigo_barra || "";
                 }
 
                 if(idN) {
@@ -895,12 +918,12 @@
 
         function getScannerConfig() {
             const side = Math.min(window.innerWidth || 320, 320);
-            const boxSize = Math.max(190, Math.min(240, Math.floor(side * 0.62)));
+            const boxWidth = Math.max(240, Math.min(320, Math.floor(side * 0.9)));
 
             return {
-                fps: 10,
-                aspectRatio: 4 / 3,
-                qrbox: { width: boxSize, height: boxSize },
+                fps: 12,
+                aspectRatio: 16 / 9,
+                qrbox: { width: boxWidth, height: Math.floor(boxWidth * 0.45) },
                 disableFlip: false,
                 rememberLastUsedCamera: true,
                 supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
