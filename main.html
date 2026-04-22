@@ -221,11 +221,14 @@
 
             <div id="resCorrelacion" class="hidden space-y-4 animate-in">
                 <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                    <div id="corrNombre" class="mb-4 text-xs font-black text-slate-500 uppercase leading-tight">--</div>
-                    <div class="flex flex-col gap-4 divide-y divide-slate-100">
-                        <div class="pb-1">
+                    <div id="corrNombre" class="text-sm font-black text-slate-600 uppercase leading-snug break-words">--</div>
+                    <div id="corrUmVenta" class="mt-2 text-sm font-bold text-slate-500 uppercase leading-snug break-words">UDS DE VENTA: SIN DATO</div>
+                    <div id="corrMedida" class="mt-1 text-sm font-bold text-slate-500 uppercase leading-snug break-words hidden">MEDIDA: SIN DATO</div>
+                    <div class="mt-4 flex flex-col gap-4 divide-y divide-slate-100">
+                        <div class="pb-2">
                             <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">CÓDIGO LIMSA</p>
-                            <p id="corrLimsa" class="font-black text-2xl text-indigo-600 uppercase tracking-tight">--</p>
+                            <p id="corrLimsa" class="mt-1 font-black text-2xl text-indigo-600 uppercase tracking-tight break-all leading-none">--</p>
+                            <p id="corrClaveProveedor" class="mt-3 text-sm font-bold text-slate-500 uppercase leading-snug break-words">CLAVE_PROVEEDOR: SIN DATO</p>
                         </div>
                         <div class="pt-3">
                             <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">CÓDIGO DE BARRAS</p>
@@ -247,6 +250,20 @@
                     <div id="rowVinculo" class="flex gap-2">
                         <input type="text" id="inputVinculo" class="flex-1 border border-indigo-200 rounded-xl px-4 py-4 text-center font-black text-indigo-700 uppercase text-lg" placeholder="Vincular código de barras">
                         <button onclick="abrirScanner('vinculo')" class="bg-indigo-600 text-white p-4 rounded-xl shadow-sm">📷</button>
+                    </div>
+
+                    <div id="boxSugerenciaBarcode" class="hidden bg-white/90 border border-amber-200 rounded-2xl p-4 space-y-3 shadow-sm">
+                        <p class="text-[10px] font-black text-amber-700 uppercase tracking-widest text-center">Sugerencia por clave_proveedor</p>
+                        <div class="text-center space-y-1">
+                            <p id="sugerenciaClaveProveedor" class="text-[11px] font-bold text-slate-500 uppercase break-words">CLAVE_PROVEEDOR: SIN DATO</p>
+                            <p id="sugerenciaBarcodePrincipal" class="text-2xl font-black text-amber-700 break-all">--</p>
+                            <p id="sugerenciaBarcodeMeta" class="text-[11px] text-slate-500 font-bold">Sin sugerencias cargadas</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="button" id="btnUsarSugerenciaBarcode" onclick="usarSugerenciaBarcode()" class="flex-1 bg-amber-500 text-white py-3 rounded-xl font-bold text-xs uppercase shadow-sm disabled:opacity-50" disabled>Usar sugerencia</button>
+                            <button type="button" id="btnVerMasSugerencias" onclick="toggleListaSugerenciasBarcode()" class="px-4 bg-slate-100 text-slate-700 py-3 rounded-xl font-bold text-xs uppercase border border-slate-200 hidden">Ver más</button>
+                        </div>
+                        <div id="listaSugerenciasBarcode" class="hidden space-y-2"></div>
                     </div>
 
                     <div class="space-y-4">
@@ -316,6 +333,25 @@
                         </div>
                     </div>
 
+                    <div class="bg-white/80 border border-indigo-100 rounded-3xl p-4 space-y-3">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <p class="text-[10px] font-black text-indigo-700 uppercase tracking-widest">Similares</p>
+                                <p id="corrCriterioSimilares" class="text-[11px] text-slate-500 font-bold">Criterio: pendiente</p>
+                            </div>
+                            <button type="button" onclick="buscarSimilaresCorrelacion()" class="bg-slate-900 text-white px-4 py-3 rounded-xl text-[11px] font-black uppercase shadow-sm">Buscar similares</button>
+                        </div>
+                        <div id="corrEstadoSimilares" class="hidden text-xs font-bold rounded-xl px-3 py-2"></div>
+                        <div id="corrSimilaresBox" class="hidden space-y-3">
+                            <label class="flex items-center gap-2 text-xs font-bold text-slate-600">
+                                <input type="checkbox" id="corrSelectAllSimilares" onchange="toggleSeleccionSimilares(this.checked)" class="rounded border-slate-300">
+                                Seleccionar todos
+                            </label>
+                            <div id="corrListaSimilares" class="space-y-2 max-h-72 overflow-auto pr-1"></div>
+                            <button type="button" onclick="aplicarLogisticaASimilares()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold uppercase text-xs shadow-sm">Aplicar datos logísticos a seleccionados</button>
+                        </div>
+                    </div>
+
                     <button onclick="guardarVinculo()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold uppercase text-sm shadow-md">Guardar</button>
                 </div>
                 
@@ -360,7 +396,8 @@
         let scannerTargetActual = null;
         let catalogoModo = "registro";
         let correlacionActiva = {
-            limsa: "", barras: "", modo: "",
+            similares: [],
+            limsa: "", barras: "", modo: "", claveProveedor: "", sugerenciasBarcode: [], sugerenciaBarcodeElegida: "",
             largoUnidad: "", anchoUnidad: "", altoUnidad: "", pesoUnidad: "",
             unidadesCajaBolsa: "", largoCajaBolsa: "", anchoCajaBolsa: "", altoCajaBolsa: "", pesoCajaBolsa: "",
             unidadesTarima: "", largoTarima: "", anchoTarima: "", altoTarima: "", pesoTarima: ""
@@ -468,6 +505,352 @@
             body.classList.toggle('hidden', !hidden);
             icon.innerText = hidden ? '−' : '+';
         }
+        function extraerMedidaDesdeDescripcion(descripcion) {
+            try {
+                if (!descripcion || typeof descripcion !== "string") return "";
+                const texto = descripcion.trim();
+                if (!texto) return "";
+                const match = texto.match(/\d{1,4}(?:[.,]\d{1,2})?\s*[xX]\s*\d{1,4}(?:[.,]\d{1,2})?(?:\s*[xX]\s*\d{1,4}(?:[.,]\d{1,2})?)?/);
+                if (!match) return "";
+                return match[0].replace(/\s*[xX]\s*/g, "X").replace(/\s+/g, "").toUpperCase();
+            } catch (_) {
+                return "";
+            }
+        }
+
+        function pintarMedidaCorrelacion(descripcion) {
+            const el = document.getElementById('corrMedida');
+            if (!el) return;
+            const medida = extraerMedidaDesdeDescripcion(descripcion);
+            correlacionActiva.medida = medida || '';
+            if (medida) {
+                el.innerText = `MEDIDA: ${medida}`;
+                el.classList.remove('hidden');
+            } else {
+                el.innerText = 'MEDIDA: SIN DATO';
+                el.classList.add('hidden');
+            }
+            actualizarCriterioSimilares();
+        }
+
+        function limpiarSugerenciaBarcode() {
+            correlacionActiva.sugerenciasBarcode = [];
+            correlacionActiva.sugerenciaBarcodeElegida = "";
+            const box = document.getElementById('boxSugerenciaBarcode');
+            const clave = document.getElementById('sugerenciaClaveProveedor');
+            const principal = document.getElementById('sugerenciaBarcodePrincipal');
+            const meta = document.getElementById('sugerenciaBarcodeMeta');
+            const btnUsar = document.getElementById('btnUsarSugerenciaBarcode');
+            const btnMas = document.getElementById('btnVerMasSugerencias');
+            const lista = document.getElementById('listaSugerenciasBarcode');
+            if (box) box.classList.add('hidden');
+            if (clave) clave.innerText = 'CLAVE_PROVEEDOR: SIN DATO';
+            if (principal) principal.innerText = '--';
+            if (meta) meta.innerText = 'Sin sugerencias cargadas';
+            if (btnUsar) btnUsar.disabled = true;
+            if (btnMas) {
+                btnMas.classList.add('hidden');
+                btnMas.innerText = 'Ver más';
+            }
+            if (lista) {
+                lista.classList.add('hidden');
+                lista.innerHTML = '';
+            }
+        }
+
+        function renderListaSugerenciasBarcode() {
+            const lista = document.getElementById('listaSugerenciasBarcode');
+            const btnMas = document.getElementById('btnVerMasSugerencias');
+            if (!lista || !btnMas) return;
+            const sugerencias = correlacionActiva.sugerenciasBarcode || [];
+            if (sugerencias.length <= 1) {
+                btnMas.classList.add('hidden');
+                lista.classList.add('hidden');
+                lista.innerHTML = '';
+                return;
+            }
+            btnMas.classList.remove('hidden');
+            lista.innerHTML = sugerencias.map((item, idx) => `
+                <button type="button" onclick="seleccionarSugerenciaBarcode(${idx})" class="w-full text-left border border-slate-200 rounded-xl px-3 py-3 bg-slate-50 active:bg-slate-100">
+                    <p class="font-black text-slate-700 break-all">${item.codigo_barras || '--'}</p>
+                    <p class="text-[11px] text-slate-500 font-bold break-words">${item.nombre_fuente || 'Sin descripción'}</p>
+                </button>
+            `).join('');
+        }
+
+        function seleccionarSugerenciaBarcode(index) {
+            const sugerencias = correlacionActiva.sugerenciasBarcode || [];
+            const item = sugerencias[index];
+            if (!item) return;
+            correlacionActiva.sugerenciaBarcodeElegida = item.codigo_barras || '';
+            const principal = document.getElementById('sugerenciaBarcodePrincipal');
+            const meta = document.getElementById('sugerenciaBarcodeMeta');
+            const btnUsar = document.getElementById('btnUsarSugerenciaBarcode');
+            if (principal) principal.innerText = item.codigo_barras || '--';
+            if (meta) meta.innerText = item.nombre_fuente || 'Coincidencia por clave_proveedor';
+            if (btnUsar) btnUsar.disabled = !item.codigo_barras;
+        }
+
+        function toggleListaSugerenciasBarcode() {
+            const lista = document.getElementById('listaSugerenciasBarcode');
+            const btnMas = document.getElementById('btnVerMasSugerencias');
+            if (!lista || !btnMas) return;
+            const abierta = !lista.classList.contains('hidden');
+            lista.classList.toggle('hidden', abierta);
+            btnMas.innerText = abierta ? 'Ver más' : 'Ocultar';
+        }
+
+        async function cargarSugerenciaBarcode(claveProveedor, yaTieneCodigo) {
+            limpiarSugerenciaBarcode();
+            const clave = (claveProveedor || '').trim().toUpperCase();
+            if (!clave || yaTieneCodigo) return;
+            const box = document.getElementById('boxSugerenciaBarcode');
+            const claveEl = document.getElementById('sugerenciaClaveProveedor');
+            const principal = document.getElementById('sugerenciaBarcodePrincipal');
+            const meta = document.getElementById('sugerenciaBarcodeMeta');
+            if (box) box.classList.remove('hidden');
+            if (claveEl) claveEl.innerText = `CLAVE_PROVEEDOR: ${clave}`;
+            if (principal) principal.innerText = 'BUSCANDO...';
+            if (meta) meta.innerText = 'Consultando sugerencias';
+            try {
+                const headers = { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` };
+                const urlFinal = `${SB_URL}sugerencias_codigo_barras?clave_proveedor=eq.${encodeURIComponent(clave)}&activo=eq.true&select=codigo_barras,nombre_fuente,prioridad,confianza&order=prioridad.asc,confianza.desc,id.asc&limit=5`;
+                let data = await fetchJsonOrThrow(urlFinal, { headers });
+                let sugerencias = Array.isArray(data) ? data.filter(x => (x?.codigo_barras || '').trim()) : [];
+
+                if (!sugerencias.length) {
+                    const urlStaging = `${SB_URL}sugerencias_codigo_barras_staging?clave_proveedor=eq.${encodeURIComponent(clave)}&select=codigo_barras,nombre&limit=5`;
+                    const dataStaging = await fetchJsonOrThrow(urlStaging, { headers });
+                    sugerencias = Array.isArray(dataStaging)
+                        ? dataStaging
+                            .filter(x => (x?.codigo_barras || '').trim())
+                            .map(x => ({
+                                codigo_barras: x.codigo_barras,
+                                nombre_fuente: x.nombre || 'Coincidencia desde staging',
+                                prioridad: 99,
+                                confianza: 1
+                            }))
+                        : [];
+                }
+
+                correlacionActiva.sugerenciasBarcode = sugerencias;
+                if (!sugerencias.length) {
+                    if (principal) principal.innerText = '--';
+                    if (meta) meta.innerText = 'Sin sugerencias para esta clave_proveedor';
+                    return;
+                }
+                renderListaSugerenciasBarcode();
+                seleccionarSugerenciaBarcode(0);
+                if (meta) meta.innerText = sugerencias[0].nombre_fuente || `Se encontraron ${sugerencias.length} sugerencias`;
+            } catch (e) {
+                if (principal) principal.innerText = '--';
+                if (meta) meta.innerText = 'No fue posible consultar sugerencias';
+                console.error('Error sugerencia barcode:', e);
+            }
+        }
+
+        async function usarSugerenciaBarcode() {
+            const sugerido = (correlacionActiva.sugerenciaBarcodeElegida || '').trim();
+            if (!sugerido) return;
+            if (!confirm(`¿Vincular el código de barras sugerido ${sugerido}?`)) return;
+            const input = document.getElementById('inputVinculo');
+            if (input) input.value = sugerido;
+            await guardarVinculo();
+        }
+
+        function obtenerPrefijoProveedorDesdeCodigo(codigo) {
+            const limpio = String(codigo || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+            return limpio.slice(0, 5);
+        }
+
+        function actualizarCriterioSimilares() {
+            const el = document.getElementById('corrCriterioSimilares');
+            if (!el) return;
+            const prefijo = obtenerPrefijoProveedorDesdeCodigo(correlacionActiva.limsa || '');
+            const medida = correlacionActiva.medida || '';
+            correlacionActiva.prefijoBusqueda = prefijo;
+            el.innerText = `Criterio: ${prefijo || 'SIN PREFIJO'}${medida ? ' + ' + medida : ' + SIN MEDIDA'}`;
+        }
+
+        function setEstadoSimilares(texto, tipo = 'info') {
+            const el = document.getElementById('corrEstadoSimilares');
+            if (!el) return;
+            if (!texto) {
+                el.className = 'hidden text-xs font-bold rounded-xl px-3 py-2';
+                el.innerText = '';
+                return;
+            }
+            const cls = {
+                info: 'bg-slate-100 text-slate-700',
+                ok: 'bg-emerald-100 text-emerald-700',
+                warn: 'bg-amber-100 text-amber-700',
+                error: 'bg-red-100 text-red-700'
+            }[tipo] || 'bg-slate-100 text-slate-700';
+            el.className = `text-xs font-bold rounded-xl px-3 py-2 ${cls}`;
+            el.innerText = texto;
+        }
+
+        function limpiarSimilaresCorrelacion() {
+            correlacionActiva.similares = [];
+            const box = document.getElementById('corrSimilaresBox');
+            const lista = document.getElementById('corrListaSimilares');
+            const sel = document.getElementById('corrSelectAllSimilares');
+            if (box) box.classList.add('hidden');
+            if (lista) lista.innerHTML = '';
+            if (sel) sel.checked = false;
+            setEstadoSimilares('');
+            actualizarCriterioSimilares();
+        }
+
+        function renderSimilaresCorrelacion(items) {
+            const box = document.getElementById('corrSimilaresBox');
+            const lista = document.getElementById('corrListaSimilares');
+            const selAll = document.getElementById('corrSelectAllSimilares');
+            if (!box || !lista) return;
+            correlacionActiva.similares = Array.isArray(items) ? items : [];
+            if (!correlacionActiva.similares.length) {
+                box.classList.add('hidden');
+                lista.innerHTML = '';
+                if (selAll) selAll.checked = false;
+                return;
+            }
+            box.classList.remove('hidden');
+            lista.innerHTML = correlacionActiva.similares.map((item, idx) => {
+                const medida = extraerMedidaDesdeDescripcion(item.nombre || '');
+                const checked = item.seleccionado ? 'checked' : '';
+                return `
+                    <label class="flex items-start gap-3 bg-slate-50 border border-slate-200 rounded-2xl p-3">
+                        <input type="checkbox" class="mt-1 rounded border-slate-300 corr-similar-check" data-index="${idx}" ${checked} onchange="actualizarSeleccionSimilar(${idx}, this.checked)">
+                        <div class="min-w-0 flex-1">
+                            <div class="text-xs font-black text-slate-700 uppercase break-all">${item.articulo || '--'}</div>
+                            <div class="text-[11px] font-bold text-slate-500 uppercase leading-snug break-words mt-1">${item.nombre || 'SIN DESCRIPCIÓN'}</div>
+                            <div class="mt-2 flex flex-wrap gap-2 text-[10px] font-black uppercase">
+                                <span class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-500">${item.um_venta ? 'UDS: ' + item.um_venta : 'UDS: S/D'}</span>
+                                <span class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-500">${medida ? 'MEDIDA: ' + medida : 'MEDIDA: S/D'}</span>
+                            </div>
+                        </div>
+                    </label>`;
+            }).join('');
+            if (selAll) selAll.checked = correlacionActiva.similares.every(x => x.seleccionado);
+        }
+
+        function actualizarSeleccionSimilar(index, checked) {
+            if (!Array.isArray(correlacionActiva.similares) || !correlacionActiva.similares[index]) return;
+            correlacionActiva.similares[index].seleccionado = !!checked;
+            const selAll = document.getElementById('corrSelectAllSimilares');
+            if (selAll) selAll.checked = correlacionActiva.similares.length > 0 && correlacionActiva.similares.every(x => x.seleccionado);
+        }
+
+        function toggleSeleccionSimilares(checked) {
+            if (!Array.isArray(correlacionActiva.similares)) return;
+            correlacionActiva.similares.forEach(x => x.seleccionado = !!checked);
+            document.querySelectorAll('.corr-similar-check').forEach(el => { el.checked = !!checked; });
+        }
+
+        function obtenerPayloadLogisticaCorrelacion() {
+            return {
+                largo_unidad: corrVal('corrLargoUnidad') || null,
+                ancho_unidad: corrVal('corrAnchoUnidad') || null,
+                alto_unidad: corrVal('corrAltoUnidad') || null,
+                peso_unidad: corrVal('corrPesoUnidad') || null,
+                unidades_caja_bolsa: corrVal('corrUndCajaBolsa') || null,
+                largo_caja_bolsa: corrVal('corrLargoCajaBolsa') || null,
+                ancho_caja_bolsa: corrVal('corrAnchoCajaBolsa') || null,
+                alto_caja_bolsa: corrVal('corrAltoCajaBolsa') || null,
+                peso_caja_bolsa: corrVal('corrPesoCajaBolsa') || null,
+                unidades_tarima: corrVal('corrUndTarima') || null,
+                largo_tarima: corrVal('corrLargoTarima') || null,
+                ancho_tarima: corrVal('corrAnchoTarima') || null,
+                alto_tarima: corrVal('corrAltoTarima') || null,
+                peso_tarima: corrVal('corrPesoTarima') || null
+            };
+        }
+
+        async function buscarSimilaresCorrelacion() {
+            try {
+                const codigo = correlacionActiva.limsa || '';
+                const prefijo = obtenerPrefijoProveedorDesdeCodigo(codigo);
+                const medida = correlacionActiva.medida || extraerMedidaDesdeDescripcion(document.getElementById('corrNombre')?.innerText || '');
+                actualizarCriterioSimilares();
+                if (!codigo) {
+                    alert('Primero carga un SKU en correlación.');
+                    return;
+                }
+                if (!prefijo) {
+                    alert('No pude obtener el prefijo proveedor del código LIMSA.');
+                    return;
+                }
+                if (!medida) {
+                    alert('Este artículo no tiene medida detectable en la descripción.');
+                    return;
+                }
+                setEstadoSimilares('Buscando coincidencias...', 'info');
+                const prefijoLike = encodeURIComponent(`${prefijo.toLowerCase()}*`);
+                const medidaLike = encodeURIComponent(`*${medida.toLowerCase()}*`);
+                const url = `${SB_URL}catalogo_articulos?select=articulo,nombre,um_venta,clave_proveedor&articulo=like.${prefijoLike}&nombre=ilike.${medidaLike}&limit=80`;
+                const data = await fetchJsonOrThrow(url, { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` } });
+                const actual = String(codigo || '').toLowerCase();
+                const items = (Array.isArray(data) ? data : [])
+                    .filter(x => String(x.articulo || '').trim())
+                    .filter(x => String(x.articulo || '').toLowerCase() !== actual)
+                    .map(x => ({ ...x, seleccionado: true }));
+                renderSimilaresCorrelacion(items);
+                if (!items.length) {
+                    setEstadoSimilares('No encontré coincidencias para ese prefijo y medida.', 'warn');
+                    return;
+                }
+                setEstadoSimilares(`Se encontraron ${items.length} coincidencias. Revisa y aplica a las correctas.`, 'ok');
+            } catch (e) {
+                setEstadoSimilares(`Error al buscar similares: ${e.message || e}`, 'error');
+            }
+        }
+
+        async function aplicarLogisticaASimilares() {
+            try {
+                const seleccionados = (correlacionActiva.similares || []).filter(x => x.seleccionado && x.articulo);
+                if (!seleccionados.length) {
+                    alert('Selecciona al menos un artículo.');
+                    return;
+                }
+                const payload = obtenerPayloadLogisticaCorrelacion();
+                const codigos = seleccionados.map(x => String(x.articulo).toLowerCase());
+                if (!confirm(`¿Aplicar estos datos logísticos a ${codigos.length} artículo(s)?`)) return;
+                setEstadoSimilares('Aplicando datos logísticos...', 'info');
+                const existentes = await fetchJsonOrThrow(`${SB_URL}almacen_datos?select=codigo&codigo=in.(${codigos.map(x => `"${x}"`).join(',')})&limit=500`, {
+                    headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
+                });
+                const setExist = new Set((Array.isArray(existentes) ? existentes : []).map(x => String(x.codigo || '').toLowerCase()));
+                for (const codigo of codigos) {
+                    if (setExist.has(codigo)) {
+                        await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${encodeURIComponent(codigo)}`, {
+                            method: 'PATCH',
+                            headers: {
+                                'apikey': SB_KEY,
+                                'Authorization': `Bearer ${SB_KEY}`,
+                                'Content-Type': 'application/json',
+                                'Prefer': 'return=representation'
+                            },
+                            body: JSON.stringify(payload)
+                        });
+                    } else {
+                        await fetchJsonOrThrow(`${SB_URL}almacen_datos`, {
+                            method: 'POST',
+                            headers: {
+                                'apikey': SB_KEY,
+                                'Authorization': `Bearer ${SB_KEY}`,
+                                'Content-Type': 'application/json',
+                                'Prefer': 'return=representation'
+                            },
+                            body: JSON.stringify({ codigo, ...payload })
+                        });
+                    }
+                }
+                setEstadoSimilares(`Se aplicaron los datos logísticos a ${codigos.length} artículo(s).`, 'ok');
+            } catch (e) {
+                setEstadoSimilares(`Error al aplicar similares: ${e.message || e}`, 'error');
+            }
+        }
+
         function copiarMedidasUnidadACaja() {
             setCorrVal('corrLargoCajaBolsa', corrVal('corrLargoUnidad'));
             setCorrVal('corrAnchoCajaBolsa', corrVal('corrAnchoUnidad'));
@@ -687,11 +1070,13 @@
             document.getElementById('inputVinculo').value = "";
             limpiarCamposCorrelacion();
             correlacionActiva = {
-                limsa: "", barras: "", modo: "",
+                limsa: "", barras: "", modo: "", medida: "", nombre: "", umVenta: "", claveProveedor: "", prefijoBusqueda: "", similares: [], sugerenciasBarcode: [], sugerenciaBarcodeElegida: "",
                 largoUnidad: "", anchoUnidad: "", altoUnidad: "", pesoUnidad: "",
                 unidadesCajaBolsa: "", largoCajaBolsa: "", anchoCajaBolsa: "", altoCajaBolsa: "", pesoCajaBolsa: "",
                 unidadesTarima: "", largoTarima: "", anchoTarima: "", altoTarima: "", pesoTarima: ""
             };
+            limpiarSimilaresCorrelacion();
+            limpiarSugerenciaBarcode();
             document.getElementById('formVinculo').classList.add('hidden');
             document.getElementById('btnEliminarCorrMini').classList.add('hidden');
 
@@ -722,12 +1107,25 @@
                 }
 
                 if(idN) {
-                    const dataN = await fetchJsonOrThrow(`${SB_URL}catalogo_articulos?articulo=eq.${idN.toLowerCase()}&select=nombre&limit=1`, {
+                    const dataN = await fetchJsonOrThrow(`${SB_URL}catalogo_articulos?articulo=eq.${idN.toLowerCase()}&select=nombre,um_venta,clave_proveedor&limit=1`, {
                         headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` }
                     });
-                    document.getElementById('corrNombre').innerText = dataN?.[0]?.nombre || "SIN DESCRIPCIÓN";
+                    const articuloInfo = dataN?.[0] || {};
+                    correlacionActiva.nombre = articuloInfo.nombre || '';
+                    correlacionActiva.umVenta = articuloInfo.um_venta || '';
+                    correlacionActiva.claveProveedor = (articuloInfo.clave_proveedor || '').trim();
+                    document.getElementById('corrNombre').innerText = articuloInfo.nombre || "SIN DESCRIPCIÓN";
+                    document.getElementById('corrUmVenta').innerText = `UDS DE VENTA: ${articuloInfo.um_venta || 'SIN DATO'}`;
+                    document.getElementById('corrClaveProveedor').innerText = `CLAVE_PROVEEDOR: ${articuloInfo.clave_proveedor || 'SIN DATO'}`;
+                    pintarMedidaCorrelacion(articuloInfo.nombre || '');
                 } else {
+                    correlacionActiva.nombre = '';
+                    correlacionActiva.umVenta = '';
+                    correlacionActiva.claveProveedor = '';
                     document.getElementById('corrNombre').innerText = "SIN DESCRIPCIÓN";
+                    document.getElementById('corrUmVenta').innerText = "UDS DE VENTA: SIN DATO";
+                    document.getElementById('corrClaveProveedor').innerText = "CLAVE_PROVEEDOR: SIN DATO";
+                    pintarMedidaCorrelacion('');
                 }
 
                 correlacionActiva.largoUnidad = fila?.largo_unidad || "";
@@ -769,6 +1167,7 @@
                 setCorrVal('corrPesoTarima', correlacionActiva.pesoTarima);
 
                 document.getElementById('corrLimsa').innerText = correlacionActiva.limsa.toUpperCase() || "NO ASIGNADO";
+                actualizarCriterioSimilares();
                 document.getElementById('corrBarras').innerText = correlacionActiva.barras || "NO ASIGNADO";
                 document.getElementById('bodyUnidad')?.classList.remove('hidden');
                 document.getElementById('iconUnidad').innerText = '−';
@@ -780,6 +1179,7 @@
 
                 document.getElementById('formVinculo').classList.remove('hidden');
                 const rowVinculo = document.getElementById('rowVinculo');
+                await cargarSugerenciaBarcode(correlacionActiva.claveProveedor, !!correlacionActiva.barras);
 
                 if(correlacionActiva.limsa && correlacionActiva.barras) {
                     document.getElementById('corrMensaje').innerText = "Vínculo Correcto";
@@ -811,29 +1211,9 @@
                 return;
             }
 
-            const largoUnidad = corrVal('corrLargoUnidad') || null;
-            const anchoUnidad = corrVal('corrAnchoUnidad') || null;
-            const altoUnidad = corrVal('corrAltoUnidad') || null;
-            const pesoUnidad = corrVal('corrPesoUnidad') || null;
-
             const payload = {
                 codigo_barra: b || null,
-                largo_unidad: largoUnidad,
-                ancho_unidad: anchoUnidad,
-                alto_unidad: altoUnidad,
-                peso_unidad: pesoUnidad,
-
-                unidades_caja_bolsa: corrVal('corrUndCajaBolsa') || null,
-                largo_caja_bolsa: corrVal('corrLargoCajaBolsa') || null,
-                ancho_caja_bolsa: corrVal('corrAnchoCajaBolsa') || null,
-                alto_caja_bolsa: corrVal('corrAltoCajaBolsa') || null,
-                peso_caja_bolsa: corrVal('corrPesoCajaBolsa') || null,
-
-                unidades_tarima: corrVal('corrUndTarima') || null,
-                largo_tarima: corrVal('corrLargoTarima') || null,
-                ancho_tarima: corrVal('corrAnchoTarima') || null,
-                alto_tarima: corrVal('corrAltoTarima') || null,
-                peso_tarima: corrVal('corrPesoTarima') || null
+                ...obtenerPayloadLogisticaCorrelacion()
             };
 
             try {
