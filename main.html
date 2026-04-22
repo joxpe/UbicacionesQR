@@ -398,7 +398,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2026.04.14.3";
+        const APP_VERSION = "2026.04.22.4";
         const SB_URL = "https://smlalagqfphliastgjbh.supabase.co/rest/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtbGFsYWdxZnBobGlhc3RnamJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExODc3ODIsImV4cCI6MjA3Njc2Mzc4Mn0.L4bp6sGzzjiNsGSY1fTYolSLxvVoJh1ENon9Prw1CZA";
         const ALMACENES_FALLBACK = ["aa","ab","ac","ad","ag","ah","ai","aj","al","am","as","at","cb","cc","cd","cg","ch","ci","cj","cl","cm","cr","cs","ct"];
@@ -433,9 +433,7 @@
             limpiarTodo(); 
         }
         function irACorrelacion() { 
-            document.getElementById('pantallaMenuPrincipal').classList.add('hidden'); 
-            document.getElementById('pantallaCorrelacion').classList.remove('hidden'); 
-            setTimeout(() => document.getElementById('inputCorr').focus(), 300); 
+            irASelectorAlmacen('correlacion');
         }
         function regresarAAlmacenes() { 
             document.getElementById('pantallaApp').classList.add('hidden'); 
@@ -453,6 +451,12 @@
                 document.getElementById('pantallaSelectorAlmacen').classList.add('hidden');
                 document.getElementById('pantallaApp').classList.remove('hidden');
                 setTimeout(() => document.getElementById('inputUbicacion').focus(), 300);
+            } else if(moduloActivo === 'correlacion') {
+                const txt = document.getElementById('corrTxtAlmacen');
+                if (txt) txt.innerText = alm;
+                document.getElementById('pantallaSelectorAlmacen').classList.add('hidden');
+                document.getElementById('pantallaCorrelacion').classList.remove('hidden');
+                setTimeout(() => document.getElementById('inputCorr').focus(), 300);
             } else {
                 document.getElementById('audTxtAlmacen').innerText = alm;
                 document.getElementById('pantallaSelectorAlmacen').classList.add('hidden');
@@ -1350,24 +1354,6 @@
             }
         }
 
-        function normalizarAlmacenVinculo(valor) {
-            const v = String(valor || '').trim().toUpperCase();
-            return ['CI', 'AI', 'CR'].includes(v) ? v : '';
-        }
-
-        async function pedirAlmacenParaNuevoRegistro(codigoLimsa) {
-            const sugerencia = `El código ${String(codigoLimsa || '').toUpperCase()} no existe todavía en almacen_datos.
-
-¿En qué bodega quieres registrarlo?
-Escribe: CI, AI o CR`;
-            const respuesta = prompt(sugerencia, 'CI');
-            const almacen = normalizarAlmacenVinculo(respuesta);
-            if (!almacen) {
-                alert('Debes escribir una bodega válida: CI, AI o CR.');
-                return '';
-            }
-            return almacen.toLowerCase();
-        }
 
         async function guardarVinculo() {
             const nv = document.getElementById('inputVinculo').value.trim();
@@ -1387,8 +1373,14 @@ Escribe: CI, AI o CR`;
             };
 
             try {
-                const query = `${SB_URL}almacen_datos?codigo=eq.${l.toLowerCase()}`;
-                const rows = await fetchJsonOrThrow(`${query}&select=codigo&limit=1`, {
+                if(!almacenActual) {
+                    alert('Primero selecciona almacén para Correlación.');
+                    irASelectorAlmacen('correlacion');
+                    return;
+                }
+
+                const query = `${SB_URL}almacen_datos?codigo=eq.${l.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`;
+                const rows = await fetchJsonOrThrow(`${query}&select=codigo,almacen&limit=1`, {
                     headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` }
                 });
 
@@ -1404,8 +1396,6 @@ Escribe: CI, AI o CR`;
                         body: JSON.stringify(payload)
                     });
                 } else {
-                    const almacenNuevo = await pedirAlmacenParaNuevoRegistro(l);
-                    if(!almacenNuevo) return;
                     await fetchJsonOrThrow(`${SB_URL}almacen_datos`, {
                         method: 'POST',
                         headers: {
@@ -1414,7 +1404,7 @@ Escribe: CI, AI o CR`;
                             "Content-Type": "application/json",
                             "Prefer": "return=representation"
                         },
-                        body: JSON.stringify({ codigo: l.toLowerCase(), almacen: almacenNuevo, ...payload })
+                        body: JSON.stringify({ codigo: l.toLowerCase(), almacen: almacenActual.toLowerCase(), ...payload })
                     });
                 }
 
