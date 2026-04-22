@@ -266,21 +266,6 @@
                         <div id="listaSugerenciasBarcode" class="hidden space-y-2"></div>
                     </div>
 
-                    <div id="boxSugerenciaLimsaPorBarcode" class="hidden bg-white/90 border border-emerald-200 rounded-2xl p-4 space-y-3 shadow-sm">
-                        <p class="text-[10px] font-black text-emerald-700 uppercase tracking-widest text-center">Sugerencia de código limsa por barcode</p>
-                        <div class="text-center space-y-1">
-                            <p id="sugerenciaLimsaBarcodeScan" class="text-[11px] font-bold text-slate-500 uppercase break-words">BARCODE ESCANEADO: --</p>
-                            <p id="sugerenciaLimsaPrincipal" class="text-2xl font-black text-emerald-700 break-all">--</p>
-                            <p id="sugerenciaLimsaDescripcion" class="text-[11px] text-slate-500 font-bold uppercase break-words">Sin sugerencias cargadas</p>
-                            <p id="sugerenciaLimsaClaveProveedor" class="text-[11px] text-slate-500 font-bold uppercase break-words">CLAVE_PROVEEDOR: --</p>
-                        </div>
-                        <div class="flex gap-2">
-                            <button type="button" id="btnConfirmarSugerenciaLimsa" onclick="confirmarSugerenciaLimsaDesdeBarcode()" class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold text-xs uppercase shadow-sm disabled:opacity-50" disabled>Confirmar y vincular</button>
-                            <button type="button" id="btnVerMasSugerenciasLimsa" onclick="toggleListaSugerenciasLimsa()" class="px-4 bg-slate-100 text-slate-700 py-3 rounded-xl font-bold text-xs uppercase border border-slate-200 hidden">Ver más</button>
-                        </div>
-                        <div id="listaSugerenciasLimsa" class="hidden space-y-2"></div>
-                    </div>
-
                     <div class="space-y-4">
                         <div class="bg-white/80 border border-indigo-100 rounded-3xl overflow-hidden shadow-sm">
                             <button type="button" onclick="toggleLogisticaSection('unidad')" class="w-full flex items-center justify-between px-4 py-4 text-left">
@@ -412,7 +397,7 @@
         let catalogoModo = "registro";
         let correlacionActiva = {
             similares: [],
-            limsa: "", barras: "", modo: "", claveProveedor: "", sugerenciasBarcode: [], sugerenciaBarcodeElegida: "", sugerenciasLimsa: [], sugerenciaLimsaElegida: null,
+            limsa: "", barras: "", modo: "", claveProveedor: "", sugerenciasBarcode: [], sugerenciaBarcodeElegida: "",
             largoUnidad: "", anchoUnidad: "", altoUnidad: "", pesoUnidad: "",
             unidadesCajaBolsa: "", largoCajaBolsa: "", anchoCajaBolsa: "", altoCajaBolsa: "", pesoCajaBolsa: "",
             unidadesTarima: "", largoTarima: "", anchoTarima: "", altoTarima: "", pesoTarima: ""
@@ -673,140 +658,6 @@
             await guardarVinculo();
         }
 
-        function limpiarSugerenciaLimsa() {
-            correlacionActiva.sugerenciasLimsa = [];
-            correlacionActiva.sugerenciaLimsaElegida = null;
-            const box = document.getElementById('boxSugerenciaLimsaPorBarcode');
-            const scan = document.getElementById('sugerenciaLimsaBarcodeScan');
-            const principal = document.getElementById('sugerenciaLimsaPrincipal');
-            const desc = document.getElementById('sugerenciaLimsaDescripcion');
-            const clave = document.getElementById('sugerenciaLimsaClaveProveedor');
-            const btn = document.getElementById('btnConfirmarSugerenciaLimsa');
-            const btnMas = document.getElementById('btnVerMasSugerenciasLimsa');
-            const lista = document.getElementById('listaSugerenciasLimsa');
-            if (box) box.classList.add('hidden');
-            if (scan) scan.innerText = 'BARCODE ESCANEADO: --';
-            if (principal) principal.innerText = '--';
-            if (desc) desc.innerText = 'Sin sugerencias cargadas';
-            if (clave) clave.innerText = 'CLAVE_PROVEEDOR: --';
-            if (btn) btn.disabled = true;
-            if (btnMas) { btnMas.classList.add('hidden'); btnMas.innerText = 'Ver más'; }
-            if (lista) { lista.classList.add('hidden'); lista.innerHTML = ''; }
-        }
-
-        function renderListaSugerenciasLimsa() {
-            const lista = document.getElementById('listaSugerenciasLimsa');
-            const btnMas = document.getElementById('btnVerMasSugerenciasLimsa');
-            if (!lista || !btnMas) return;
-            const sugerencias = correlacionActiva.sugerenciasLimsa || [];
-            if (sugerencias.length <= 1) {
-                btnMas.classList.add('hidden');
-                lista.classList.add('hidden');
-                lista.innerHTML = '';
-                return;
-            }
-            btnMas.classList.remove('hidden');
-            lista.innerHTML = sugerencias.map((item, idx) => `
-                <button type="button" onclick="seleccionarSugerenciaLimsa(${idx})" class="w-full text-left border border-slate-200 rounded-xl px-3 py-3 bg-slate-50 active:bg-slate-100">
-                    <p class="font-black text-slate-700 break-all uppercase">${item.articulo || '--'}</p>
-                    <p class="text-[11px] text-slate-500 font-bold uppercase break-words">${item.nombre || 'Sin descripción'}</p>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase break-words mt-1">CLAVE_PROVEEDOR: ${item.clave_proveedor || '--'}</p>
-                </button>
-            `).join('');
-        }
-
-        function seleccionarSugerenciaLimsa(index) {
-            const item = (correlacionActiva.sugerenciasLimsa || [])[index];
-            if (!item) return;
-            correlacionActiva.sugerenciaLimsaElegida = item;
-            const principal = document.getElementById('sugerenciaLimsaPrincipal');
-            const desc = document.getElementById('sugerenciaLimsaDescripcion');
-            const clave = document.getElementById('sugerenciaLimsaClaveProveedor');
-            const btn = document.getElementById('btnConfirmarSugerenciaLimsa');
-            if (principal) principal.innerText = item.articulo || '--';
-            if (desc) desc.innerText = item.nombre || 'Coincidencia encontrada';
-            if (clave) clave.innerText = `CLAVE_PROVEEDOR: ${item.clave_proveedor || '--'}`;
-            if (btn) btn.disabled = !item.articulo;
-        }
-
-        function toggleListaSugerenciasLimsa() {
-            const lista = document.getElementById('listaSugerenciasLimsa');
-            const btnMas = document.getElementById('btnVerMasSugerenciasLimsa');
-            if (!lista || !btnMas) return;
-            const abierta = !lista.classList.contains('hidden');
-            lista.classList.toggle('hidden', abierta);
-            btnMas.innerText = abierta ? 'Ver más' : 'Ocultar';
-        }
-
-        async function cargarSugerenciaLimsaDesdeBarcode(barcode, yaTieneLimsa) {
-            limpiarSugerenciaLimsa();
-            const b = (barcode || '').trim();
-            if (!b || yaTieneLimsa) return;
-            const box = document.getElementById('boxSugerenciaLimsaPorBarcode');
-            const scan = document.getElementById('sugerenciaLimsaBarcodeScan');
-            const principal = document.getElementById('sugerenciaLimsaPrincipal');
-            const desc = document.getElementById('sugerenciaLimsaDescripcion');
-            if (box) box.classList.remove('hidden');
-            if (scan) scan.innerText = `BARCODE ESCANEADO: ${b}`;
-            if (principal) principal.innerText = 'BUSCANDO...';
-            if (desc) desc.innerText = 'Buscando clave_proveedor y código LIMSA';
-            try {
-                const headers = { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` };
-                const urlFinal = `${SB_URL}sugerencias_codigo_barras?codigo_barras=eq.${encodeURIComponent(b)}&activo=eq.true&select=clave_proveedor,nombre_fuente&order=prioridad.asc,confianza.desc,id.asc&limit=10`;
-                let data = await fetchJsonOrThrow(urlFinal, { headers });
-                let claves = Array.isArray(data) ? data.map(x => (x?.clave_proveedor || '').trim()).filter(Boolean) : [];
-                if (!claves.length) {
-                    const urlStaging = `${SB_URL}sugerencias_codigo_barras_staging?codigo_barras=eq.${encodeURIComponent(b)}&select=clave_proveedor,nombre&limit=10`;
-                    const dataStaging = await fetchJsonOrThrow(urlStaging, { headers });
-                    claves = Array.isArray(dataStaging) ? dataStaging.map(x => (x?.clave_proveedor || '').trim()).filter(Boolean) : [];
-                }
-                const unicas = [...new Set(claves.map(x => x.toUpperCase()))];
-                if (!unicas.length) {
-                    if (principal) principal.innerText = '--';
-                    if (desc) desc.innerText = 'No encontré sugerencia de clave_proveedor para este barcode';
-                    return;
-                }
-                let candidatos = [];
-                for (const claveProv of unicas.slice(0, 10)) {
-                    const urlCat = `${SB_URL}catalogo_articulos?clave_proveedor=eq.${encodeURIComponent(claveProv)}&select=articulo,nombre,clave_proveedor&limit=10`;
-                    const dataCat = await fetchJsonOrThrow(urlCat, { headers });
-                    if (Array.isArray(dataCat) && dataCat.length) {
-                        candidatos.push(...dataCat.map(x => ({
-                            articulo: (x.articulo || '').toUpperCase(),
-                            nombre: x.nombre || '',
-                            clave_proveedor: x.clave_proveedor || claveProv
-                        })));
-                    }
-                }
-                const mapa = new Map();
-                for (const item of candidatos) {
-                    const k = `${item.articulo}||${item.clave_proveedor}`;
-                    if (!mapa.has(k)) mapa.set(k, item);
-                }
-                correlacionActiva.sugerenciasLimsa = [...mapa.values()];
-                if (!correlacionActiva.sugerenciasLimsa.length) {
-                    if (principal) principal.innerText = '--';
-                    if (desc) desc.innerText = 'Encontré clave_proveedor pero no un código LIMSA relacionado';
-                    return;
-                }
-                renderListaSugerenciasLimsa();
-                seleccionarSugerenciaLimsa(0);
-            } catch (e) {
-                if (principal) principal.innerText = '--';
-                if (desc) desc.innerText = 'No fue posible buscar sugerencia de código LIMSA';
-                console.error('Error sugerencia limsa desde barcode:', e);
-            }
-        }
-
-        async function confirmarSugerenciaLimsaDesdeBarcode() {
-            const item = correlacionActiva.sugerenciaLimsaElegida;
-            if (!item?.articulo || !correlacionActiva.barras) return;
-            if (!confirm(`¿Vincular ${correlacionActiva.barras} con ${item.articulo}?`)) return;
-            correlacionActiva.limsa = item.articulo;
-            correlacionActiva.claveProveedor = item.clave_proveedor || correlacionActiva.claveProveedor || '';
-            await guardarVinculo();
-        }
-
         function obtenerPrefijoProveedorDesdeCodigo(codigo) {
             const limpio = String(codigo || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
             return limpio.slice(0, 5);
@@ -963,38 +814,46 @@
                 }
                 const payload = obtenerPayloadLogisticaCorrelacion();
                 const codigos = seleccionados.map(x => String(x.articulo).toLowerCase());
-                if (!confirm(`¿Aplicar estos datos logísticos a ${codigos.length} artículo(s)?`)) return;
-                setEstadoSimilares('Aplicando datos logísticos...', 'info');
-                const existentes = await fetchJsonOrThrow(`${SB_URL}almacen_datos?select=codigo&codigo=in.(${codigos.map(x => `"${x}"`).join(',')})&limit=500`, {
+                if (!confirm(`¿Aplicar estos datos logísticos a ${codigos.length} artículo(s)? Esto solo actualizará registros ya existentes.`)) return;
+                setEstadoSimilares('Aplicando datos logísticos a registros existentes...', 'info');
+                const existentes = await fetchJsonOrThrow(`${SB_URL}almacen_datos?select=id,codigo&codigo=in.(${codigos.map(x => `"${x}"`).join(',')})&limit=5000`, {
                     headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
                 });
-                const setExist = new Set((Array.isArray(existentes) ? existentes : []).map(x => String(x.codigo || '').toLowerCase()));
-                for (const codigo of codigos) {
-                    if (setExist.has(codigo)) {
-                        await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${encodeURIComponent(codigo)}`, {
-                            method: 'PATCH',
-                            headers: {
-                                'apikey': SB_KEY,
-                                'Authorization': `Bearer ${SB_KEY}`,
-                                'Content-Type': 'application/json',
-                                'Prefer': 'return=representation'
-                            },
-                            body: JSON.stringify(payload)
-                        });
-                    } else {
-                        await fetchJsonOrThrow(`${SB_URL}almacen_datos`, {
-                            method: 'POST',
-                            headers: {
-                                'apikey': SB_KEY,
-                                'Authorization': `Bearer ${SB_KEY}`,
-                                'Content-Type': 'application/json',
-                                'Prefer': 'return=representation'
-                            },
-                            body: JSON.stringify({ codigo, ...payload })
-                        });
-                    }
+                const porCodigo = new Map();
+                for (const row of (Array.isArray(existentes) ? existentes : [])) {
+                    const codigo = String(row.codigo || '').toLowerCase();
+                    if (!codigo) continue;
+                    if (!porCodigo.has(codigo)) porCodigo.set(codigo, []);
+                    porCodigo.get(codigo).push(row);
                 }
-                setEstadoSimilares(`Se aplicaron los datos logísticos a ${codigos.length} artículo(s).`, 'ok');
+                let codigosActualizados = 0;
+                let filasActualizadas = 0;
+                let omitidos = 0;
+                const omitidosLista = [];
+                for (const codigo of codigos) {
+                    const rows = porCodigo.get(codigo) || [];
+                    if (!rows.length) {
+                        omitidos += 1;
+                        omitidosLista.push(codigo.toUpperCase());
+                        continue;
+                    }
+                    await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${encodeURIComponent(codigo)}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'apikey': SB_KEY,
+                            'Authorization': `Bearer ${SB_KEY}`,
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=representation'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    codigosActualizados += 1;
+                    filasActualizadas += rows.length;
+                }
+                let msg = `Actualizados ${codigosActualizados} código(s) en ${filasActualizadas} registro(s).`;
+                if (omitidos) msg += ` Omitidos ${omitidos} código(s) sin registro en almacen_datos.`;
+                if (omitidosLista.length && omitidosLista.length <= 10) msg += ` (${omitidosLista.join(', ')})`;
+                setEstadoSimilares(msg, omitidos ? 'warn' : 'ok');
             } catch (e) {
                 setEstadoSimilares(`Error al aplicar similares: ${e.message || e}`, 'error');
             }
@@ -1219,14 +1078,13 @@
             document.getElementById('inputVinculo').value = "";
             limpiarCamposCorrelacion();
             correlacionActiva = {
-                limsa: "", barras: "", modo: "", medida: "", nombre: "", umVenta: "", claveProveedor: "", prefijoBusqueda: "", similares: [], sugerenciasBarcode: [], sugerenciaBarcodeElegida: "", sugerenciasLimsa: [], sugerenciaLimsaElegida: null,
+                limsa: "", barras: "", modo: "", medida: "", nombre: "", umVenta: "", claveProveedor: "", prefijoBusqueda: "", similares: [], sugerenciasBarcode: [], sugerenciaBarcodeElegida: "",
                 largoUnidad: "", anchoUnidad: "", altoUnidad: "", pesoUnidad: "",
                 unidadesCajaBolsa: "", largoCajaBolsa: "", anchoCajaBolsa: "", altoCajaBolsa: "", pesoCajaBolsa: "",
                 unidadesTarima: "", largoTarima: "", anchoTarima: "", altoTarima: "", pesoTarima: ""
             };
             limpiarSimilaresCorrelacion();
             limpiarSugerenciaBarcode();
-            limpiarSugerenciaLimsa();
             document.getElementById('formVinculo').classList.add('hidden');
             document.getElementById('btnEliminarCorrMini').classList.add('hidden');
 
@@ -1330,7 +1188,6 @@
                 document.getElementById('formVinculo').classList.remove('hidden');
                 const rowVinculo = document.getElementById('rowVinculo');
                 await cargarSugerenciaBarcode(correlacionActiva.claveProveedor, !!correlacionActiva.barras);
-                await cargarSugerenciaLimsaDesdeBarcode(correlacionActiva.barras, !!correlacionActiva.limsa);
 
                 if(correlacionActiva.limsa && correlacionActiva.barras) {
                     document.getElementById('corrMensaje').innerText = "Vínculo Correcto";
