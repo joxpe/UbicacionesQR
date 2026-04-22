@@ -398,7 +398,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2026.04.22.4";
+        const APP_VERSION = "2026.04.22.5";
         const SB_URL = "https://smlalagqfphliastgjbh.supabase.co/rest/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtbGFsYWdxZnBobGlhc3RnamJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExODc3ODIsImV4cCI6MjA3Njc2Mzc4Mn0.L4bp6sGzzjiNsGSY1fTYolSLxvVoJh1ENon9Prw1CZA";
         const ALMACENES_FALLBACK = ["aa","ab","ac","ad","ag","ah","ai","aj","al","am","as","at","cb","cc","cd","cg","ch","ci","cj","cl","cm","cr","cs","ct"];
@@ -967,14 +967,26 @@
                 }
                 const payload = obtenerPayloadLogisticaCorrelacion();
                 const codigos = seleccionados.map(x => String(x.articulo).toLowerCase());
-                if (!confirm(`¿Aplicar estos datos logísticos a ${codigos.length} artículo(s)?`)) return;
+                if (!confirm(`¿Aplicar estos datos logísticos a ${codigos.length} artículo(s)?
+
+Solo se actualizarán registros ya existentes en almacen_datos.`)) return;
                 setEstadoSimilares('Aplicando datos logísticos...', 'info');
-                const existentes = await fetchJsonOrThrow(`${SB_URL}almacen_datos?select=codigo&codigo=in.(${codigos.map(x => `"${x}"`).join(',')})&limit=500`, {
+                const existentes = await fetchJsonOrThrow(`${SB_URL}almacen_datos?select=codigo&codigo=in.(${codigos.map(x => `"${x}"`).join(',')})&limit=5000`, {
                     headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
                 });
-                const setExist = new Set((Array.isArray(existentes) ? existentes : []).map(x => String(x.codigo || '').toLowerCase()));
+                const existentesArr = Array.isArray(existentes) ? existentes : [];
+                const counts = {};
+                for (const row of existentesArr) {
+                    const c = String(row.codigo || '').toLowerCase();
+                    if (!c) continue;
+                    counts[c] = (counts[c] || 0) + 1;
+                }
+                let codigosActualizados = 0;
+                let registrosActualizados = 0;
+                let omitidos = 0;
                 for (const codigo of codigos) {
-                    if (setExist.has(codigo)) {
+                    const n = counts[codigo] || 0;
+                    if (n > 0) {
                         await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${encodeURIComponent(codigo)}`, {
                             method: 'PATCH',
                             headers: {
@@ -985,20 +997,13 @@
                             },
                             body: JSON.stringify(payload)
                         });
+                        codigosActualizados += 1;
+                        registrosActualizados += n;
                     } else {
-                        await fetchJsonOrThrow(`${SB_URL}almacen_datos`, {
-                            method: 'POST',
-                            headers: {
-                                'apikey': SB_KEY,
-                                'Authorization': `Bearer ${SB_KEY}`,
-                                'Content-Type': 'application/json',
-                                'Prefer': 'return=representation'
-                            },
-                            body: JSON.stringify({ codigo, ...payload })
-                        });
+                        omitidos += 1;
                     }
                 }
-                setEstadoSimilares(`Se aplicaron los datos logísticos a ${codigos.length} artículo(s).`, 'ok');
+                setEstadoSimilares(`Actualizados: ${codigosActualizados} código(s) / ${registrosActualizados} registro(s). Omitidos por no existir en almacen_datos: ${omitidos}.`, 'ok');
             } catch (e) {
                 setEstadoSimilares(`Error al aplicar similares: ${e.message || e}`, 'error');
             }
