@@ -537,6 +537,54 @@
             }
         }
 
+        function parseNumeroCorr(v) {
+            const t = String(v || '').trim().replace(',', '.');
+            if (!t) return null;
+            const n = Number(t);
+            return Number.isFinite(n) ? n : null;
+        }
+
+        function formatearNumeroCorr(v) {
+            if (v == null || !Number.isFinite(v)) return '';
+            const red = Math.round(v * 1000) / 1000;
+            return String(red).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
+        }
+
+        function extraerPartesMedida(medida) {
+            const m = String(medida || '').trim().toUpperCase();
+            if (!m) return [];
+            return m.split('X').map(x => parseNumeroCorr(x)).filter(x => x != null);
+        }
+
+        function aplicarMedidaDetectadaEnCampos(medida) {
+            const partes = extraerPartesMedida(medida);
+            if (partes.length < 2) return;
+            const largo = formatearNumeroCorr(partes[0]);
+            const alto = formatearNumeroCorr(partes[1]);
+            if (!corrVal('corrLargoUnidad')) setCorrVal('corrLargoUnidad', largo);
+            if (!corrVal('corrAltoUnidad')) setCorrVal('corrAltoUnidad', alto);
+            if (!corrVal('corrLargoCajaBolsa')) setCorrVal('corrLargoCajaBolsa', largo);
+            if (!corrVal('corrAltoCajaBolsa')) setCorrVal('corrAltoCajaBolsa', alto);
+        }
+
+        function recalcularAutomaticosCorrelacion() {
+            const undCaja = parseNumeroCorr(corrVal('corrUndCajaBolsa'));
+            const anchoCaja = parseNumeroCorr(corrVal('corrAnchoCajaBolsa'));
+            const pesoCaja = parseNumeroCorr(corrVal('corrPesoCajaBolsa'));
+            const undTarima = parseNumeroCorr(corrVal('corrUndTarima'));
+
+            if (undCaja && undCaja > 0 && anchoCaja != null) {
+                setCorrVal('corrAnchoUnidad', formatearNumeroCorr(anchoCaja / undCaja));
+            }
+            if (undCaja && undCaja > 0 && pesoCaja != null) {
+                setCorrVal('corrPesoUnidad', formatearNumeroCorr(pesoCaja / undCaja));
+            }
+            if (undTarima && undTarima > 0 && pesoCaja != null) {
+                setCorrVal('corrPesoTarima', formatearNumeroCorr((pesoCaja * undTarima) + 22));
+            }
+            actualizarResumenCorrelacion();
+        }
+
         function pintarMedidaCorrelacion(descripcion) {
             const el = document.getElementById('corrMedida');
             if (!el) return;
@@ -545,10 +593,12 @@
             if (medida) {
                 el.innerText = `MEDIDA: ${medida}`;
                 el.classList.remove('hidden');
+                aplicarMedidaDetectadaEnCampos(medida);
             } else {
                 el.innerText = 'MEDIDA: SIN DATO';
                 el.classList.add('hidden');
             }
+            recalcularAutomaticosCorrelacion();
             actualizarCriterioSimilares();
         }
 
@@ -1014,14 +1064,14 @@ Solo se actualizarán registros ya existentes en almacen_datos.`)) return;
             setCorrVal('corrAnchoCajaBolsa', corrVal('corrAnchoUnidad'));
             setCorrVal('corrAltoCajaBolsa', corrVal('corrAltoUnidad'));
             setCorrVal('corrPesoCajaBolsa', corrVal('corrPesoUnidad'));
-            actualizarResumenCorrelacion();
+            recalcularAutomaticosCorrelacion();
         }
         function copiarMedidasCajaATarima() {
             setCorrVal('corrLargoTarima', corrVal('corrLargoCajaBolsa'));
             setCorrVal('corrAnchoTarima', corrVal('corrAnchoCajaBolsa'));
             setCorrVal('corrAltoTarima', corrVal('corrAltoCajaBolsa'));
             setCorrVal('corrPesoTarima', corrVal('corrPesoCajaBolsa'));
-            actualizarResumenCorrelacion();
+            recalcularAutomaticosCorrelacion();
         }
         function textoResumenMedidas(prefix) {
             const largo = corrVal('corrLargo' + prefix);
@@ -1052,6 +1102,7 @@ Solo se actualizarán registros ya existentes en almacen_datos.`)) return;
                 'corrUndCajaBolsa','corrLargoCajaBolsa','corrAnchoCajaBolsa','corrAltoCajaBolsa','corrPesoCajaBolsa',
                 'corrUndTarima','corrLargoTarima','corrAnchoTarima','corrAltoTarima','corrPesoTarima'
             ].forEach(id => setCorrVal(id, ''));
+            actualizarResumenCorrelacion();
         }
         function valorCajaVigente(v) { const t = String(v || '').trim(); return t !== '' && t !== '0' && t !== '0.0'; }
         async function fetchJsonOrThrow(url, options = {}) { const res = await fetch(url, options); const raw = await res.text(); let data = null; try { data = raw ? JSON.parse(raw) : null; } catch(_) { data = raw; } if(!res.ok) { throw new Error(typeof data === 'string' ? data : JSON.stringify(data)); } return data; }
@@ -1117,7 +1168,7 @@ Solo se actualizarán registros ya existentes en almacen_datos.`)) return;
             'corrUndTarima','corrLargoTarima','corrAnchoTarima','corrAltoTarima','corrPesoTarima'
         ].forEach(id => {
             const el = document.getElementById(id);
-            if(el) el.addEventListener('input', actualizarResumenCorrelacion);
+            if(el) el.addEventListener('input', recalcularAutomaticosCorrelacion);
         });
 
         // --- BUSCADOR MAESTRO ---
@@ -1324,6 +1375,11 @@ Solo se actualizarán registros ya existentes en almacen_datos.`)) return;
                 setCorrVal('corrAnchoTarima', correlacionActiva.anchoTarima);
                 setCorrVal('corrAltoTarima', correlacionActiva.altoTarima);
                 setCorrVal('corrPesoTarima', correlacionActiva.pesoTarima);
+
+                if (correlacionActiva.medida) {
+                    aplicarMedidaDetectadaEnCampos(correlacionActiva.medida);
+                }
+                recalcularAutomaticosCorrelacion();
 
                 document.getElementById('corrLimsa').innerText = correlacionActiva.limsa.toUpperCase() || "NO ASIGNADO";
                 actualizarCriterioSimilares();
