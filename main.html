@@ -425,6 +425,13 @@
                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Resumen por proveedor</p>
                     <p class="text-[11px] text-slate-500 font-bold">Proveedor = primeras 5 letras del código LIMSA</p>
                 </div>
+                <select id="dashFiltroEstatusProveedor" onchange="renderDashboardResumenProveedor()" class="border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white w-full">
+                    <option value="">Todos los estatus</option>
+                    <option value="linea">Línea</option>
+                    <option value="descontinuado">Descontinuado</option>
+                    <option value="compra especial">Compra especial</option>
+                    <option value="sobre pedido">Sobre pedido</option>
+                </select>
                 <div id="dashTablaProveedor" class="space-y-2 max-h-80 overflow-auto pr-1"></div>
             </div>
 
@@ -1293,6 +1300,18 @@ Solo se actualizarán registros ya existentes en almacen_datos.`)) return;
             `).join('');
         }
 
+        function getDashboardResumenProveedorFiltrado() {
+            const estatus = document.getElementById('dashFiltroEstatusProveedor')?.value || '';
+            return dashboardBarcodeData.filter(item => {
+                if (estatus && item.estatus !== estatus) return false;
+                return true;
+            });
+        }
+
+        function renderDashboardResumenProveedor() {
+            return renderDashboardTablaProveedor(getDashboardResumenProveedorFiltrado());
+        }
+
         function renderDashboardTablaProveedor(items) {
             const map = new Map();
             for (const item of items) {
@@ -1472,7 +1491,7 @@ Fallidos: ${fallidos}`);
             if (dashboardBarcodeLoaded && !force) {
                 renderDashboardTarjetas(dashboardBarcodeData);
                 renderDashboardTablaEstatus(dashboardBarcodeData);
-                renderDashboardTablaProveedor(dashboardBarcodeData);
+                renderDashboardResumenProveedor();
                 poblarFiltroProveedorDashboard(dashboardBarcodeData);
                 renderDashboardDetalle();
                 return;
@@ -1560,7 +1579,7 @@ Fallidos: ${fallidos}`);
                 dashboardBarcodeLoaded = true;
                 renderDashboardTarjetas(dashboardBarcodeData);
                 renderDashboardTablaEstatus(dashboardBarcodeData);
-                renderDashboardTablaProveedor(dashboardBarcodeData);
+                renderDashboardResumenProveedor();
                 poblarFiltroProveedorDashboard(dashboardBarcodeData);
                 renderDashboardDetalle();
             } catch (e) {
