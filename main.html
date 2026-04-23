@@ -15,6 +15,18 @@
         input[type="text"], input[type="number"] { font-size: 16px !important; }
         .card-modulo:active { transform: scale(0.96); transition: 0.1s; }
         .safe-pb { padding-bottom: 5rem; }
+
+        .editor-grid th, .editor-grid td { white-space: nowrap; }
+        .editor-grid thead th { position: sticky; top: 0; z-index: 10; }
+        .editor-cell-readonly { background: #f8fafc; color: #475569; }
+        .editor-cell-editable { background: white; }
+        .editor-cell-modified { background: #fef3c7 !important; }
+        .editor-sticky-col-1 { position: sticky; left: 0; z-index: 13; min-width: 160px; width: 160px; box-shadow: 1px 0 0 #e2e8f0; }
+        .editor-sticky-col-2 { position: sticky; left: 160px; z-index: 12; min-width: 320px; width: 320px; box-shadow: 1px 0 0 #e2e8f0; }
+        .editor-sticky-col-3 { position: sticky; left: 480px; z-index: 11; min-width: 190px; width: 190px; box-shadow: 1px 0 0 #cbd5e1; }
+        .editor-header-btn { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; }
+        .editor-header-btn:hover { color: #334155; }
+        .editor-sort-indicator { font-size: 11px; color: #7c3aed; font-weight: 900; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen font-sans">
@@ -64,6 +76,16 @@
                 <div>
                     <h3 class="font-black text-slate-800 uppercase text-sm tracking-tight">Dashboard Barcode</h3>
                     <p class="text-xs text-slate-500 mt-1">Cobertura por estatus, proveedor y coincidencias.</p>
+                </div>
+            </button>
+
+            <button onclick="irAEditorLogisticoPC()" class="card-modulo w-full bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center gap-5 text-left">
+                <div class="bg-violet-600 p-4 rounded-2xl text-white shadow-lg shadow-violet-100">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16M8 4v16m8-16v16"/></svg>
+                </div>
+                <div>
+                    <h3 class="font-black text-slate-800 uppercase text-sm tracking-tight">Editor Logístico PC</h3>
+                    <p class="text-xs text-slate-500 mt-1">Vista tipo Excel para revisar y editar logística por código.</p>
                 </div>
             </button>
         </div>
@@ -470,6 +492,138 @@
         </main>
     </div>
 
+    <div id="pantallaEditorPC" class="hidden min-h-screen bg-slate-50">
+        <header class="bg-white border-b p-4 sticky top-0 z-30 shadow-sm">
+            <div class="max-w-[96vw] mx-auto flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div class="flex items-center gap-3">
+                    <button onclick="regresarAlMenuPrincipalDesdeEditor()" class="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                        <svg class="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                    </button>
+                    <div>
+                        <p class="text-[10px] bg-violet-600 text-white px-2 py-0.5 rounded-full font-bold inline-block uppercase tracking-widest">PC / Excel</p>
+                        <h1 class="text-lg font-bold text-slate-800">Editor Logístico</h1>
+                    </div>
+                </div>
+                <div id="editorPcStatus" class="text-xs font-bold text-slate-500"></div>
+            </div>
+        </header>
+
+        <main class="max-w-[96vw] mx-auto p-4 space-y-4">
+            <div class="bg-white border border-slate-200 rounded-3xl p-4 shadow-sm space-y-4">
+                <div class="grid grid-cols-1 xl:grid-cols-7 gap-3">
+                    <div class="xl:col-span-2">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Buscar</label>
+                        <input type="text" id="editorPcBusqueda" placeholder="Código, nombre, proveedor o clave proveedor..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Grupo</label>
+                        <select id="editorPcFiltroGrupo" class="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white">
+                            <option value="">Todos</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Proveedor</label>
+                        <select id="editorPcFiltroProveedor" class="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white">
+                            <option value="">Todos</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">UM venta</label>
+                        <select id="editorPcFiltroUmVenta" class="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white">
+                            <option value="">Todos</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Código de barras</label>
+                        <select id="editorPcFiltroBarcode" class="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white">
+                            <option value="">Todos</option>
+                            <option value="con_barcode">Con código</option>
+                            <option value="sin_barcode">Sin código</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Logística</label>
+                        <select id="editorPcFiltroLogistica" class="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white">
+                            <option value="">Todos</option>
+                            <option value="completa">Completa</option>
+                            <option value="incompleta">Incompleta</option>
+                            <option value="sin_logistica">Sin logística</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Estado comercial</label>
+                        <select id="editorPcFiltroEstado" class="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white">
+                            <option value="">Todos</option>
+                            <option value="de_linea">De línea</option>
+                            <option value="descontinuado">Descontinuado</option>
+                            <option value="sobre_pedido">Sobre pedido</option>
+                            <option value="compra_especial">Compra especial</option>
+                        </select>
+                    </div>
+                    <div class="xl:col-span-3 flex items-end">
+                        <button onclick="cargarEditorLogisticoPC()" class="w-full bg-violet-600 text-white py-3 rounded-xl font-bold uppercase shadow-md">Cargar</button>
+                    </div>
+                    <div class="xl:col-span-2 flex items-end">
+                        <button onclick="editorPcLimpiarFiltros()" class="w-full bg-slate-100 text-slate-700 py-3 rounded-xl font-bold uppercase border border-slate-200 shadow-sm">Limpiar filtros</button>
+                    </div>
+                    <div class="xl:col-span-2 flex items-end">
+                        <button onclick="guardarCambiosEditorPC()" id="btnGuardarEditorPC" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold uppercase shadow-md disabled:bg-slate-300" disabled>Guardar y replicar</button>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2 text-[11px] font-bold">
+                    <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-600">Una fila por código. Al guardar, se replica en todas las bodegas donde exista.</span>
+                    <span id="editorPcResumen" class="px-3 py-1 rounded-full bg-violet-50 text-violet-700">Sin datos cargados</span>
+                    <span class="px-3 py-1 rounded-full bg-amber-50 text-amber-700">Amarillo = modificado sin guardar</span>
+                </div>
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                    <div id="editorPcPagerInfo" class="text-xs font-bold text-slate-500">Página 1 de 1</div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="editorPcGoPage(-1)" id="editorPcPrevBtn" class="px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold disabled:opacity-40">Anterior</button>
+                        <button onclick="editorPcGoPage(1)" id="editorPcNextBtn" class="px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold disabled:opacity-40">Siguiente</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+                <div class="overflow-auto max-h-[75vh]">
+                    <table class="min-w-full text-xs editor-grid">
+                        <thead class="bg-slate-100 text-slate-600 uppercase tracking-wider text-[10px]">
+                            <tr>
+                                <th class="px-3 py-3 text-left border-b border-slate-200 bg-slate-100 editor-sticky-col-1"><button onclick="editorPcSortBy('codigo')" class="editor-header-btn">Código <span id="editorSort_codigo" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200 bg-slate-100 editor-sticky-col-2"><button onclick="editorPcSortBy('nombre')" class="editor-header-btn">Nombre <span id="editorSort_nombre" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200 bg-slate-100 editor-sticky-col-3"><button onclick="editorPcSortBy('clave_proveedor')" class="editor-header-btn">Clave proveedor <span id="editorSort_clave_proveedor" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('grupo')" class="editor-header-btn">Grupo <span id="editorSort_grupo" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('um_venta')" class="editor-header-btn">UM venta <span id="editorSort_um_venta" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('factor')" class="editor-header-btn">Factor <span id="editorSort_factor" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('proveedor')" class="editor-header-btn">Proveedor <span id="editorSort_proveedor" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('largo')" class="editor-header-btn">Largo cat. <span id="editorSort_largo" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('ancho')" class="editor-header-btn">Ancho cat. <span id="editorSort_ancho" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('alto')" class="editor-header-btn">Alto cat. <span id="editorSort_alto" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('bodegas_count')" class="editor-header-btn">Bodegas <span id="editorSort_bodegas_count" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('codigo_barra')" class="editor-header-btn">Código barra <span id="editorSort_codigo_barra" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('largo_unidad')" class="editor-header-btn">Largo unidad <span id="editorSort_largo_unidad" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('ancho_unidad')" class="editor-header-btn">Ancho unidad <span id="editorSort_ancho_unidad" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('alto_unidad')" class="editor-header-btn">Alto unidad <span id="editorSort_alto_unidad" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('peso_unidad')" class="editor-header-btn">Peso unidad <span id="editorSort_peso_unidad" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('unidades_caja_bolsa')" class="editor-header-btn">Unid. caja/bolsa <span id="editorSort_unidades_caja_bolsa" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('largo_caja_bolsa')" class="editor-header-btn">Largo caja/bolsa <span id="editorSort_largo_caja_bolsa" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('ancho_caja_bolsa')" class="editor-header-btn">Ancho caja/bolsa <span id="editorSort_ancho_caja_bolsa" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('alto_caja_bolsa')" class="editor-header-btn">Alto caja/bolsa <span id="editorSort_alto_caja_bolsa" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('peso_caja_bolsa')" class="editor-header-btn">Peso caja/bolsa <span id="editorSort_peso_caja_bolsa" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('unidades_tarima')" class="editor-header-btn">Unid. tarima <span id="editorSort_unidades_tarima" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('largo_tarima')" class="editor-header-btn">Largo tarima <span id="editorSort_largo_tarima" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('ancho_tarima')" class="editor-header-btn">Ancho tarima <span id="editorSort_ancho_tarima" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('alto_tarima')" class="editor-header-btn">Alto tarima <span id="editorSort_alto_tarima" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('peso_tarima')" class="editor-header-btn">Peso tarima <span id="editorSort_peso_tarima" class="editor-sort-indicator"></span></button></th>
+                            </tr>
+                        </thead>
+                        <tbody id="editorPcBody" class="divide-y divide-slate-100 bg-white"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
     <div id="modalScanner" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex flex-col items-center justify-center p-6">
         <div class="w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl"><div id="reader"></div></div>
         <button onclick="cerrarScanner()" class="mt-8 bg-white/10 text-white border border-white/20 px-10 py-3 rounded-full font-bold backdrop-blur-md">Cerrar Cámara</button>
@@ -494,7 +648,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2026.04.23.1";
+        const APP_VERSION = "2026.04.23.2";
         const SB_URL = "https://smlalagqfphliastgjbh.supabase.co/rest/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtbGFsYWdxZnBobGlhc3RnamJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExODc3ODIsImV4cCI6MjA3Njc2Mzc4Mn0.L4bp6sGzzjiNsGSY1fTYolSLxvVoJh1ENon9Prw1CZA";
         const ALMACENES_FALLBACK = ["aa","ab","ac","ad","ag","ah","ai","aj","al","am","as","at","cb","cc","cd","cg","ch","ci","cj","cl","cm","cr","cs","ct"];
@@ -503,6 +657,19 @@
         let ubicacionActiva = "";
         let moduloActivo = "registro";
         let skusNuevos = [];
+        let editorPcRows = [];
+        let editorPcRowsFiltered = [];
+        let editorPcModified = new Map();
+        let editorPcSortField = 'codigo';
+        let editorPcSortDir = 'asc';
+        let editorPcCurrentPage = 1;
+        const editorPcPageSize = 200;
+        let editorPcLastFilterSignature = '';
+        const EDITOR_PC_CAMPOS_EDITABLES = [
+            'codigo_barra','largo_unidad','ancho_unidad','alto_unidad','peso_unidad',
+            'unidades_caja_bolsa','largo_caja_bolsa','ancho_caja_bolsa','alto_caja_bolsa','peso_caja_bolsa',
+            'unidades_tarima','largo_tarima','ancho_tarima','alto_tarima','peso_tarima'
+        ];
         let html5QrCode = null;
         let scannerTargetActual = null;
         let catalogoModo = "registro";
@@ -2176,6 +2343,379 @@ Fallidos: ${fallidos}`);
             }
         }
 
+
+        function escapeHtmlEditor(v) {
+            return String(v ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function editorPcKey(row) {
+            return String(row.codigo || '').trim().toUpperCase();
+        }
+
+        async function cargarAlmacenesEditorPC() { return; }
+
+        async function irAEditorLogisticoPC() {
+            limpiarTodo();
+            document.getElementById('pantallaMenuPrincipal').classList.add('hidden');
+            document.getElementById('pantallaEditorPC').classList.remove('hidden');
+            document.getElementById('editorPcStatus').innerText = 'Carga la vista maestra por código para revisar y editar.';
+            await cargarAlmacenesEditorPC();
+            setTimeout(() => document.getElementById('editorPcBusqueda')?.focus(), 50);
+        }
+
+        function regresarAlMenuPrincipalDesdeEditor() {
+            document.getElementById('pantallaEditorPC').classList.add('hidden');
+            document.getElementById('pantallaMenuPrincipal').classList.remove('hidden');
+        }
+
+        function editorPcTieneLogistica(row) {
+            return [
+                'codigo_barra','largo_unidad','ancho_unidad','alto_unidad','peso_unidad','unidades_caja_bolsa','largo_caja_bolsa',
+                'ancho_caja_bolsa','alto_caja_bolsa','peso_caja_bolsa','unidades_tarima','largo_tarima','ancho_tarima','alto_tarima','peso_tarima'
+            ].some(k => String(row?.[k] ?? '').trim() !== '');
+        }
+
+        function editorPcTieneLogisticaCompleta(row) {
+            return [
+                'codigo_barra','largo_unidad','ancho_unidad','alto_unidad','peso_unidad','unidades_caja_bolsa','largo_caja_bolsa',
+                'ancho_caja_bolsa','alto_caja_bolsa','peso_caja_bolsa','unidades_tarima','largo_tarima','ancho_tarima','alto_tarima','peso_tarima'
+            ].every(k => String(row?.[k] ?? '').trim() !== '');
+        }
+
+        function editorPcEstadoComercialDesdeNombre(nombre) {
+            const texto = String(nombre || '').trim();
+            if (!texto) return 'de_linea';
+            if (/^\*+/.test(texto)) return 'sobre_pedido';
+            if (/\+$/.test(texto)) return 'compra_especial';
+            if (/\*+$/.test(texto)) return 'descontinuado';
+            return 'de_linea';
+        }
+
+        function editorPcPoblarSelect(id, valores, placeholder='Todos') {
+            const select = document.getElementById(id);
+            if (!select) return;
+            const actual = select.value;
+            const opciones = ['<option value="">' + placeholder + '</option>'].concat(
+                valores.map(v => `<option value="${escapeHtmlEditor(v)}">${escapeHtmlEditor(v)}</option>`)
+            );
+            select.innerHTML = opciones.join('');
+            select.value = valores.includes(actual) ? actual : '';
+        }
+
+        function editorPcActualizarOpcionesFiltros() {
+            const grupos = [...new Set(editorPcRows.map(r => String(r.grupo || '').trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
+            const proveedores = [...new Set(editorPcRows.map(r => String(r.proveedor || '').trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
+            const ums = [...new Set(editorPcRows.map(r => String(r.um_venta || '').trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
+            editorPcPoblarSelect('editorPcFiltroGrupo', grupos);
+            editorPcPoblarSelect('editorPcFiltroProveedor', proveedores);
+            editorPcPoblarSelect('editorPcFiltroUmVenta', ums);
+        }
+
+        function editorPcLimpiarFiltros() {
+            ['editorPcBusqueda','editorPcFiltroGrupo','editorPcFiltroProveedor','editorPcFiltroUmVenta','editorPcFiltroBarcode','editorPcFiltroLogistica','editorPcFiltroEstado'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                if (el.tagName === 'INPUT') el.value = '';
+                else el.value = '';
+            });
+            aplicarFiltrosEditorPC();
+        }
+
+        function editorPcResumen() {
+            const total = editorPcRows.length;
+            const filtradas = editorPcRowsFiltered.length;
+            const modificadas = editorPcModified.size;
+            const totalPages = Math.max(1, Math.ceil(filtradas / editorPcPageSize));
+            if (editorPcCurrentPage > totalPages) editorPcCurrentPage = totalPages;
+            document.getElementById('editorPcResumen').innerText = `Cargadas: ${total} · Visibles: ${filtradas} · Modificadas: ${modificadas}`;
+            document.getElementById('editorPcPagerInfo').innerText = `Página ${editorPcCurrentPage} de ${totalPages} · ${editorPcPageSize} por página`;
+            document.getElementById('editorPcPrevBtn').disabled = editorPcCurrentPage <= 1;
+            document.getElementById('editorPcNextBtn').disabled = editorPcCurrentPage >= totalPages;
+            document.getElementById('btnGuardarEditorPC').disabled = modificadas === 0;
+        }
+
+        function editorPcSortValue(v) {
+            const s = String(v ?? '').trim();
+            if (s === '') return { type: 'empty', value: '' };
+            const n = Number(String(s).replace(/,/g, ''));
+            if (!Number.isNaN(n) && /^-?\d+(\.\d+)?$/.test(String(s).replace(/,/g, ''))) return { type: 'number', value: n };
+            return { type: 'text', value: s.toLowerCase() };
+        }
+
+        function editorPcApplySort() {
+            const dir = editorPcSortDir === 'asc' ? 1 : -1;
+            editorPcRowsFiltered.sort((a, b) => {
+                const va = editorPcSortValue(a?.[editorPcSortField]);
+                const vb = editorPcSortValue(b?.[editorPcSortField]);
+                if (va.type === 'empty' && vb.type !== 'empty') return 1;
+                if (va.type !== 'empty' && vb.type === 'empty') return -1;
+                if (va.value < vb.value) return -1 * dir;
+                if (va.value > vb.value) return 1 * dir;
+                return String(a.codigo || '').localeCompare(String(b.codigo || ''));
+            });
+        }
+
+        function editorPcRefreshSortIndicators() {
+            document.querySelectorAll('[id^="editorSort_"]').forEach(el => el.textContent = '');
+            const el = document.getElementById(`editorSort_${editorPcSortField}`);
+            if (el) el.textContent = editorPcSortDir === 'asc' ? '▲' : '▼';
+        }
+
+        function editorPcGoPage(delta) {
+            const totalPages = Math.max(1, Math.ceil(editorPcRowsFiltered.length / editorPcPageSize));
+            editorPcCurrentPage = Math.min(totalPages, Math.max(1, editorPcCurrentPage + delta));
+            renderEditorPcTable();
+        }
+
+        function editorPcSortBy(field) {
+            if (editorPcSortField === field) {
+                editorPcSortDir = editorPcSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                editorPcSortField = field;
+                editorPcSortDir = 'asc';
+            }
+            aplicarFiltrosEditorPC();
+        }
+
+        function aplicarFiltrosEditorPC() {
+            const q = String(document.getElementById('editorPcBusqueda').value || '').trim().toLowerCase();
+            const filtroGrupo = String(document.getElementById('editorPcFiltroGrupo')?.value || '').trim().toLowerCase();
+            const filtroProveedor = String(document.getElementById('editorPcFiltroProveedor')?.value || '').trim().toLowerCase();
+            const filtroUmVenta = String(document.getElementById('editorPcFiltroUmVenta')?.value || '').trim().toLowerCase();
+            const filtroBarcode = String(document.getElementById('editorPcFiltroBarcode')?.value || '').trim();
+            const filtroLogistica = String(document.getElementById('editorPcFiltroLogistica')?.value || '').trim();
+            const filtroEstado = String(document.getElementById('editorPcFiltroEstado')?.value || '').trim();
+            const signature = [q,filtroGrupo,filtroProveedor,filtroUmVenta,filtroBarcode,filtroLogistica,filtroEstado,editorPcSortField,editorPcSortDir].join('|');
+            if (signature !== editorPcLastFilterSignature) {
+                editorPcCurrentPage = 1;
+                editorPcLastFilterSignature = signature;
+            }
+            editorPcRowsFiltered = editorPcRows.filter(row => {
+                if (filtroGrupo && row._grupo !== filtroGrupo) return false;
+                if (filtroProveedor && row._proveedor !== filtroProveedor) return false;
+                if (filtroUmVenta && row._um_venta !== filtroUmVenta) return false;
+                if (filtroBarcode === 'con_barcode' && !row._codigo_barra) return false;
+                if (filtroBarcode === 'sin_barcode' && row._codigo_barra) return false;
+                if (filtroLogistica === 'sin_logistica' && row._tiene_logistica) return false;
+                if (filtroLogistica === 'completa' && !row._logistica_completa) return false;
+                if (filtroLogistica === 'incompleta' && (!row._tiene_logistica || row._logistica_completa)) return false;
+                if (filtroEstado && String(row.estado_comercial || '') !== filtroEstado) return false;
+                if (!q) return true;
+                return row._search.includes(q);
+            });
+            editorPcApplySort();
+            renderEditorPcTable();
+        }
+
+        function editorPcReadonlyCell(value, extra='') {
+            return `<td class="px-2 py-1.5 border-b border-slate-100 editor-cell-readonly ${extra}"><div class="min-h-[38px] flex items-center">${escapeHtmlEditor(value || '')}</div></td>`;
+        }
+
+        function editorPcEditableCell(row, field) {
+            const val = row?.[field] ?? '';
+            const key = editorPcKey(row);
+            const mod = editorPcModified.get(key) || {};
+            const modified = Object.prototype.hasOwnProperty.call(mod, field);
+            return `<td class="px-2 py-1.5 border-b border-slate-100 ${modified ? 'editor-cell-modified' : 'editor-cell-editable'}"><input data-key="${escapeHtmlEditor(key)}" data-field="${field}" value="${escapeHtmlEditor(val)}" oninput="editorPcOnInput(this)" class="w-full min-w-[110px] border ${modified ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-white'} rounded-lg px-2 py-2 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-violet-400"></td>`;
+        }
+
+        function renderEditorPcTable() {
+            const body = document.getElementById('editorPcBody');
+            if (!editorPcRowsFiltered.length) {
+                body.innerHTML = '<tr><td colspan="26" class="px-4 py-8 text-center text-sm font-bold text-slate-400">Sin registros para mostrar.</td></tr>';
+                editorPcResumen();
+                return;
+            }
+            const start = (editorPcCurrentPage - 1) * editorPcPageSize;
+            const end = start + editorPcPageSize;
+            const rowsToRender = editorPcRowsFiltered.slice(start, end);
+            body.innerHTML = rowsToRender.map(row => `
+                <tr class="hover:bg-slate-50 align-top">
+                    ${editorPcReadonlyCell(row.codigo, 'editor-sticky-col-1 bg-slate-50')}
+                    ${editorPcReadonlyCell(row.nombre, 'editor-sticky-col-2 bg-slate-50')}
+                    ${editorPcReadonlyCell(row.clave_proveedor, 'editor-sticky-col-3 bg-slate-50')}
+                    ${editorPcReadonlyCell(row.grupo)}
+                    ${editorPcReadonlyCell(row.um_venta)}
+                    ${editorPcReadonlyCell(row.factor)}
+                    ${editorPcReadonlyCell(row.proveedor)}
+                    ${editorPcReadonlyCell(row.largo)}
+                    ${editorPcReadonlyCell(row.ancho)}
+                    ${editorPcReadonlyCell(row.alto)}
+                    ${editorPcReadonlyCell(row.bodegas_text || '', '')}
+                    ${editorPcEditableCell(row, 'codigo_barra')}
+                    ${editorPcEditableCell(row, 'largo_unidad')}
+                    ${editorPcEditableCell(row, 'ancho_unidad')}
+                    ${editorPcEditableCell(row, 'alto_unidad')}
+                    ${editorPcEditableCell(row, 'peso_unidad')}
+                    ${editorPcEditableCell(row, 'unidades_caja_bolsa')}
+                    ${editorPcEditableCell(row, 'largo_caja_bolsa')}
+                    ${editorPcEditableCell(row, 'ancho_caja_bolsa')}
+                    ${editorPcEditableCell(row, 'alto_caja_bolsa')}
+                    ${editorPcEditableCell(row, 'peso_caja_bolsa')}
+                    ${editorPcEditableCell(row, 'unidades_tarima')}
+                    ${editorPcEditableCell(row, 'largo_tarima')}
+                    ${editorPcEditableCell(row, 'ancho_tarima')}
+                    ${editorPcEditableCell(row, 'alto_tarima')}
+                    ${editorPcEditableCell(row, 'peso_tarima')}
+                </tr>
+            `).join('');
+            editorPcResumen();
+            editorPcRefreshSortIndicators();
+        }
+
+        function editorPcOnInput(input) {
+            const key = input.dataset.key;
+            const field = input.dataset.field;
+            const row = editorPcRows.find(x => editorPcKey(x) === key);
+            if (!row) return;
+            row[field] = input.value;
+            const mod = editorPcModified.get(key) || {};
+            mod[field] = input.value;
+            editorPcModified.set(key, mod);
+            input.closest('td')?.classList.add('editor-cell-modified');
+            input.classList.remove('border-slate-200', 'bg-white');
+            input.classList.add('border-amber-300', 'bg-amber-50');
+            editorPcResumen();
+        }
+
+        async function cargarEditorLogisticoPC() {
+            document.getElementById('editorPcStatus').innerText = 'Cargando información...';
+            const body = document.getElementById('editorPcBody');
+            body.innerHTML = '<tr><td colspan="26" class="px-4 py-8 text-center text-sm font-bold text-slate-400">Cargando...</td></tr>';
+            editorPcModified = new Map();
+            try {
+                const allRows = await fetchAllSupabaseRows(
+                    'almacen_datos',
+                    'id,codigo,almacen,codigo_barra,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima',
+                    'order=codigo.asc',
+                    1000
+                );
+                const grouped = new Map();
+                (allRows || []).forEach(r => {
+                    const code = String(r.codigo || '').trim().toLowerCase();
+                    if (!code) return;
+                    if (!grouped.has(code)) grouped.set(code, []);
+                    grouped.get(code).push(r);
+                });
+                const codes = [...grouped.keys()];
+                const catalogo = [];
+                for (let i = 0; i < codes.length; i += 150) {
+                    const chunk = codes.slice(i, i + 150);
+                    const q = `articulo=in.(${chunk.map(x => `"${x}"`).join(',')})`;
+                    const part = await fetchJsonOrThrow(`${SB_URL}catalogo_articulos?select=articulo,nombre,grupo,um_venta,factor,proveedor,clave_proveedor,largo,ancho,alto&${q}`, { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` } });
+                    catalogo.push(...(Array.isArray(part) ? part : []));
+                }
+                const mapCat = new Map(catalogo.map(x => [String(x.articulo || '').trim().toLowerCase(), x]));
+                editorPcRows = [...grouped.entries()].map(([code, rows]) => {
+                    const base = rows[0] || {};
+                    const cat = mapCat.get(code) || {};
+                    const uniqueAlmacenes = [...new Set(rows.map(x => String(x.almacen || '').trim().toLowerCase()).filter(Boolean))].sort();
+                    return {
+                        codigo: String(base.codigo || '').trim().toUpperCase(),
+                        row_ids: rows.map(x => x.id).filter(Boolean),
+                        bodegas_count: uniqueAlmacenes.length,
+                        bodegas_text: uniqueAlmacenes.map(x => x.toUpperCase()).join(', '),
+                        codigo_barra: base.codigo_barra || '',
+                        largo_unidad: base.largo_unidad ?? '',
+                        ancho_unidad: base.ancho_unidad ?? '',
+                        alto_unidad: base.alto_unidad ?? '',
+                        peso_unidad: base.peso_unidad ?? '',
+                        unidades_caja_bolsa: base.unidades_caja_bolsa ?? '',
+                        largo_caja_bolsa: base.largo_caja_bolsa ?? '',
+                        ancho_caja_bolsa: base.ancho_caja_bolsa ?? '',
+                        alto_caja_bolsa: base.alto_caja_bolsa ?? '',
+                        peso_caja_bolsa: base.peso_caja_bolsa ?? '',
+                        unidades_tarima: base.unidades_tarima ?? '',
+                        largo_tarima: base.largo_tarima ?? '',
+                        ancho_tarima: base.ancho_tarima ?? '',
+                        alto_tarima: base.alto_tarima ?? '',
+                        peso_tarima: base.peso_tarima ?? '',
+                        nombre: cat.nombre || '',
+                        grupo: cat.grupo || '',
+                        um_venta: cat.um_venta || '',
+                        factor: cat.factor == null ? '' : String(cat.factor),
+                        proveedor: cat.proveedor || '',
+                        clave_proveedor: cat.clave_proveedor || '',
+                        largo: cat.largo == null ? '' : String(cat.largo),
+                        ancho: cat.ancho == null ? '' : String(cat.ancho),
+                        alto: cat.alto == null ? '' : String(cat.alto),
+                        estado_comercial: editorPcEstadoComercialDesdeNombre(cat.nombre || '')
+                    };
+                }).map(row => ({
+                    ...row,
+                    _grupo: String(row.grupo || '').trim().toLowerCase(),
+                    _proveedor: String(row.proveedor || '').trim().toLowerCase(),
+                    _um_venta: String(row.um_venta || '').trim().toLowerCase(),
+                    _codigo_barra: String(row.codigo_barra || '').trim(),
+                    _tiene_logistica: editorPcTieneLogistica(row),
+                    _logistica_completa: editorPcTieneLogisticaCompleta(row),
+                    _search: [row.codigo,row.nombre,row.grupo,row.proveedor,row.clave_proveedor,row.codigo_barra,row.um_venta,row.estado_comercial]
+                        .map(v => String(v || '').toLowerCase()).join(' | ')
+                }));
+                editorPcActualizarOpcionesFiltros();
+                editorPcCurrentPage = 1;
+                editorPcLastFilterSignature = '';
+                document.getElementById('editorPcStatus').innerText = `Vista maestra cargada. Códigos: ${editorPcRows.length}.`;
+                aplicarFiltrosEditorPC();
+            } catch (e) {
+                body.innerHTML = `<tr><td colspan="26" class="px-4 py-8 text-center text-sm font-bold text-red-500">${escapeHtmlEditor(e.message || 'Error al cargar.')}</td></tr>`;
+                document.getElementById('editorPcStatus').innerText = 'Error al cargar.';
+            }
+        }
+
+        async function guardarCambiosEditorPC() {
+            if (!editorPcModified.size) return;
+            if (!confirm(`¿Guardar y replicar ${editorPcModified.size} código(s) modificados en todas sus bodegas?`)) return;
+            document.getElementById('editorPcStatus').innerText = 'Guardando y replicando cambios...';
+            let ok = 0;
+            let fail = 0;
+            for (const [key, changes] of editorPcModified.entries()) {
+                const row = editorPcRows.find(x => editorPcKey(x) === key);
+                if (!row?.codigo) { fail++; continue; }
+                const payload = {};
+                EDITOR_PC_CAMPOS_EDITABLES.forEach(field => {
+                    if (Object.prototype.hasOwnProperty.call(changes, field)) payload[field] = String(changes[field] ?? '').trim();
+                });
+                if (!Object.keys(payload).length) continue;
+                try {
+                    await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${encodeURIComponent(String(row.codigo || '').trim().toLowerCase())}`, {
+                        method: 'PATCH',
+                        headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+                        body: JSON.stringify(payload)
+                    });
+                    ok++;
+                } catch (e) {
+                    console.error('Error guardando fila', row.codigo, e);
+                    fail++;
+                }
+            }
+            editorPcModified = new Map();
+            editorPcRows = editorPcRows.map(row => ({
+                ...row,
+                _codigo_barra: String(row.codigo_barra || '').trim(),
+                _tiene_logistica: editorPcTieneLogistica(row),
+                _logistica_completa: editorPcTieneLogisticaCompleta(row),
+                _search: [row.codigo,row.nombre,row.grupo,row.proveedor,row.clave_proveedor,row.codigo_barra,row.um_venta,row.estado_comercial]
+                    .map(v => String(v || '').toLowerCase()).join(' | ')
+            }));
+            document.getElementById('editorPcStatus').innerText = `Guardado terminado sin recargar toda la vista. Códigos replicados OK: ${ok}. Error: ${fail}.`;
+            aplicarFiltrosEditorPC();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            let editorPcBusquedaTimer = null;
+            document.getElementById('editorPcBusqueda')?.addEventListener('input', () => {
+                clearTimeout(editorPcBusquedaTimer);
+                editorPcBusquedaTimer = setTimeout(aplicarFiltrosEditorPC, 180);
+            });
+            ['editorPcFiltroGrupo','editorPcFiltroProveedor','editorPcFiltroUmVenta','editorPcFiltroBarcode','editorPcFiltroLogistica','editorPcFiltroEstado']
+                .forEach(id => document.getElementById(id)?.addEventListener('change', aplicarFiltrosEditorPC));
+        });
 
         function limpiarTodo() {
             skusNuevos = []; renderNuevos(); auditoriaArticulo = null; auditoriaConteos = [];
