@@ -56,6 +56,16 @@
                     <p class="text-xs text-slate-500 mt-1">Vincular Código LIMSA con Código de Barras, Unidades y Volumetrías.</p>
                 </div>
             </button>
+
+            <button onclick="irADashboardBarcode()" class="card-modulo w-full bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center gap-5 text-left">
+                <div class="bg-emerald-600 p-4 rounded-2xl text-white shadow-lg shadow-emerald-100">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6m4 6V7m4 10v-4M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                </div>
+                <div>
+                    <h3 class="font-black text-slate-800 uppercase text-sm tracking-tight">Dashboard Barcode</h3>
+                    <p class="text-xs text-slate-500 mt-1">Cobertura por estatus, proveedor y coincidencias.</p>
+                </div>
+            </button>
         </div>
 
         <div class="mt-10 text-center">
@@ -374,6 +384,85 @@
         </main>
     </div>
 
+    <div id="pantallaDashboardBarcode" class="hidden flex flex-col min-h-screen safe-pb">
+        <header class="bg-white border-b p-4 sticky top-0 z-30 shadow-sm flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <button onclick="regresarAlMenuPrincipal()" class="p-2 hover:bg-slate-100 rounded-full">
+                    <svg class="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <div>
+                    <h1 class="text-lg font-bold text-slate-800">Dashboard Barcode</h1>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Cobertura por estatus y proveedor</p>
+                </div>
+            </div>
+            <button onclick="cargarDashboardBarcode(true)" class="bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-black uppercase shadow-sm">Actualizar</button>
+        </header>
+
+        <main class="max-w-md mx-auto p-4 space-y-4 w-full">
+            <div id="dashboardLoader" class="hidden bg-white border border-slate-200 rounded-3xl p-6 text-center text-sm font-bold text-slate-500">Cargando dashboard...</div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-white border border-slate-200 rounded-3xl p-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total SKUs</p><p id="dashTotalSkus" class="mt-2 text-2xl font-black text-slate-800">--</p></div>
+                <div class="bg-white border border-slate-200 rounded-3xl p-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Con barcode</p><p id="dashConBarcode" class="mt-2 text-2xl font-black text-emerald-600">--</p></div>
+                <div class="bg-white border border-slate-200 rounded-3xl p-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sin barcode</p><p id="dashSinBarcode" class="mt-2 text-2xl font-black text-red-500">--</p></div>
+                <div class="bg-white border border-slate-200 rounded-3xl p-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Exacta</p><p id="dashExacta" class="mt-2 text-2xl font-black text-indigo-600">--</p></div>
+                <div class="bg-white border border-slate-200 rounded-3xl p-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Casi exacta</p><p id="dashCasiExacta" class="mt-2 text-2xl font-black text-amber-600">--</p></div>
+                <div class="bg-white border border-slate-200 rounded-3xl p-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Cobertura</p><p id="dashCobertura" class="mt-2 text-2xl font-black text-slate-800">--</p></div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-3xl p-4 space-y-3">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Resumen por estatus</p>
+                        <p class="text-[11px] text-slate-500 font-bold">Cobertura del catálogo por tipo de artículo</p>
+                    </div>
+                </div>
+                <div id="dashTablaEstatus" class="space-y-2"></div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-3xl p-4 space-y-3">
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Resumen por proveedor</p>
+                    <p class="text-[11px] text-slate-500 font-bold">Proveedor = primeras 5 letras del código LIMSA</p>
+                </div>
+                <div id="dashTablaProveedor" class="space-y-2 max-h-80 overflow-auto pr-1"></div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-3xl p-4 space-y-3">
+                <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Detalle filtrable</p>
+                    <p class="text-[11px] text-slate-500 font-bold">Pendientes, sugerencias y cobertura por SKU</p>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <select id="dashFiltroProveedor" onchange="renderDashboardDetalle()" class="border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white">
+                        <option value="">Todos los proveedores</option>
+                    </select>
+                    <select id="dashFiltroEstatus" onchange="renderDashboardDetalle()" class="border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white">
+                        <option value="">Todos los estatus</option>
+                        <option value="linea">Línea</option>
+                        <option value="descontinuado">Descontinuado</option>
+                        <option value="compra especial">Compra especial</option>
+                        <option value="sobre pedido">Sobre pedido</option>
+                    </select>
+                    <select id="dashFiltroCoincidencia" onchange="renderDashboardDetalle()" class="border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white">
+                        <option value="">Todas las coincidencias</option>
+                        <option value="exacta">Exacta</option>
+                        <option value="casi exacta">Casi exacta</option>
+                        <option value="sin coincidencia">Sin coincidencia</option>
+                    </select>
+                    <select id="dashFiltroBarcode" onchange="renderDashboardDetalle()" class="border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white">
+                        <option value="">Con y sin barcode</option>
+                        <option value="con">Con barcode</option>
+                        <option value="sin">Sin barcode</option>
+                    </select>
+                </div>
+                <input type="text" id="dashBusqueda" oninput="renderDashboardDetalle()" placeholder="Buscar código o descripción..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700">
+                <div id="dashDetalleResumen" class="text-xs font-bold text-slate-500"></div>
+                <div id="dashDetalleLista" class="space-y-2 max-h-[32rem] overflow-auto pr-1"></div>
+            </div>
+        </main>
+    </div>
+
     <div id="modalScanner" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex flex-col items-center justify-center p-6">
         <div class="w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl"><div id="reader"></div></div>
         <button onclick="cerrarScanner()" class="mt-8 bg-white/10 text-white border border-white/20 px-10 py-3 rounded-full font-bold backdrop-blur-md">Cerrar Cámara</button>
@@ -398,7 +487,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2026.04.22.6";
+        const APP_VERSION = "2026.04.23.1";
         const SB_URL = "https://smlalagqfphliastgjbh.supabase.co/rest/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtbGFsYWdxZnBobGlhc3RnamJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExODc3ODIsImV4cCI6MjA3Njc2Mzc4Mn0.L4bp6sGzzjiNsGSY1fTYolSLxvVoJh1ENon9Prw1CZA";
         const ALMACENES_FALLBACK = ["aa","ab","ac","ad","ag","ah","ai","aj","al","am","as","at","cb","cc","cd","cg","ch","ci","cj","cl","cm","cr","cs","ct"];
@@ -419,6 +508,9 @@
         };
         let auditoriaArticulo = null;
         let auditoriaConteos = [];
+        let dashboardBarcodeData = [];
+        let dashboardBarcodeLoaded = false;
+        let dashboardAlmacenRows = [];
 
         // --- NAVEGACIÓN ---
         function irASelectorAlmacen(mod) { 
@@ -429,11 +521,21 @@
         function regresarAlMenuPrincipal() { 
             document.getElementById('pantallaSelectorAlmacen').classList.add('hidden'); 
             document.getElementById('pantallaCorrelacion').classList.add('hidden'); 
+            document.getElementById('pantallaDashboardBarcode').classList.add('hidden'); 
             document.getElementById('pantallaMenuPrincipal').classList.remove('hidden'); 
             limpiarTodo(); 
         }
         function irACorrelacion() { 
             irASelectorAlmacen('correlacion');
+        }
+        function irADashboardBarcode() {
+            document.getElementById('pantallaMenuPrincipal').classList.add('hidden');
+            document.getElementById('pantallaSelectorAlmacen').classList.add('hidden');
+            document.getElementById('pantallaApp').classList.add('hidden');
+            document.getElementById('pantallaAuditoria').classList.add('hidden');
+            document.getElementById('pantallaCorrelacion').classList.add('hidden');
+            document.getElementById('pantallaDashboardBarcode').classList.remove('hidden');
+            cargarDashboardBarcode();
         }
         function regresarAAlmacenes() { 
             document.getElementById('pantallaApp').classList.add('hidden'); 
@@ -1106,6 +1208,367 @@ Solo se actualizarán registros ya existentes en almacen_datos.`)) return;
         }
         function valorCajaVigente(v) { const t = String(v || '').trim(); return t !== '' && t !== '0' && t !== '0.0'; }
         async function fetchJsonOrThrow(url, options = {}) { const res = await fetch(url, options); const raw = await res.text(); let data = null; try { data = raw ? JSON.parse(raw) : null; } catch(_) { data = raw; } if(!res.ok) { throw new Error(typeof data === 'string' ? data : JSON.stringify(data)); } return data; }
+
+        async function fetchAllSupabaseRows(table, selectClause, extraQuery = '', batchSize = 1000) {
+            const headers = { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}` };
+            let out = [];
+            let offset = 0;
+            while (true) {
+                const normalizedExtra = extraQuery ? (extraQuery.startsWith('&') ? extraQuery : `&${extraQuery}`) : '';
+                const url = `${SB_URL}${table}?select=${selectClause}${normalizedExtra}&limit=${batchSize}&offset=${offset}`;
+                const rows = await fetchJsonOrThrow(url, { headers });
+                const arr = Array.isArray(rows) ? rows : [];
+                out = out.concat(arr);
+                if (arr.length < batchSize) break;
+                offset += batchSize;
+                if (offset > 200000) break;
+            }
+            return out;
+        }
+
+        function dashboardProveedor5(codigo) {
+            return String(codigo || '').trim().toUpperCase().slice(0, 5);
+        }
+
+        function dashboardEstatus(descripcion) {
+            const n = String(descripcion || '').trim();
+            if (/^\*+/.test(n)) return 'sobre pedido';
+            if (/\*+$/.test(n)) return 'descontinuado';
+            if (/\+$/.test(n)) return 'compra especial';
+            return 'linea';
+        }
+
+        function dashboardCoberturaPct(a, b) {
+            if (!b) return '0%';
+            return `${((a * 100) / b).toFixed(1)}%`;
+        }
+
+        function dashboardBadgeCoincidencia(tipo) {
+            if (tipo === 'exacta') return 'bg-indigo-50 text-indigo-700 border-indigo-100';
+            if (tipo === 'casi exacta') return 'bg-amber-50 text-amber-700 border-amber-100';
+            if (tipo === 'sin coincidencia') return 'bg-slate-100 text-slate-600 border-slate-200';
+            return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+        }
+
+        function renderDashboardTarjetas(items) {
+            const total = items.length;
+            const conBarcode = items.filter(x => x.tiene_barcode).length;
+            const sinBarcode = total - conBarcode;
+            const exacta = items.filter(x => x.tipo_coincidencia === 'exacta').length;
+            const casi = items.filter(x => x.tipo_coincidencia === 'casi exacta').length;
+            document.getElementById('dashTotalSkus').innerText = total;
+            document.getElementById('dashConBarcode').innerText = conBarcode;
+            document.getElementById('dashSinBarcode').innerText = sinBarcode;
+            document.getElementById('dashExacta').innerText = exacta;
+            document.getElementById('dashCasiExacta').innerText = casi;
+            document.getElementById('dashCobertura').innerText = dashboardCoberturaPct(conBarcode, total);
+        }
+
+        function renderDashboardTablaEstatus(items) {
+            const orden = ['linea', 'descontinuado', 'compra especial', 'sobre pedido'];
+            const rows = orden.map(estatus => {
+                const arr = items.filter(x => x.estatus === estatus);
+                const total = arr.length;
+                const conBarcode = arr.filter(x => x.tiene_barcode).length;
+                const exacta = arr.filter(x => x.tipo_coincidencia === 'exacta').length;
+                const casi = arr.filter(x => x.tipo_coincidencia === 'casi exacta').length;
+                const sinCoin = arr.filter(x => x.tipo_coincidencia === 'sin coincidencia').length;
+                return { estatus, total, conBarcode, sinBarcode: total - conBarcode, exacta, casi, sinCoin, cobertura: dashboardCoberturaPct(conBarcode, total) };
+            });
+            document.getElementById('dashTablaEstatus').innerHTML = rows.map(r => `
+                <div class="bg-slate-50 rounded-2xl border border-slate-200 p-3">
+                    <div class="flex items-center justify-between gap-3 mb-2">
+                        <p class="text-xs font-black uppercase text-slate-700">${r.estatus}</p>
+                        <p class="text-xs font-black text-slate-500">${r.cobertura}</p>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-[11px] font-bold text-slate-600">
+                        <div class="bg-white rounded-xl px-2 py-2 border border-slate-200">Total<br><span class="text-slate-800 text-sm font-black">${r.total}</span></div>
+                        <div class="bg-white rounded-xl px-2 py-2 border border-slate-200">Con<br><span class="text-emerald-600 text-sm font-black">${r.conBarcode}</span></div>
+                        <div class="bg-white rounded-xl px-2 py-2 border border-slate-200">Sin<br><span class="text-red-500 text-sm font-black">${r.sinBarcode}</span></div>
+                        <div class="bg-white rounded-xl px-2 py-2 border border-slate-200">Exacta<br><span class="text-indigo-600 text-sm font-black">${r.exacta}</span></div>
+                        <div class="bg-white rounded-xl px-2 py-2 border border-slate-200">Casi<br><span class="text-amber-600 text-sm font-black">${r.casi}</span></div>
+                        <div class="bg-white rounded-xl px-2 py-2 border border-slate-200">Sin coin.<br><span class="text-slate-700 text-sm font-black">${r.sinCoin}</span></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderDashboardTablaProveedor(items) {
+            const map = new Map();
+            for (const item of items) {
+                const key = item.proveedor_5 || '-----';
+                if (!map.has(key)) map.set(key, []);
+                map.get(key).push(item);
+            }
+            const rows = [...map.entries()].map(([proveedor, arr]) => {
+                const total = arr.length;
+                const conBarcode = arr.filter(x => x.tiene_barcode).length;
+                const exacta = arr.filter(x => x.tipo_coincidencia === 'exacta').length;
+                const casi = arr.filter(x => x.tipo_coincidencia === 'casi exacta').length;
+                const sinCoin = arr.filter(x => x.tipo_coincidencia === 'sin coincidencia').length;
+                const exactosPendientes = arr.filter(x => !x.tiene_barcode && x.tipo_coincidencia === 'exacta' && x.barcode_sugerido).length;
+                return { proveedor, total, conBarcode, sinBarcode: total - conBarcode, exacta, casi, sinCoin, exactosPendientes, cobertura: dashboardCoberturaPct(conBarcode, total) };
+            }).sort((a,b) => (b.sinBarcode - a.sinBarcode) || (parseFloat(a.cobertura) - parseFloat(b.cobertura)) || a.proveedor.localeCompare(b.proveedor));
+            document.getElementById('dashTablaProveedor').innerHTML = rows.map(r => `
+                <div class="bg-slate-50 rounded-2xl border border-slate-200 p-3 space-y-3">
+                    <div class="flex items-center justify-between gap-3 mb-2">
+                        <p class="text-sm font-black uppercase text-slate-800">${r.proveedor}</p>
+                        <p class="text-xs font-black text-slate-500">${r.cobertura}</p>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-[11px] font-bold text-slate-600">
+                        <div class="bg-white rounded-xl px-2 py-2 border border-slate-200">Total<br><span class="text-slate-800 text-sm font-black">${r.total}</span></div>
+                        <div class="bg-white rounded-xl px-2 py-2 border border-slate-200">Con<br><span class="text-emerald-600 text-sm font-black">${r.conBarcode}</span></div>
+                        <div class="bg-white rounded-xl px-2 py-2 border border-slate-200">Sin<br><span class="text-red-500 text-sm font-black">${r.sinBarcode}</span></div>
+                        <div class="bg-white rounded-xl px-2 py-2 border border-slate-200">Exacta<br><span class="text-indigo-600 text-sm font-black">${r.exacta}</span></div>
+                        <div class="bg-white rounded-xl px-2 py-2 border border-slate-200">Casi<br><span class="text-amber-600 text-sm font-black">${r.casi}</span></div>
+                        <div class="bg-white rounded-xl px-2 py-2 border border-slate-200">Sin coin.<br><span class="text-slate-700 text-sm font-black">${r.sinCoin}</span></div>
+                    </div>
+                    <div class="flex items-center justify-between gap-3">
+                        <p class="text-[11px] font-bold text-slate-500">Exactos pendientes: <span class="text-indigo-600 font-black">${r.exactosPendientes}</span></p>
+                        <button type="button" onclick="aplicarExactosProveedor('${r.proveedor}')" ${r.exactosPendientes ? '' : 'disabled'} class="px-4 py-3 rounded-xl text-xs font-black uppercase shadow-sm ${r.exactosPendientes ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}">Aplicar exactos</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function poblarFiltroProveedorDashboard(items) {
+            const sel = document.getElementById('dashFiltroProveedor');
+            if (!sel) return;
+            const actual = sel.value;
+            const proveedores = [...new Set(items.map(x => x.proveedor_5).filter(Boolean))].sort();
+            sel.innerHTML = '<option value="">Todos los proveedores</option>' + proveedores.map(p => `<option value="${p}">${p}</option>`).join('');
+            if (proveedores.includes(actual)) sel.value = actual;
+        }
+
+        function getDashboardFiltrado() {
+            const proveedor = document.getElementById('dashFiltroProveedor')?.value || '';
+            const estatus = document.getElementById('dashFiltroEstatus')?.value || '';
+            const coincidencia = document.getElementById('dashFiltroCoincidencia')?.value || '';
+            const barcode = document.getElementById('dashFiltroBarcode')?.value || '';
+            const q = (document.getElementById('dashBusqueda')?.value || '').trim().toUpperCase();
+            return dashboardBarcodeData.filter(item => {
+                if (proveedor && item.proveedor_5 !== proveedor) return false;
+                if (estatus && item.estatus !== estatus) return false;
+                if (coincidencia && item.tipo_coincidencia !== coincidencia) return false;
+                if (barcode === 'con' && !item.tiene_barcode) return false;
+                if (barcode === 'sin' && item.tiene_barcode) return false;
+                if (q) {
+                    const blob = `${item.codigo_limsa} ${item.descripcion} ${item.clave_proveedor} ${item.barcode_actual || ''} ${item.barcode_sugerido || ''}`.toUpperCase();
+                    if (!blob.includes(q)) return false;
+                }
+                return true;
+            }).sort((a,b) => {
+                const orden = { alta: 1, media: 2, baja: 3, resuelto: 4 };
+                return (orden[a.prioridad] || 99) - (orden[b.prioridad] || 99) || a.proveedor_5.localeCompare(b.proveedor_5) || a.codigo_limsa.localeCompare(b.codigo_limsa);
+            });
+        }
+
+        async function aplicarExactosProveedor(proveedor) {
+            const prov = String(proveedor || '').trim().toUpperCase();
+            if (!prov) return;
+            const candidatos = dashboardBarcodeData.filter(x => x.proveedor_5 === prov && !x.tiene_barcode && x.tipo_coincidencia === 'exacta' && x.barcode_sugerido);
+            if (!candidatos.length) {
+                alert(`No hay exactos pendientes para ${prov}.`);
+                return;
+            }
+
+            const conflictoPorBarcode = new Set();
+            const barcodeToCodes = new Map();
+            for (const item of candidatos) {
+                const bar = String(item.barcode_sugerido || '').trim();
+                if (!bar) continue;
+                if (!barcodeToCodes.has(bar)) barcodeToCodes.set(bar, new Set());
+                barcodeToCodes.get(bar).add(item.codigo_limsa);
+            }
+            for (const [bar, codes] of barcodeToCodes.entries()) {
+                if (codes.size > 1) conflictoPorBarcode.add(bar);
+            }
+            for (const row of (dashboardAlmacenRows || [])) {
+                const code = String(row.codigo || '').trim().toUpperCase();
+                const bar = String(row.codigo_barra || '').trim();
+                if (!bar) continue;
+                if (barcodeToCodes.has(bar) && !barcodeToCodes.get(bar).has(code)) conflictoPorBarcode.add(bar);
+            }
+
+            const aplicables = candidatos.filter(x => !conflictoPorBarcode.has(String(x.barcode_sugerido || '').trim()));
+            const conflictivos = candidatos.length - aplicables.length;
+            if (!aplicables.length) {
+                alert(`No hay exactos seguros para aplicar en ${prov}. Conflictivos: ${conflictivos}.`);
+                return;
+            }
+            if (!confirm(`Proveedor ${prov}
+
+Exactos pendientes: ${candidatos.length}
+Aplicables: ${aplicables.length}
+Conflictivos: ${conflictivos}
+
+¿Aplicar ahora?`)) return;
+
+            let skuActualizados = 0;
+            let registrosActualizados = 0;
+            let fallidos = 0;
+            const headers = { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+            for (const item of aplicables) {
+                try {
+                    const codigo = encodeURIComponent(String(item.codigo_limsa || '').trim().toLowerCase());
+                    const payload = { codigo_barra: String(item.barcode_sugerido || '').trim() };
+                    const res = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${codigo}&or=(codigo_barra.is.null,codigo_barra.eq.)`, {
+                        method: 'PATCH',
+                        headers,
+                        body: JSON.stringify(payload)
+                    });
+                    const n = Array.isArray(res) ? res.length : 0;
+                    if (n > 0) {
+                        skuActualizados += 1;
+                        registrosActualizados += n;
+                    }
+                } catch (e) {
+                    console.error('Error aplicando exacto proveedor', prov, item.codigo_limsa, e);
+                    fallidos += 1;
+                }
+            }
+            dashboardBarcodeLoaded = false;
+            await cargarDashboardBarcode(true);
+            alert(`Proveedor ${prov}
+
+Exactos pendientes: ${candidatos.length}
+Aplicados: ${skuActualizados} SKU(s)
+Registros actualizados: ${registrosActualizados}
+Conflictivos omitidos: ${conflictivos}
+Fallidos: ${fallidos}`);
+        }
+
+        function renderDashboardDetalle() {
+            const items = getDashboardFiltrado();
+            const box = document.getElementById('dashDetalleLista');
+            const resumen = document.getElementById('dashDetalleResumen');
+            if (resumen) resumen.innerText = `${items.length} SKU(s) visibles`;
+            if (!box) return;
+            box.innerHTML = items.map(item => `
+                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3 space-y-2">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="text-xs font-black text-slate-700 uppercase break-all">${item.codigo_limsa}</p>
+                            <p class="text-[11px] font-bold text-slate-500 uppercase leading-snug break-words mt-1">${item.descripcion || 'SIN DESCRIPCIÓN'}</p>
+                        </div>
+                        <span class="shrink-0 text-[10px] font-black uppercase px-2 py-1 rounded-lg border ${dashboardBadgeCoincidencia(item.tipo_coincidencia)}">${item.tipo_coincidencia}</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2 text-[10px] font-black uppercase">
+                        <span class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-500">Proveedor: ${item.proveedor_5 || '--'}</span>
+                        <span class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-500">Estatus: ${item.estatus}</span>
+                        <span class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-500">Medida: ${item.medida || 'S/D'}</span>
+                        <span class="bg-white border border-slate-200 rounded-lg px-2 py-1 ${item.tiene_barcode ? 'text-emerald-600' : 'text-red-500'}">${item.tiene_barcode ? 'Con barcode' : 'Sin barcode'}</span>
+                    </div>
+                    <div class="grid grid-cols-1 gap-2 text-[11px] font-bold text-slate-600">
+                        <div class="bg-white border border-slate-200 rounded-xl px-3 py-2 break-all">Barcode actual: <span class="text-slate-800">${item.barcode_actual || '--'}</span></div>
+                        <div class="bg-white border border-slate-200 rounded-xl px-3 py-2 break-all">Barcode sugerido: <span class="text-slate-800">${item.barcode_sugerido || '--'}</span></div>
+                        <div class="bg-white border border-slate-200 rounded-xl px-3 py-2 break-all">Clave proveedor: <span class="text-slate-800">${item.clave_proveedor || '--'}</span></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function cargarDashboardBarcode(force = false) {
+            if (dashboardBarcodeLoaded && !force) {
+                renderDashboardTarjetas(dashboardBarcodeData);
+                renderDashboardTablaEstatus(dashboardBarcodeData);
+                renderDashboardTablaProveedor(dashboardBarcodeData);
+                poblarFiltroProveedorDashboard(dashboardBarcodeData);
+                renderDashboardDetalle();
+                return;
+            }
+            const loader = document.getElementById('dashboardLoader');
+            if (loader) loader.classList.remove('hidden');
+            try {
+                const [catalogo, almacenDatos, sugerenciasFinal] = await Promise.all([
+                    fetchAllSupabaseRows('catalogo_articulos', 'articulo,nombre,clave_proveedor,proveedor,um_venta'),
+                    fetchAllSupabaseRows('almacen_datos', 'codigo,codigo_barra'),
+                    fetchAllSupabaseRows('sugerencias_codigo_barras', 'clave_proveedor,codigo_barras,nombre_fuente,activo')
+                ]);
+                dashboardAlmacenRows = Array.isArray(almacenDatos) ? almacenDatos : [];
+                let sugerencias = Array.isArray(sugerenciasFinal) ? sugerenciasFinal.filter(x => x?.activo !== false) : [];
+                if (!sugerencias.length) {
+                    const stg = await fetchAllSupabaseRows('sugerencias_codigo_barras_staging', 'clave_proveedor,codigo_barras,nombre');
+                    sugerencias = (Array.isArray(stg) ? stg : []).map(x => ({ clave_proveedor: x.clave_proveedor, codigo_barras: x.codigo_barras, nombre_fuente: x.nombre, activo: true }));
+                }
+                const barcodeMap = new Map();
+                const universoCodigos = new Set();
+                for (const row of (Array.isArray(almacenDatos) ? almacenDatos : [])) {
+                    const code = String(row.codigo || '').trim().toUpperCase();
+                    const bar = String(row.codigo_barra || '').trim();
+                    if (!code) continue;
+                    universoCodigos.add(code);
+                    if (bar && !barcodeMap.has(code)) barcodeMap.set(code, bar);
+                }
+                const catalogoFiltrado = (Array.isArray(catalogo) ? catalogo : []).filter(row => {
+                    const art = String(row?.articulo || '').trim().toUpperCase();
+                    if (!art) return false;
+                    if (!universoCodigos.has(art)) return false;
+                    if (art.startsWith('30X')) return false;
+                    return true;
+                });
+                const providerByClave = new Map();
+                for (const row of catalogoFiltrado) {
+                    const clave = String(row.clave_proveedor || '').trim().toUpperCase();
+                    const proveedor5 = dashboardProveedor5(row.articulo || '');
+                    if (!clave || !proveedor5) continue;
+                    if (!providerByClave.has(clave)) providerByClave.set(clave, new Set());
+                    providerByClave.get(clave).add(proveedor5);
+                }
+                const exactaMap = new Map();
+                const casiMap = new Map();
+                for (const sug of sugerencias) {
+                    const clave = String(sug.clave_proveedor || '').trim().toUpperCase();
+                    const bar = String(sug.codigo_barras || '').trim();
+                    if (!clave || !bar) continue;
+                    if (!exactaMap.has(clave)) exactaMap.set(clave, bar);
+                    const medida = extraerMedidaDesdeDescripcion(String(sug.nombre_fuente || ''));
+                    const provs = providerByClave.get(clave);
+                    if (medida && provs) {
+                        for (const prov of provs) {
+                            const key = `${prov}|${medida}`;
+                            if (!casiMap.has(key)) casiMap.set(key, bar);
+                        }
+                    }
+                }
+                dashboardBarcodeData = catalogoFiltrado.map(row => {
+                    const codigo = String(row.articulo || '').trim().toUpperCase();
+                    const descripcion = row.nombre || '';
+                    const clave = String(row.clave_proveedor || '').trim().toUpperCase();
+                    const proveedor_5 = dashboardProveedor5(codigo);
+                    const medida = extraerMedidaDesdeDescripcion(descripcion);
+                    const barcode_actual = barcodeMap.get(codigo) || '';
+                    const barcode_sugerido_exacto = exactaMap.get(clave) || '';
+                    const barcode_sugerido_casi = !barcode_sugerido_exacto ? (casiMap.get(`${proveedor_5}|${medida}`) || '') : '';
+                    const tipo_coincidencia = barcode_sugerido_exacto ? 'exacta' : (barcode_sugerido_casi ? 'casi exacta' : 'sin coincidencia');
+                    return {
+                        codigo_limsa: codigo,
+                        proveedor_5,
+                        descripcion,
+                        estatus: dashboardEstatus(descripcion),
+                        medida,
+                        clave_proveedor: clave,
+                        proveedor: row.proveedor || '',
+                        um_venta: row.um_venta || '',
+                        tiene_barcode: !!barcode_actual,
+                        barcode_actual,
+                        barcode_sugerido: barcode_sugerido_exacto || barcode_sugerido_casi || '',
+                        tipo_coincidencia,
+                        prioridad: barcode_actual ? 'resuelto' : (tipo_coincidencia === 'exacta' ? 'alta' : (tipo_coincidencia === 'casi exacta' ? 'media' : 'baja'))
+                    };
+                });
+                dashboardBarcodeLoaded = true;
+                renderDashboardTarjetas(dashboardBarcodeData);
+                renderDashboardTablaEstatus(dashboardBarcodeData);
+                renderDashboardTablaProveedor(dashboardBarcodeData);
+                poblarFiltroProveedorDashboard(dashboardBarcodeData);
+                renderDashboardDetalle();
+            } catch (e) {
+                alert(`Error al cargar dashboard: ${e.message || e}`);
+            } finally {
+                if (loader) loader.classList.add('hidden');
+            }
+        }
         async function obtenerFactorCatalogo(codigo) { if(!codigo) return ''; const data = await fetchJsonOrThrow(`${SB_URL}catalogo_articulos?articulo=eq.${codigo.toLowerCase()}&select=factor&limit=1`, { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` } }); const factor = data?.[0]?.factor; return factor == null ? '' : String(factor).trim(); }
 
         function bindScanAwareInput(inputId, submitFn, options = {}) {
