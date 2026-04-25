@@ -583,6 +583,13 @@
                     <div class="xl:col-span-2 flex items-end">
                         <button onclick="guardarCambiosEditorPC()" id="btnGuardarEditorPC" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold uppercase shadow-md disabled:bg-slate-300" disabled>Guardar y replicar</button>
                     </div>
+                    <div class="xl:col-span-1 flex items-end">
+                        <button onclick="exportarEditorLogisticoCSV()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold uppercase shadow-md">Exportar CSV</button>
+                    </div>
+                    <div class="xl:col-span-1 flex items-end">
+                        <input type="file" id="editorPcImportFile" accept=".csv,text/csv" class="hidden" onchange="importarEditorLogisticoCSV(this.files && this.files[0]); this.value=''">
+                        <button onclick="document.getElementById('editorPcImportFile').click()" class="w-full bg-orange-500 text-white py-3 rounded-xl font-bold uppercase shadow-md">Importar CSV</button>
+                    </div>
                 </div>
                 <div class="flex flex-wrap gap-2 text-[11px] font-bold">
                     <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-600">Una fila por código. Al guardar, se replica en todas las bodegas donde exista.</span>
@@ -737,6 +744,17 @@
             'unidades_caja_bolsa','largo_caja_bolsa','ancho_caja_bolsa','alto_caja_bolsa','peso_caja_bolsa',
             'unidades_tarima','largo_tarima','ancho_tarima','alto_tarima','peso_tarima'
         ];
+        const EDITOR_PC_CAMPOS_REFERENCIA = ['nombre','clave_proveedor','grupo','um_venta','factor','proveedor','largo','ancho','alto','bodegas_text'];
+        const EDITOR_PC_CSV_EXPORT_FIELDS = [
+            'codigo','nombre','clave_proveedor','grupo','um_venta','factor','proveedor','largo','ancho','alto','bodegas_text',
+            ...EDITOR_PC_CAMPOS_EDITABLES
+        ];
+        const EDITOR_PC_CSV_LABELS = {
+            codigo: 'codigo', nombre: 'nombre', clave_proveedor: 'clave_proveedor', grupo: 'grupo', um_venta: 'um_venta', factor: 'factor', proveedor: 'proveedor', largo: 'largo_catalogo', ancho: 'ancho_catalogo', alto: 'alto_catalogo', bodegas_text: 'bodegas',
+            codigo_barra: 'codigo_barra', largo_unidad: 'largo_unidad', ancho_unidad: 'ancho_unidad', alto_unidad: 'alto_unidad', peso_unidad: 'peso_unidad',
+            unidades_caja_bolsa: 'unidades_caja_bolsa', largo_caja_bolsa: 'largo_caja_bolsa', ancho_caja_bolsa: 'ancho_caja_bolsa', alto_caja_bolsa: 'alto_caja_bolsa', peso_caja_bolsa: 'peso_caja_bolsa',
+            unidades_tarima: 'unidades_tarima', largo_tarima: 'largo_tarima', ancho_tarima: 'ancho_tarima', alto_tarima: 'alto_tarima', peso_tarima: 'peso_tarima'
+        };
         let html5QrCode = null;
         let scannerTargetActual = null;
         let catalogoModo = "registro";
@@ -2650,6 +2668,150 @@ Fallidos: ${fallidos}`);
             editorPcResumen();
         }
 
+
+        function editorPcCsvEscape(value) {
+            const s = String(value ?? '');
+            return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+        }
+
+        function editorPcDownloadText(filename, text) {
+            const blob = new Blob(['\ufeff' + text], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportarEditorLogisticoCSV() {
+            const rows = editorPcRowsFiltered.length ? editorPcRowsFiltered : editorPcRows;
+            if (!rows.length) { alert('Primero carga el editor logístico.'); return; }
+            const headers = EDITOR_PC_CSV_EXPORT_FIELDS.map(f => EDITOR_PC_CSV_LABELS[f] || f);
+            const lines = [headers.map(editorPcCsvEscape).join(',')];
+            rows.forEach(row => {
+                lines.push(EDITOR_PC_CSV_EXPORT_FIELDS.map(f => editorPcCsvEscape(row?.[f] ?? '')).join(','));
+            });
+            const fecha = new Date().toISOString().slice(0,10);
+            editorPcDownloadText(`editor_logistico_${fecha}.csv`, lines.join('\n'));
+            document.getElementById('editorPcStatus').innerText = `CSV exportado: ${rows.length} código(s). Las columnas de catálogo son solo referencia.`;
+        }
+
+        function editorPcParseCSV(text) {
+            const rows = [];
+            let row = [], val = '', inQuotes = false;
+            const clean = String(text || '').replace(/^\ufeff/, '');
+            for (let i = 0; i < clean.length; i++) {
+                const ch = clean[i];
+                const next = clean[i + 1];
+                if (inQuotes) {
+                    if (ch === '"' && next === '"') { val += '"'; i++; }
+                    else if (ch === '"') inQuotes = false;
+                    else val += ch;
+                } else {
+                    if (ch === '"') inQuotes = true;
+                    else if (ch === ',') { row.push(val); val = ''; }
+                    else if (ch === '\n') { row.push(val); rows.push(row); row = []; val = ''; }
+                    else if (ch !== '\r') val += ch;
+                }
+            }
+            row.push(val);
+            if (row.some(x => String(x).trim() !== '')) rows.push(row);
+            return rows;
+        }
+
+        function editorPcNormalizarHeader(header) {
+            return String(header || '')
+                .trim()
+                .toLowerCase()
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .replace(/\s+/g, '_')
+                .replace(/[^a-z0-9_]/g, '_')
+                .replace(/_+/g, '_')
+                .replace(/^_|_$/g, '');
+        }
+
+
+        function editorPcNormalizarValorImport(value) {
+            return String(value ?? '').trim();
+        }
+
+        function editorPcValoresIgualesImport(a, b) {
+            return editorPcNormalizarValorImport(a) === editorPcNormalizarValorImport(b);
+        }
+
+        function editorPcCampoDesdeHeader(header) {
+            const h = editorPcNormalizarHeader(header);
+            const aliases = {
+                articulo: 'codigo', sku: 'codigo', codigo_limsa: 'codigo', codigo: 'codigo',
+                codigo_barras: 'codigo_barra', barcode: 'codigo_barra', cod_barra: 'codigo_barra',
+                clave_proveedor: 'clave_proveedor', clave_de_proveedor: 'clave_proveedor',
+                um_venta: 'um_venta', unidad_venta: 'um_venta', uds_de_venta: 'um_venta', uds_venta: 'um_venta',
+                largo_catalogo: 'largo', ancho_catalogo: 'ancho', alto_catalogo: 'alto', bodegas: 'bodegas_text'
+            };
+            return aliases[h] || h;
+        }
+
+        async function importarEditorLogisticoCSV(file) {
+            if (!file) return;
+            if (!editorPcRows.length) { alert('Primero carga el editor logístico para comparar contra los códigos existentes.'); return; }
+            try {
+                const text = await file.text();
+                const parsed = editorPcParseCSV(text);
+                if (parsed.length < 2) { alert('El CSV no tiene registros.'); return; }
+                const headers = parsed[0].map(editorPcCampoDesdeHeader);
+                const idxCodigo = headers.indexOf('codigo');
+                if (idxCodigo < 0) { alert('El CSV debe incluir la columna codigo.'); return; }
+                const importables = headers
+                    .map((field, index) => ({ field, index }))
+                    .filter(x => EDITOR_PC_CAMPOS_EDITABLES.includes(x.field));
+                if (!importables.length) { alert('El CSV no trae columnas logísticas editables para importar.'); return; }
+
+                const mapRows = new Map(editorPcRows.map(r => [String(r.codigo || '').trim().toLowerCase(), r]));
+                let actualizados = 0, sinCambios = 0, omitidos = 0, sinCodigo = 0;
+                const codigosProcesados = new Set();
+                for (let r = 1; r < parsed.length; r++) {
+                    const cols = parsed[r];
+                    const code = String(cols[idxCodigo] || '').trim().toLowerCase();
+                    if (!code) { sinCodigo++; continue; }
+                    const row = mapRows.get(code);
+                    if (!row) { omitidos++; continue; }
+                    const key = editorPcKey(row);
+                    const mod = editorPcModified.get(key) || {};
+                    let cambio = false;
+                    importables.forEach(({ field, index }) => {
+                        const nuevo = editorPcNormalizarValorImport(cols[index]);
+                        if (!editorPcValoresIgualesImport(row[field], nuevo)) {
+                            row[field] = nuevo;
+                            mod[field] = nuevo;
+                            cambio = true;
+                        }
+                    });
+                    if (cambio) {
+                        editorPcModified.set(key, mod);
+                        if (!codigosProcesados.has(code)) actualizados++;
+                    } else {
+                        if (!codigosProcesados.has(code)) sinCambios++;
+                    }
+                    codigosProcesados.add(code);
+                }
+                editorPcRows = editorPcRows.map(row => ({
+                    ...row,
+                    _codigo_barra: String(row.codigo_barra || '').trim(),
+                    _tiene_logistica: editorPcTieneLogistica(row),
+                    _logistica_completa: editorPcTieneLogisticaCompleta(row),
+                    _search: [row.codigo,row.nombre,row.grupo,row.proveedor,row.clave_proveedor,row.codigo_barra,row.um_venta,row.estado_comercial]
+                        .map(v => String(v || '').toLowerCase()).join(' | ')
+                }));
+                document.getElementById('editorPcStatus').innerText = `CSV importado. Con cambios reales: ${actualizados}. Sin cambios: ${sinCambios}. Omitidos no encontrados: ${omitidos}. Sin código: ${sinCodigo}. Columnas de referencia ignoradas: clave_proveedor, grupo, um_venta, factor y proveedor.`;
+                aplicarFiltrosEditorPC();
+                alert(`Importación cargada en pantalla.\n\nCon cambios reales: ${actualizados}\nSin cambios: ${sinCambios}\nOmitidos no encontrados: ${omitidos}\n\nSolo los códigos con cambios quedan pendientes para Guardar y replicar.`);
+            } catch (e) {
+                alert(`Error al importar CSV: ${e.message || e}`);
+            }
+        }
         async function cargarEditorLogisticoPC() {
             document.getElementById('editorPcStatus').innerText = 'Cargando información...';
             const body = document.getElementById('editorPcBody');
@@ -2737,7 +2899,7 @@ Fallidos: ${fallidos}`);
 
         async function guardarCambiosEditorPC() {
             if (!editorPcModified.size) return;
-            if (!confirm(`¿Guardar y replicar ${editorPcModified.size} código(s) modificados en todas sus bodegas?`)) return;
+            if (!confirm(`¿Guardar y replicar ${editorPcModified.size} código(s) con cambios reales en todas sus bodegas?`)) return;
             document.getElementById('editorPcStatus').innerText = 'Guardando y replicando cambios...';
             let ok = 0;
             let fail = 0;
