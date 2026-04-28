@@ -83,6 +83,16 @@
                 </div>
             </button>
 
+            <button onclick="irAAsignacionSerie()" class="card-modulo w-full bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center gap-5 text-left">
+                <div class="bg-cyan-600 p-4 rounded-2xl text-white shadow-lg shadow-cyan-100">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h10M7 4v16M17 4v10"/></svg>
+                </div>
+                <div>
+                    <h3 class="font-black text-slate-800 uppercase text-sm tracking-tight">Asignación en Serie</h3>
+                    <p class="text-xs text-slate-500 mt-1">Buscar catálogo y asignar códigos de barras en lista.</p>
+                </div>
+            </button>
+
             <button onclick="irADashboardBarcode()" class="card-modulo w-full bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center gap-5 text-left">
                 <div class="bg-emerald-600 p-4 rounded-2xl text-white shadow-lg shadow-emerald-100">
                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6m4 6V7m4 10v-4M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
@@ -420,6 +430,58 @@
         </main>
     </div>
 
+    <div id="pantallaAsignacionSerie" class="hidden flex flex-col min-h-screen safe-pb">
+        <header class="bg-white border-b p-4 flex items-center gap-3 sticky top-0 z-30 shadow-sm">
+            <button onclick="regresarAlMenuPrincipal()" class="p-2 hover:bg-slate-100 rounded-full">
+                <svg class="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+            </button>
+            <div class="flex-1">
+                <h1 class="text-lg font-bold text-slate-800">Asignación en Serie</h1>
+                <p class="text-[11px] font-bold text-slate-400 uppercase">Almacén: <span id="serieTxtAlmacen">--</span></p>
+            </div>
+        </header>
+
+        <main class="max-w-md mx-auto p-4 space-y-4 w-full">
+            <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+                <p class="text-[10px] font-black text-cyan-700 uppercase tracking-widest">Buscar en catálogo</p>
+                <div class="flex gap-2">
+                    <input type="text" id="inputAsignacionBusqueda" placeholder="Ej. 30perjun10, pegazulejo..." class="flex-1 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-cyan-500 outline-none uppercase">
+                    <button onclick="abrirCatalogo('asignacionSerie')" class="bg-slate-100 p-3 rounded-xl border border-slate-200 active:bg-slate-200">🔍</button>
+                </div>
+                <button onclick="buscarAsignacionSerie()" class="w-full bg-cyan-600 text-white py-3 rounded-xl font-bold text-xs uppercase shadow-md active:scale-95">Cargar listado</button>
+                <p class="text-[11px] text-slate-500 font-bold leading-snug">Carga varios SKUs del catálogo y asigna códigos de barras uno por uno. El código de barras se replica globalmente en todas las bodegas donde exista el SKU LIMSA.</p>
+            </div>
+
+            <div id="seriePanelCaptura" class="hidden bg-cyan-50 p-5 rounded-3xl border border-cyan-100 shadow-sm space-y-3">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <p class="text-[10px] font-black text-cyan-700 uppercase tracking-widest">Captura en serie</p>
+                        <p id="serieSkuActual" class="text-xl font-black text-cyan-700 uppercase break-all">--</p>
+                        <p id="serieNombreActual" class="text-xs font-bold text-slate-600 uppercase break-words">--</p>
+                    </div>
+                    <span id="serieContador" class="shrink-0 bg-white border border-cyan-100 rounded-xl px-3 py-2 text-xs font-black text-cyan-700">0/0</span>
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="inputAsignacionSerie" placeholder="Escanea o escribe barcode" class="flex-1 border border-cyan-200 rounded-xl px-4 py-4 text-center font-black text-cyan-700 text-lg">
+                    <button onclick="abrirScanner('asignacionSerie')" class="bg-cyan-600 text-white p-4 rounded-xl shadow-sm">📷</button>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="guardarAsignacionSerieActual()" class="bg-cyan-600 text-white py-3 rounded-xl font-bold text-xs uppercase shadow-sm active:scale-95">Guardar y siguiente</button>
+                    <button onclick="siguienteAsignacionSeriePendiente()" class="bg-white text-slate-600 py-3 rounded-xl font-bold text-xs uppercase border border-slate-200 active:bg-slate-100">Saltar</button>
+                </div>
+                <p id="serieMensaje" class="hidden p-3 rounded-xl text-xs font-bold text-center"></p>
+            </div>
+
+            <div id="serieResumen" class="hidden grid grid-cols-3 gap-2">
+                <div class="bg-white rounded-2xl border border-slate-200 p-3 text-center"><p class="text-[9px] font-black text-slate-400 uppercase">Total</p><p id="serieTotal" class="text-xl font-black text-slate-700">0</p></div>
+                <div class="bg-white rounded-2xl border border-slate-200 p-3 text-center"><p class="text-[9px] font-black text-slate-400 uppercase">Con barcode</p><p id="serieCon" class="text-xl font-black text-emerald-600">0</p></div>
+                <div class="bg-white rounded-2xl border border-slate-200 p-3 text-center"><p class="text-[9px] font-black text-slate-400 uppercase">Pendientes</p><p id="seriePend" class="text-xl font-black text-orange-600">0</p></div>
+            </div>
+
+            <div id="listaAsignacionSerie" class="space-y-3"></div>
+        </main>
+    </div>
+
     <div id="pantallaDashboardBarcode" class="hidden flex flex-col min-h-screen safe-pb">
         <header class="bg-white border-b p-4 sticky top-0 z-30 shadow-sm flex items-center justify-between gap-3">
             <div class="flex items-center gap-3">
@@ -669,7 +731,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2026.04.25.6-auth-rls-proyecto-correcto";
+        const APP_VERSION = "2026.04.28.9-asignacion-serie-barcode";
         const SB_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/rest/v1/";
         const SB_AUTH_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/auth/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBodWRmbG10YmZrZHpxanFhb3ViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTUyMjIsImV4cCI6MjA5MjYzMTIyMn0.KbQenxZHHNlsLBdamQtI6CvJQisTzLLcVgN11TY2_XQ";
@@ -770,6 +832,8 @@
         let dashboardBarcodeData = [];
         let dashboardBarcodeLoaded = false;
         let dashboardAlmacenRows = [];
+        let asignacionSerieItems = [];
+        let asignacionSerieIndex = 0;
 
         // --- NAVEGACIÓN ---
         function irASelectorAlmacen(mod) { 
@@ -780,6 +844,7 @@
         function regresarAlMenuPrincipal() { 
             document.getElementById('pantallaSelectorAlmacen').classList.add('hidden'); 
             document.getElementById('pantallaCorrelacion').classList.add('hidden'); 
+            document.getElementById('pantallaAsignacionSerie')?.classList.add('hidden');
             document.getElementById('pantallaDashboardBarcode').classList.add('hidden'); 
             document.getElementById('pantallaMenuPrincipal').classList.remove('hidden'); 
             limpiarTodo(); 
@@ -787,12 +852,16 @@
         function irACorrelacion() { 
             irASelectorAlmacen('correlacion');
         }
+        function irAAsignacionSerie() {
+            irASelectorAlmacen('asignacionSerie');
+        }
         function irADashboardBarcode() {
             document.getElementById('pantallaMenuPrincipal').classList.add('hidden');
             document.getElementById('pantallaSelectorAlmacen').classList.add('hidden');
             document.getElementById('pantallaApp').classList.add('hidden');
             document.getElementById('pantallaAuditoria').classList.add('hidden');
             document.getElementById('pantallaCorrelacion').classList.add('hidden');
+            document.getElementById('pantallaAsignacionSerie')?.classList.add('hidden');
             document.getElementById('pantallaDashboardBarcode').classList.remove('hidden');
             cargarDashboardBarcode();
         }
@@ -818,6 +887,12 @@
                 document.getElementById('pantallaSelectorAlmacen').classList.add('hidden');
                 document.getElementById('pantallaCorrelacion').classList.remove('hidden');
                 setTimeout(() => document.getElementById('inputCorr').focus(), 300);
+            } else if(moduloActivo === 'asignacionSerie') {
+                const txt = document.getElementById('serieTxtAlmacen');
+                if (txt) txt.innerText = alm;
+                document.getElementById('pantallaSelectorAlmacen').classList.add('hidden');
+                document.getElementById('pantallaAsignacionSerie').classList.remove('hidden');
+                setTimeout(() => document.getElementById('inputAsignacionBusqueda').focus(), 300);
             } else {
                 document.getElementById('audTxtAlmacen').innerText = alm;
                 document.getElementById('pantallaSelectorAlmacen').classList.add('hidden');
@@ -869,6 +944,8 @@
         bindScanAwareInput('inputSku', value => procesarSku(value));
         bindScanAwareInput('inputCorr', value => procesarCorrelacion(value));
         bindScanAwareInput('inputVinculo', () => guardarVinculo());
+        bindScanAwareInput('inputAsignacionBusqueda', value => buscarAsignacionSerie(value));
+        bindScanAwareInput('inputAsignacionSerie', value => guardarAsignacionSerieActual(value));
         function corrVal(id) { return (document.getElementById(id)?.value || '').trim(); }
         function setCorrVal(id, value) { const el = document.getElementById(id); if(el) el.value = value || ''; }
         function toggleLogisticaSection(seccion) {
@@ -1930,9 +2007,218 @@ Fallidos: ${fallidos}`);
                 cont.innerHTML = filtered.map(a => `<div onclick="seleccionarArticuloCat('${a.articulo}')" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm active:bg-blue-50 cursor-pointer animate-in"><div class="flex justify-between"><span class="font-black text-blue-700 text-sm tracking-tighter">${a.articulo.toUpperCase()}</span><span class="text-[9px] bg-slate-100 px-2 py-0.5 rounded font-bold uppercase">ART</span></div><p class="text-xs font-bold mt-1 uppercase text-slate-800">${a.nombre}</p></div>`).join('');
             } catch(e) { cont.innerHTML = "Error."; }
         }
-        function seleccionarArticuloCat(sku) { if(catalogoModo === "registro") procesarSku(sku); else if(catalogoModo === "correlacion") procesarCorrelacion(sku); else buscarArticuloAuditoria(sku); cerrarCatalogo(); }
+        function seleccionarArticuloCat(sku) { if(catalogoModo === "registro") procesarSku(sku); else if(catalogoModo === "correlacion") procesarCorrelacion(sku); else if(catalogoModo === "asignacionSerie") { document.getElementById('inputAsignacionBusqueda').value = sku; buscarAsignacionSerie(sku); } else buscarArticuloAuditoria(sku); cerrarCatalogo(); }
         function abrirCatalogo(modo) { catalogoModo = modo; document.getElementById('modalCatalogo').classList.remove('hidden'); document.getElementById('busquedaCat').focus(); }
         function cerrarCatalogo() { document.getElementById('modalCatalogo').classList.add('hidden'); }
+
+
+        // --- MÓDULO ASIGNACIÓN EN SERIE ---
+        function setSerieMensaje(txt, tipo = 'info') {
+            const el = document.getElementById('serieMensaje');
+            if(!el) return;
+            if(!txt) { el.classList.add('hidden'); return; }
+            const clases = tipo === 'ok'
+                ? 'bg-green-100 text-green-700'
+                : tipo === 'error'
+                    ? 'bg-red-100 text-red-700'
+                    : tipo === 'warn'
+                        ? 'bg-orange-100 text-orange-700'
+                        : 'bg-cyan-100 text-cyan-700';
+            el.innerText = txt;
+            el.className = `p-3 rounded-xl text-xs font-bold text-center ${clases}`;
+            el.classList.remove('hidden');
+        }
+
+        function normalizarSku(v) { return String(v || '').trim().toLowerCase(); }
+
+        function renderAsignacionSerie() {
+            const lista = document.getElementById('listaAsignacionSerie');
+            const total = asignacionSerieItems.length;
+            const con = asignacionSerieItems.filter(x => String(x.codigo_barra || '').trim()).length;
+            const pend = total - con;
+            document.getElementById('serieResumen')?.classList.toggle('hidden', total === 0);
+            document.getElementById('seriePanelCaptura')?.classList.toggle('hidden', total === 0);
+            document.getElementById('serieTotal').innerText = total;
+            document.getElementById('serieCon').innerText = con;
+            document.getElementById('seriePend').innerText = pend;
+
+            if(!total) {
+                if(lista) lista.innerHTML = '';
+                return;
+            }
+
+            if(asignacionSerieIndex < 0 || asignacionSerieIndex >= total) asignacionSerieIndex = Math.max(0, asignacionSerieItems.findIndex(x => !String(x.codigo_barra || '').trim()));
+            if(asignacionSerieIndex < 0) asignacionSerieIndex = 0;
+            const actual = asignacionSerieItems[asignacionSerieIndex] || asignacionSerieItems[0];
+            document.getElementById('serieSkuActual').innerText = (actual?.articulo || '--').toUpperCase();
+            document.getElementById('serieNombreActual').innerText = actual?.nombre || '--';
+            document.getElementById('serieContador').innerText = `${asignacionSerieIndex + 1}/${total}`;
+            const input = document.getElementById('inputAsignacionSerie');
+            if(input && document.activeElement !== input) input.value = actual?.codigo_barra || '';
+
+            if(lista) {
+                lista.innerHTML = asignacionSerieItems.map((item, idx) => {
+                    const activo = idx === asignacionSerieIndex;
+                    const tiene = String(item.codigo_barra || '').trim();
+                    return `<div class="bg-white p-4 rounded-3xl border ${activo ? 'border-cyan-400 ring-2 ring-cyan-100' : 'border-slate-200'} shadow-sm space-y-3 animate-in">
+                        <div onclick="seleccionarAsignacionSerieIndex(${idx})" class="cursor-pointer">
+                            <div class="flex justify-between gap-3 items-start">
+                                <p class="font-black text-cyan-700 text-sm uppercase break-all">${String(item.articulo || '').toUpperCase()}</p>
+                                <span class="shrink-0 text-[9px] font-black px-2 py-1 rounded-lg ${tiene ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600'}">${tiene ? 'CON BARCODE' : 'PENDIENTE'}</span>
+                            </div>
+                            <p class="text-xs font-bold text-slate-700 uppercase mt-1 break-words">${item.nombre || 'SIN DESCRIPCIÓN'}</p>
+                            <p class="text-[11px] text-slate-500 font-bold mt-1 break-all">Barcode: <span class="text-slate-800">${item.codigo_barra || '--'}</span></p>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" id="serieRowInput_${idx}" value="${item.codigo_barra || ''}" placeholder="Barcode" class="flex-1 border border-slate-200 rounded-xl px-3 py-3 font-black text-slate-700 text-sm">
+                            <button onclick="guardarAsignacionSerieFila(${idx})" class="bg-cyan-600 text-white px-4 rounded-xl font-bold text-xs uppercase active:scale-95">Guardar</button>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+        }
+
+        function seleccionarAsignacionSerieIndex(idx) {
+            asignacionSerieIndex = idx;
+            renderAsignacionSerie();
+            setTimeout(() => document.getElementById('inputAsignacionSerie')?.focus(), 120);
+        }
+
+        async function buscarAsignacionSerie(manual = null) {
+            const txt = String(manual || document.getElementById('inputAsignacionBusqueda')?.value || '').trim();
+            if(txt.length < 3) { alert('Escribe al menos 3 caracteres para buscar en catálogo.'); return; }
+            const lista = document.getElementById('listaAsignacionSerie');
+            if(lista) lista.innerHTML = `<div class="flex justify-center py-10"><div class="w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div></div>`;
+            setSerieMensaje('', 'info');
+            try {
+                const words = txt.split(/\s+/).filter(Boolean);
+                const p1 = words[0].replace(/'/g, "''");
+                const filter = `or=(articulo.ilike.*${encodeURIComponent(p1)}*,nombre.ilike.*${encodeURIComponent(p1)}*,clave_proveedor.ilike.*${encodeURIComponent(p1)}*,proveedor.ilike.*${encodeURIComponent(p1)}*)`;
+                const catalogo = await fetchJsonOrThrow(`${SB_URL}catalogo_articulos?select=articulo,nombre,clave_proveedor,proveedor,grupo&${filter}&limit=150`, {
+                    headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` }
+                });
+                const filtrado = (Array.isArray(catalogo) ? catalogo : []).filter(item => {
+                    const haystack = `${item.articulo || ''} ${item.nombre || ''} ${item.clave_proveedor || ''} ${item.proveedor || ''} ${item.grupo || ''}`.toLowerCase();
+                    return words.every(w => haystack.includes(w.toLowerCase()));
+                });
+                if(!filtrado.length) {
+                    asignacionSerieItems = [];
+                    renderAsignacionSerie();
+                    if(lista) lista.innerHTML = `<p class="text-center text-slate-500 mt-10 italic">Sin resultados.</p>`;
+                    return;
+                }
+
+                const codigos = [...new Set(filtrado.map(x => normalizarSku(x.articulo)).filter(Boolean))];
+                const barcodePorSku = new Map();
+                for(let i = 0; i < codigos.length; i += 80) {
+                    const chunk = codigos.slice(i, i + 80);
+                    const inList = chunk.map(x => `"${x}"`).join(',');
+                    const rows = await fetchJsonOrThrow(`${SB_URL}almacen_datos?select=codigo,codigo_barra&codigo=in.(${inList})&limit=5000`, {
+                        headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` }
+                    });
+                    (Array.isArray(rows) ? rows : []).forEach(r => {
+                        const code = normalizarSku(r.codigo);
+                        const bar = String(r.codigo_barra || '').trim();
+                        if(code && bar && !barcodePorSku.has(code)) barcodePorSku.set(code, bar);
+                    });
+                }
+
+                asignacionSerieItems = filtrado.map(x => ({
+                    articulo: normalizarSku(x.articulo),
+                    nombre: x.nombre || '',
+                    clave_proveedor: x.clave_proveedor || '',
+                    proveedor: x.proveedor || '',
+                    grupo: x.grupo || '',
+                    codigo_barra: barcodePorSku.get(normalizarSku(x.articulo)) || ''
+                }));
+                asignacionSerieIndex = asignacionSerieItems.findIndex(x => !String(x.codigo_barra || '').trim());
+                if(asignacionSerieIndex < 0) asignacionSerieIndex = 0;
+                renderAsignacionSerie();
+                setSerieMensaje(`Listado cargado: ${asignacionSerieItems.length} artículo(s).`, 'ok');
+                setTimeout(() => document.getElementById('inputAsignacionSerie')?.focus(), 200);
+            } catch(e) {
+                asignacionSerieItems = [];
+                renderAsignacionSerie();
+                if(lista) lista.innerHTML = `<p class="text-center text-red-500 mt-10 font-bold">Error al buscar.</p>`;
+                setSerieMensaje(`Error: ${e.message || e}`, 'error');
+            }
+        }
+
+        async function validarBarcodeNoDuplicadoSerie(barcode, skuActual) {
+            const b = String(barcode || '').trim();
+            if(!b) return true;
+            const rows = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo_barra=eq.${encodeURIComponent(b)}&select=codigo&limit=20`, {
+                headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` }
+            });
+            const otros = [...new Set((Array.isArray(rows) ? rows : []).map(r => normalizarSku(r.codigo)).filter(c => c && c !== normalizarSku(skuActual)))];
+            if(otros.length) {
+                return confirm(`Este código de barras ya aparece en otro SKU: ${otros.map(x => x.toUpperCase()).join(', ')}. ¿Aun así quieres guardarlo en ${String(skuActual).toUpperCase()}?`);
+            }
+            return true;
+        }
+
+        async function guardarAsignacionSerieFila(idx) {
+            const input = document.getElementById(`serieRowInput_${idx}`);
+            asignacionSerieIndex = idx;
+            await guardarAsignacionSerieActual(input?.value || '');
+        }
+
+        async function guardarAsignacionSerieActual(manual = null) {
+            const item = asignacionSerieItems[asignacionSerieIndex];
+            if(!item?.articulo) { setSerieMensaje('Primero carga un listado del catálogo.', 'warn'); return; }
+            const barcode = String(manual != null ? manual : (document.getElementById('inputAsignacionSerie')?.value || '')).trim();
+            if(!barcode) { setSerieMensaje('Escanea o escribe un código de barras.', 'warn'); return; }
+            try {
+                if(!(await validarBarcodeNoDuplicadoSerie(barcode, item.articulo))) return;
+                const codigo = normalizarSku(item.articulo);
+                const queryGlobal = `${SB_URL}almacen_datos?codigo=eq.${encodeURIComponent(codigo)}`;
+                const existentes = await fetchJsonOrThrow(`${queryGlobal}&select=codigo,almacen&limit=100`, {
+                    headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` }
+                });
+                if(Array.isArray(existentes) && existentes.length > 0) {
+                    await fetchJsonOrThrow(queryGlobal, {
+                        method: 'PATCH',
+                        headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}`, "Content-Type": "application/json", "Prefer": "return=representation" },
+                        body: JSON.stringify({ codigo_barra: barcode })
+                    });
+                } else {
+                    await fetchJsonOrThrow(`${SB_URL}almacen_datos`, {
+                        method: 'POST',
+                        headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}`, "Content-Type": "application/json", "Prefer": "return=representation" },
+                        body: JSON.stringify({ codigo, almacen: (almacenActual || 'ci').toLowerCase(), codigo_barra: barcode })
+                    });
+                }
+                item.codigo_barra = barcode;
+                setSerieMensaje(`Guardado ${String(codigo).toUpperCase()} → ${barcode}`, 'ok');
+                siguienteAsignacionSeriePendiente(true);
+            } catch(e) {
+                setSerieMensaje(`Error al guardar: ${e.message || e}`, 'error');
+            }
+        }
+
+        function siguienteAsignacionSeriePendiente(silencioso = false) {
+            if(!asignacionSerieItems.length) return;
+            let siguiente = -1;
+            for(let i = asignacionSerieIndex + 1; i < asignacionSerieItems.length; i++) {
+                if(!String(asignacionSerieItems[i].codigo_barra || '').trim()) { siguiente = i; break; }
+            }
+            if(siguiente < 0) {
+                for(let i = 0; i < asignacionSerieIndex; i++) {
+                    if(!String(asignacionSerieItems[i].codigo_barra || '').trim()) { siguiente = i; break; }
+                }
+            }
+            if(siguiente >= 0) {
+                asignacionSerieIndex = siguiente;
+                const input = document.getElementById('inputAsignacionSerie');
+                if(input) input.value = '';
+                renderAsignacionSerie();
+                setTimeout(() => document.getElementById('inputAsignacionSerie')?.focus(), 150);
+            } else {
+                renderAsignacionSerie();
+                if(!silencioso) setSerieMensaje('No quedan pendientes en este listado.', 'ok');
+                else setSerieMensaje('Listado completo. No quedan pendientes.', 'ok');
+            }
+        }
 
         // --- MÓDULO AUDITORÍA ---
         async function buscarArticuloAuditoria(manual = null) {
@@ -2286,6 +2572,10 @@ Fallidos: ${fallidos}`);
             else if(t === 'vinculo') {
                 document.getElementById('inputVinculo').value = txt;
                 guardarVinculo();
+            }
+            else if(t === 'asignacionSerie') {
+                document.getElementById('inputAsignacionSerie').value = txt;
+                guardarAsignacionSerieActual(txt);
             }
             else if(t === 'audNuevaUbic') {
                 agregarUbicacionAuditoria(txt);
@@ -3031,8 +3321,12 @@ Fallidos: ${fallidos}`);
             limpiarCamposCorrelacion();
             actualizarResumenCorrelacion();
             document.getElementById('resCorrelacion').classList.add('hidden');
+            document.getElementById('inputAsignacionBusqueda') && (document.getElementById('inputAsignacionBusqueda').value = '');
+            document.getElementById('inputAsignacionSerie') && (document.getElementById('inputAsignacionSerie').value = '');
+            asignacionSerieItems = []; asignacionSerieIndex = 0; renderAsignacionSerie();
             if(!document.getElementById('pantallaApp').classList.contains('hidden')) setTimeout(() => document.getElementById('inputUbicacion').focus(), 300);
             if(!document.getElementById('pantallaAuditoria').classList.contains('hidden')) setTimeout(() => document.getElementById('audInputCodigo').focus(), 300);
+            if(!document.getElementById('pantallaAsignacionSerie')?.classList.contains('hidden')) setTimeout(() => document.getElementById('inputAsignacionBusqueda')?.focus(), 300);
         }
     </script>
 
