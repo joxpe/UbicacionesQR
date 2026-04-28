@@ -669,7 +669,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2026.04.28.7-auth-rls-proyecto-correcto";
+        const APP_VERSION = "2026.04.25.6-auth-rls-proyecto-correcto";
         const SB_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/rest/v1/";
         const SB_AUTH_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/auth/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBodWRmbG10YmZrZHpxanFhb3ViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTUyMjIsImV4cCI6MjA5MjYzMTIyMn0.KbQenxZHHNlsLBdamQtI6CvJQisTzLLcVgN11TY2_XQ";
@@ -846,7 +846,8 @@
                 const lista = Array.isArray(data)
                     ? data.map(x => String(x.nombre || '').trim().toLowerCase()).filter(Boolean)
                     : [];
-                renderAlmacenes(lista.length ? lista : ALMACENES_FALLBACK);
+                const listaConCR = Array.from(new Set([...(lista.length ? lista : ALMACENES_FALLBACK), 'cr'])).sort();
+                renderAlmacenes(listaConCR);
             } catch (_) {
                 renderAlmacenes(ALMACENES_FALLBACK);
             }
@@ -934,7 +935,9 @@
             const pesoCaja = parseNumeroCorr(corrVal('corrPesoCajaBolsa'));
             const undTarima = parseNumeroCorr(corrVal('corrUndTarima'));
 
-            if (undCaja && undCaja > 0 && anchoCaja != null) {
+            // Ancho unidad: calcular automaticamente solo cuando no trae dato.
+            // Si el operador lo captura o modifica manualmente, no se sobrescribe.
+            if (undCaja && undCaja > 0 && anchoCaja != null && !corrVal('corrAnchoUnidad')) {
                 setCorrVal('corrAnchoUnidad', formatearNumeroCorr(anchoCaja / undCaja));
             }
             if (undCaja && undCaja > 0 && pesoCaja != null) {
@@ -2013,7 +2016,7 @@ Fallidos: ${fallidos}`);
             document.getElementById('inputVinculo').value = "";
             limpiarCamposCorrelacion();
             correlacionActiva = {
-                limsa: "", barras: "", modo: "", medida: "", nombre: "", umVenta: "", claveProveedor: "", prefijoBusqueda: "", similares: [], sugerenciasBarcode: [], sugerenciaBarcodeElegida: "", sugerenciasLimsa: [], sugerenciaLimsaElegida: null,
+                limsa: "", barras: "", modo: "", medida: "", nombre: "", umVenta: "", claveProveedor: "", prefijoBusqueda: "", similares: [], sugerenciasBarcode: [], sugerenciaBarcodeElegida: "", sugerenciasLimsa: [], sugerenciaLimsaElegida: null, codigoBarraHeredado: false, bodegaCodigoBarra: "",
                 largoUnidad: "", anchoUnidad: "", altoUnidad: "", pesoUnidad: "",
                 unidadesCajaBolsa: "", largoCajaBolsa: "", anchoCajaBolsa: "", altoCajaBolsa: "", pesoCajaBolsa: "",
                 unidadesTarima: "", largoTarima: "", anchoTarima: "", altoTarima: "", pesoTarima: ""
@@ -2030,24 +2033,67 @@ Fallidos: ${fallidos}`);
 
                 const esNumerico = /^\d+$/.test(val);
 
+                const camposLogisticos = "codigo,almacen,codigo_barra,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima";
+
                 if(esNumerico && val.length >= 8) {
                     correlacionActiva.modo = "EAN";
                     correlacionActiva.barras = val;
-                    const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo_barra=eq.${val}&select=codigo,codigo_barra,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima&limit=1`, {
+
+                    let data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo_barra=eq.${val}&almacen=eq.${almacenActual.toLowerCase()}&select=${camposLogisticos}&limit=1`, {
                         headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` }
                     });
                     fila = data?.[0] || null;
-                    correlacionActiva.limsa = fila?.codigo || "";
-                    idN = correlacionActiva.limsa;
+
+                    if(!fila) {
+                        data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo_barra=eq.${val}&select=${camposLogisticos}&limit=1`, {
+                            headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` }
+                        });
+                        const filaGlobal = data?.[0] || null;
+                        if(filaGlobal?.codigo) {
+                            correlacionActiva.codigoBarraHeredado = String(filaGlobal.almacen || '').toLowerCase() !== String(almacenActual || '').toLowerCase();
+                            correlacionActiva.bodegaCodigoBarra = filaGlobal.almacen || "";
+                            correlacionActiva.limsa = filaGlobal.codigo || "";
+                            idN = correlacionActiva.limsa;
+
+                            const dataLocal = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${String(idN).toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}&select=${camposLogisticos}&limit=1`, {
+                                headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` }
+                            });
+                            fila = dataLocal?.[0] || filaGlobal;
+                            if(!fila?.codigo_barra) correlacionActiva.barras = val;
+                        }
+                    } else {
+                        correlacionActiva.limsa = fila?.codigo || "";
+                        idN = correlacionActiva.limsa;
+                    }
+
+                    if(!idN && fila?.codigo) {
+                        correlacionActiva.limsa = fila.codigo;
+                        idN = fila.codigo;
+                    }
+
+                    if(idN) {
+                        const filasSku = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${String(idN).toLowerCase()}&select=${camposLogisticos}&limit=100`, {
+                            headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` }
+                        });
+                        const mejorFila = editorPcElegirBaseLogistica(Array.isArray(filasSku) ? filasSku : []);
+                        if(mejorFila?.codigo) fila = mejorFila;
+                        if(!correlacionActiva.barras && fila?.codigo_barra) correlacionActiva.barras = fila.codigo_barra;
+                    }
                 } else {
                     correlacionActiva.modo = "LIMSA";
                     correlacionActiva.limsa = val;
                     idN = val;
-                    const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${val.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}&select=codigo,codigo_barra,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima&limit=1`, {
+
+                    // Logistica y codigo de barras son globales por SKU LIMSA.
+                    // Se consultan todas las bodegas del SKU y se toma la fila mas completa.
+                    const filasSku = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${val.toLowerCase()}&select=${camposLogisticos}&limit=100`, {
                         headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` }
                     });
-                    fila = data?.[0] || null;
+                    const filas = Array.isArray(filasSku) ? filasSku : [];
+                    fila = editorPcElegirBaseLogistica(filas);
                     correlacionActiva.barras = fila?.codigo_barra || "";
+                    correlacionActiva.codigoBarraHeredado = String(fila?.almacen || '').toLowerCase() !== String(almacenActual || '').toLowerCase() && !!correlacionActiva.barras;
+                    correlacionActiva.bodegaCodigoBarra = fila?.almacen || "";
                 }
 
                 if(idN) {
@@ -2132,9 +2178,14 @@ Fallidos: ${fallidos}`);
                 await cargarSugerenciaLimsaDesdeBarcode(correlacionActiva.barras, !!correlacionActiva.limsa);
 
                 if(correlacionActiva.limsa && correlacionActiva.barras) {
-                    document.getElementById('corrMensaje').innerText = "Vínculo Correcto";
+                    if(correlacionActiva.codigoBarraHeredado && correlacionActiva.bodegaCodigoBarra) {
+                        document.getElementById('corrMensaje').innerText = `Vínculo Correcto · código encontrado en ${String(correlacionActiva.bodegaCodigoBarra).toUpperCase()}`;
+                        document.getElementById('btnEliminarCorrMini').classList.add('hidden');
+                    } else {
+                        document.getElementById('corrMensaje').innerText = "Vínculo Correcto";
+                        document.getElementById('btnEliminarCorrMini').classList.remove('hidden');
+                    }
                     document.getElementById('corrMensaje').className = "mt-4 p-3 rounded-xl text-xs font-bold text-center bg-green-100 text-green-700";
-                    document.getElementById('btnEliminarCorrMini').classList.remove('hidden');
                     rowVinculo?.classList.add('hidden');
                 } else {
                     document.getElementById('corrMensaje').innerText = "Vínculo Pendiente";
@@ -2178,13 +2229,15 @@ Fallidos: ${fallidos}`);
                     return;
                 }
 
-                const query = `${SB_URL}almacen_datos?codigo=eq.${l.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`;
-                const rows = await fetchJsonOrThrow(`${query}&select=codigo,almacen&limit=1`, {
+                // Codigo de barras y datos logisticos son globales por SKU LIMSA.
+                // Al guardar, se replican en todas las filas/bodegas donde exista el mismo codigo.
+                const queryGlobal = `${SB_URL}almacen_datos?codigo=eq.${l.toLowerCase()}`;
+                const rows = await fetchJsonOrThrow(`${queryGlobal}&select=codigo,almacen&limit=100`, {
                     headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` }
                 });
 
                 if(Array.isArray(rows) && rows.length > 0) {
-                    await fetchJsonOrThrow(query, {
+                    await fetchJsonOrThrow(queryGlobal, {
                         method: 'PATCH',
                         headers: {
                             "apikey": SB_KEY,
@@ -2220,7 +2273,7 @@ Fallidos: ${fallidos}`);
                 alert(`Error al guardar: ${e.message || e}`);
             }
         }
-        async function eliminarRelacionTotal() { if(!confirm("¿Quitar solo el código de barras de este artículo en la bodega actual?")) return; try { await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${correlacionActiva.limsa.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo_barra: null }) }); document.getElementById('inputVinculo').value = ""; alert("Vínculo eliminado en esta bodega."); procesarCorrelacion(correlacionActiva.limsa); } catch(e) { alert(`Error al eliminar: ${e.message || e}`); } }
+        async function eliminarRelacionTotal() { if(!confirm("¿Quitar el código de barras de este SKU en todas las bodegas?")) return; try { await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${correlacionActiva.limsa.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo_barra: null }) }); document.getElementById('inputVinculo').value = ""; alert("Vínculo eliminado en todas las bodegas del SKU."); procesarCorrelacion(correlacionActiva.limsa); } catch(e) { alert(`Error al eliminar: ${e.message || e}`); } }
 
         // --- UTILS ---
         function aplicarResultadoEscaneo(t, txt) {
@@ -2458,18 +2511,35 @@ Fallidos: ${fallidos}`);
             document.getElementById('pantallaMenuPrincipal').classList.remove('hidden');
         }
 
+        const EDITOR_PC_LOGISTICA_FIELDS = [
+            'codigo_barra','largo_unidad','ancho_unidad','alto_unidad','peso_unidad','unidades_caja_bolsa','largo_caja_bolsa',
+            'ancho_caja_bolsa','alto_caja_bolsa','peso_caja_bolsa','unidades_tarima','largo_tarima','ancho_tarima','alto_tarima','peso_tarima'
+        ];
+
+        function editorPcTieneDatoLogistico(row, campo) {
+            return String(row?.[campo] ?? '').trim() !== '';
+        }
+
+        function editorPcScoreLogistica(row) {
+            return EDITOR_PC_LOGISTICA_FIELDS.reduce((total, campo) => total + (editorPcTieneDatoLogistico(row, campo) ? 1 : 0), 0);
+        }
+
+        function editorPcElegirBaseLogistica(rows) {
+            return [...(rows || [])].sort((a, b) => {
+                const diff = editorPcScoreLogistica(b) - editorPcScoreLogistica(a);
+                if (diff) return diff;
+                const barcodeDiff = (editorPcTieneDatoLogistico(b, 'codigo_barra') ? 1 : 0) - (editorPcTieneDatoLogistico(a, 'codigo_barra') ? 1 : 0);
+                if (barcodeDiff) return barcodeDiff;
+                return String(a?.almacen || '').localeCompare(String(b?.almacen || ''), 'es');
+            })[0] || {};
+        }
+
         function editorPcTieneLogistica(row) {
-            return [
-                'codigo_barra','largo_unidad','ancho_unidad','alto_unidad','peso_unidad','unidades_caja_bolsa','largo_caja_bolsa',
-                'ancho_caja_bolsa','alto_caja_bolsa','peso_caja_bolsa','unidades_tarima','largo_tarima','ancho_tarima','alto_tarima','peso_tarima'
-            ].some(k => String(row?.[k] ?? '').trim() !== '');
+            return EDITOR_PC_LOGISTICA_FIELDS.some(k => editorPcTieneDatoLogistico(row, k));
         }
 
         function editorPcTieneLogisticaCompleta(row) {
-            return [
-                'codigo_barra','largo_unidad','ancho_unidad','alto_unidad','peso_unidad','unidades_caja_bolsa','largo_caja_bolsa',
-                'ancho_caja_bolsa','alto_caja_bolsa','peso_caja_bolsa','unidades_tarima','largo_tarima','ancho_tarima','alto_tarima','peso_tarima'
-            ].every(k => String(row?.[k] ?? '').trim() !== '');
+            return EDITOR_PC_LOGISTICA_FIELDS.every(k => editorPcTieneDatoLogistico(row, k));
         }
 
         function editorPcEstadoComercialDesdeNombre(nombre) {
@@ -2841,7 +2911,7 @@ Fallidos: ${fallidos}`);
                 }
                 const mapCat = new Map(catalogo.map(x => [String(x.articulo || '').trim().toLowerCase(), x]));
                 editorPcRows = [...grouped.entries()].map(([code, rows]) => {
-                    const base = rows[0] || {};
+                    const base = editorPcElegirBaseLogistica(rows);
                     const cat = mapCat.get(code) || {};
                     const uniqueAlmacenes = [...new Set(rows.map(x => String(x.almacen || '').trim().toLowerCase()).filter(Boolean))].sort();
                     return {
