@@ -448,7 +448,26 @@
                     <input type="text" id="inputAsignacionBusqueda" placeholder="Ej. 30perjun10, pegazulejo..." class="flex-1 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-cyan-500 outline-none uppercase">
                     <button onclick="abrirCatalogo('asignacionSerie')" class="bg-slate-100 p-3 rounded-xl border border-slate-200 active:bg-slate-200">🔍</button>
                 </div>
+                <div class="space-y-2">
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Filtros de catálogo</p>
+                    <div id="serieFiltrosCatalogo" class="grid grid-cols-2 gap-2">
+                        <label class="flex items-center gap-2 bg-cyan-50 border border-cyan-100 rounded-xl px-3 py-2 text-[10px] font-black text-cyan-700 uppercase active:scale-95">
+                            <input type="checkbox" class="serieFiltroEstatus accent-cyan-600" value="linea" checked> CONT
+                        </label>
+                        <label class="flex items-center gap-2 bg-cyan-50 border border-cyan-100 rounded-xl px-3 py-2 text-[10px] font-black text-cyan-700 uppercase active:scale-95">
+                            <input type="checkbox" class="serieFiltroEstatus accent-cyan-600" value="compra especial" checked> Compra especial
+                        </label>
+                        <label class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2 text-[10px] font-black text-slate-600 uppercase active:scale-95">
+                            <input type="checkbox" class="serieFiltroEstatus accent-cyan-600" value="descontinuado"> DESC
+                        </label>
+                        <label class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2 text-[10px] font-black text-slate-600 uppercase active:scale-95">
+                            <input type="checkbox" class="serieFiltroEstatus accent-cyan-600" value="sobre pedido"> Sobre pedido
+                        </label>
+                    </div>
+                    <p class="text-[10px] text-slate-400 font-bold leading-snug">Por default se cargan CONT + compra especial. Puedes combinarlos libremente.</p>
+                </div>
                 <button onclick="buscarAsignacionSerie()" class="w-full bg-cyan-600 text-white py-3 rounded-xl font-bold text-xs uppercase shadow-md active:scale-95">Cargar listado</button>
+                <div id="serieGruposCatalogo" class="hidden space-y-2"></div>
                 <p class="text-[11px] text-slate-500 font-bold leading-snug">Carga varios SKUs del catálogo y asigna códigos de barras uno por uno. El código de barras se replica globalmente en todas las bodegas donde exista el SKU LIMSA.</p>
             </div>
 
@@ -731,7 +750,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2026.04.28.9-asignacion-serie-barcode";
+        const APP_VERSION = "2026.04.28.13-asignacion-serie-grupos-catalogo";
         const SB_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/rest/v1/";
         const SB_AUTH_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/auth/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBodWRmbG10YmZrZHpxanFhb3ViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTUyMjIsImV4cCI6MjA5MjYzMTIyMn0.KbQenxZHHNlsLBdamQtI6CvJQisTzLLcVgN11TY2_XQ";
@@ -740,6 +759,28 @@
         let authSession = null;
         function getAccessToken() { return authSession?.access_token || ""; }
         function getUsuarioActual() { const email = authSession?.user?.email || ""; return email ? email.split("@")[0].toLowerCase() : ""; }
+        function sesionPorVencer() {
+            const exp = Number(authSession?.expires_at || 0);
+            return !!exp && (exp * 1000) < (Date.now() + 60000);
+        }
+        async function refrescarSesionSiHaceFalta(forzar = false) {
+            if(!authSession?.refresh_token) return;
+            if(!forzar && !sesionPorVencer()) return;
+            const res = await fetch(`${SB_AUTH_URL}token?grant_type=refresh_token`, {
+                method: "POST",
+                headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ refresh_token: authSession.refresh_token })
+            });
+            const data = await res.json().catch(() => ({}));
+            if(!res.ok || !data.access_token) {
+                authSession = null;
+                localStorage.removeItem(AUTH_STORAGE_KEY);
+                mostrarLogin("Tu sesión venció. Vuelve a iniciar sesión.");
+                throw new Error("Sesión vencida. Vuelve a iniciar sesión.");
+            }
+            authSession = data;
+            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(data));
+        }
         function mostrarLogin(mensaje = "") {
             document.getElementById("pantallaLogin")?.classList.remove("hidden");
             document.getElementById("pantallaMenuPrincipal")?.classList.add("hidden");
@@ -834,6 +875,8 @@
         let dashboardAlmacenRows = [];
         let asignacionSerieItems = [];
         let asignacionSerieIndex = 0;
+        let asignacionSerieCatalogoBase = [];
+        let asignacionSerieBusquedaActual = '';
 
         // --- NAVEGACIÓN ---
         function irASelectorAlmacen(mod) { 
@@ -1546,7 +1589,29 @@ Solo se actualizarán registros ya existentes en almacen_datos.`)) return;
             actualizarResumenCorrelacion();
         }
         function valorCajaVigente(v) { const t = String(v || '').trim(); return t !== '' && t !== '0' && t !== '0.0'; }
-        async function fetchJsonOrThrow(url, options = {}) { const res = await fetch(url, options); const raw = await res.text(); let data = null; try { data = raw ? JSON.parse(raw) : null; } catch(_) { data = raw; } if(!res.ok) { throw new Error(typeof data === 'string' ? data : JSON.stringify(data)); } return data; }
+        async function fetchJsonOrThrow(url, options = {}) {
+            await refrescarSesionSiHaceFalta(false);
+            const prepararOpciones = () => {
+                const headers = { ...(options.headers || {}) };
+                if(headers.Authorization || headers.authorization) headers.Authorization = `Bearer ${getAccessToken()}`;
+                return { ...options, headers };
+            };
+            let res = await fetch(url, prepararOpciones());
+            let raw = await res.text();
+            let data = null;
+            try { data = raw ? JSON.parse(raw) : null; } catch(_) { data = raw; }
+            const msg = typeof data === 'string' ? data : JSON.stringify(data || {});
+            const sesionExpirada = res.status === 401 || msg.includes('PGRST303') || msg.toLowerCase().includes('jwt expired');
+            if(!res.ok && sesionExpirada && authSession?.refresh_token) {
+                await refrescarSesionSiHaceFalta(true);
+                res = await fetch(url, prepararOpciones());
+                raw = await res.text();
+                try { data = raw ? JSON.parse(raw) : null; } catch(_) { data = raw; }
+            }
+            if(!res.ok) { throw new Error(typeof data === 'string' ? data : JSON.stringify(data)); }
+            return data;
+        }
+
 
         async function fetchAllSupabaseRows(table, selectClause, extraQuery = '', batchSize = 1000) {
             const headers = { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` };
@@ -2031,6 +2096,28 @@ Fallidos: ${fallidos}`);
 
         function normalizarSku(v) { return String(v || '').trim().toLowerCase(); }
 
+        function getAsignacionSerieFiltros() {
+            return Array.from(document.querySelectorAll('.serieFiltroEstatus:checked'))
+                .map(x => String(x.value || '').trim())
+                .filter(Boolean);
+        }
+
+        function serieEstatusLabel(estatus) {
+            if(estatus === 'linea') return 'CONT';
+            if(estatus === 'descontinuado') return 'DESC';
+            if(estatus === 'compra especial') return 'COMPRA ESPECIAL';
+            if(estatus === 'sobre pedido') return 'SOBRE PEDIDO';
+            return String(estatus || '').toUpperCase();
+        }
+
+        function serieEstatusBadgeClass(estatus) {
+            if(estatus === 'linea') return 'bg-cyan-50 text-cyan-700';
+            if(estatus === 'compra especial') return 'bg-purple-50 text-purple-700';
+            if(estatus === 'descontinuado') return 'bg-slate-100 text-slate-600';
+            if(estatus === 'sobre pedido') return 'bg-amber-50 text-amber-700';
+            return 'bg-slate-100 text-slate-600';
+        }
+
         function renderAsignacionSerie() {
             const lista = document.getElementById('listaAsignacionSerie');
             const total = asignacionSerieItems.length;
@@ -2067,6 +2154,9 @@ Fallidos: ${fallidos}`);
                                 <span class="shrink-0 text-[9px] font-black px-2 py-1 rounded-lg ${tiene ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600'}">${tiene ? 'CON BARCODE' : 'PENDIENTE'}</span>
                             </div>
                             <p class="text-xs font-bold text-slate-700 uppercase mt-1 break-words">${item.nombre || 'SIN DESCRIPCIÓN'}</p>
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                <span class="text-[9px] font-black px-2 py-1 rounded-lg ${serieEstatusBadgeClass(item.estatus)}">${serieEstatusLabel(item.estatus)}</span>
+                            </div>
                             <p class="text-[11px] text-slate-500 font-bold mt-1 break-all">Barcode: <span class="text-slate-800">${item.codigo_barra || '--'}</span></p>
                         </div>
                         <div class="flex gap-2">
@@ -2084,6 +2174,111 @@ Fallidos: ${fallidos}`);
             setTimeout(() => document.getElementById('inputAsignacionSerie')?.focus(), 120);
         }
 
+        function serieEscapeHtml(v) {
+            return String(v ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
+        }
+
+        function serieGrupoKey(v) {
+            const g = String(v || '').trim();
+            return g || 'SIN GRUPO';
+        }
+
+        function limpiarGruposAsignacionSerie() {
+            const cont = document.getElementById('serieGruposCatalogo');
+            if(cont) {
+                cont.classList.add('hidden');
+                cont.innerHTML = '';
+            }
+        }
+
+        function renderGruposAsignacionSerie(items, filtrosEstatus) {
+            const cont = document.getElementById('serieGruposCatalogo');
+            if(!cont) return;
+            const grupos = new Map();
+            (items || []).forEach(item => {
+                const key = serieGrupoKey(item.grupo);
+                if(!grupos.has(key)) grupos.set(key, []);
+                grupos.get(key).push(item);
+            });
+            const arr = Array.from(grupos.entries()).sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
+            if(arr.length <= 1) {
+                limpiarGruposAsignacionSerie();
+                return;
+            }
+            cont.classList.remove('hidden');
+            const filtrosTxt = (filtrosEstatus || []).map(serieEstatusLabel).join(' + ');
+            cont.innerHTML = `
+                <div class="bg-amber-50 border border-amber-100 rounded-2xl p-3 space-y-2">
+                    <p class="text-[10px] font-black text-amber-700 uppercase tracking-widest">Selecciona grupo</p>
+                    <p class="text-[11px] font-bold text-slate-600 leading-snug">Tu búsqueda encontró varios grupos. Elige el grupo que corresponde para cargar solo esos productos.</p>
+                    <div class="grid grid-cols-1 gap-2">
+                        ${arr.map(([grupo, rows]) => {
+                            const ejemplos = rows.slice(0, 3).map(x => String(x.articulo || '').toUpperCase()).join(' · ');
+                            return `<button onclick="seleccionarGrupoAsignacionSerie('${serieEscapeHtml(grupo)}')" class="text-left bg-white border border-amber-100 rounded-xl p-3 active:scale-95">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="text-sm font-black text-slate-800 uppercase">${serieEscapeHtml(grupo)}</span>
+                                    <span class="text-[10px] font-black bg-cyan-50 text-cyan-700 rounded-lg px-2 py-1">${rows.length} artículos</span>
+                                </div>
+                                <p class="text-[10px] font-bold text-slate-400 mt-1 break-words">${serieEscapeHtml(ejemplos)}</p>
+                            </button>`;
+                        }).join('')}
+                    </div>
+                    <button onclick="cargarAsignacionSerieDesdeCatalogo(asignacionSerieCatalogoBase, 'Listado cargado completo: ' + asignacionSerieCatalogoBase.length + ' artículo(s). Filtros: ' + '${serieEscapeHtml(filtrosTxt)}' + '.')" class="w-full bg-white text-slate-600 py-3 rounded-xl font-black text-xs uppercase border border-slate-200 active:bg-slate-100">Cargar todos los grupos</button>
+                </div>`;
+        }
+
+        async function seleccionarGrupoAsignacionSerie(grupo) {
+            const key = serieGrupoKey(grupo);
+            const filtrado = asignacionSerieCatalogoBase.filter(item => serieGrupoKey(item.grupo) === key);
+            limpiarGruposAsignacionSerie();
+            await cargarAsignacionSerieDesdeCatalogo(filtrado, `Grupo ${key}: ${filtrado.length} artículo(s) cargado(s).`);
+        }
+
+        async function cargarAsignacionSerieDesdeCatalogo(filtrado, mensajeOk) {
+            const lista = document.getElementById('listaAsignacionSerie');
+            if(!filtrado || !filtrado.length) {
+                asignacionSerieItems = [];
+                renderAsignacionSerie();
+                if(lista) lista.innerHTML = `<p class="text-center text-slate-500 mt-10 italic">Sin resultados.</p>`;
+                return;
+            }
+
+            const codigos = [...new Set(filtrado.map(x => normalizarSku(x.articulo)).filter(Boolean))];
+            const barcodePorSku = new Map();
+            for(let i = 0; i < codigos.length; i += 80) {
+                const chunk = codigos.slice(i, i + 80);
+                const inList = chunk.map(x => `"${x}"`).join(',');
+                const rows = await fetchJsonOrThrow(`${SB_URL}almacen_datos?select=codigo,codigo_barra&codigo=in.(${inList})&limit=5000`, {
+                    headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` }
+                });
+                (Array.isArray(rows) ? rows : []).forEach(r => {
+                    const code = normalizarSku(r.codigo);
+                    const bar = String(r.codigo_barra || '').trim();
+                    if(code && bar && !barcodePorSku.has(code)) barcodePorSku.set(code, bar);
+                });
+            }
+
+            asignacionSerieItems = filtrado.map(x => ({
+                articulo: normalizarSku(x.articulo),
+                nombre: x.nombre || '',
+                clave_proveedor: x.clave_proveedor || '',
+                proveedor: x.proveedor || '',
+                grupo: x.grupo || '',
+                estatus: dashboardEstatus(x.nombre),
+                codigo_barra: barcodePorSku.get(normalizarSku(x.articulo)) || ''
+            }));
+            asignacionSerieIndex = asignacionSerieItems.findIndex(x => !String(x.codigo_barra || '').trim());
+            if(asignacionSerieIndex < 0) asignacionSerieIndex = 0;
+            renderAsignacionSerie();
+            setSerieMensaje(mensajeOk || `Listado cargado: ${asignacionSerieItems.length} artículo(s).`, 'ok');
+            setTimeout(() => document.getElementById('inputAsignacionSerie')?.focus(), 200);
+        }
+
         async function buscarAsignacionSerie(manual = null) {
             const txt = String(manual || document.getElementById('inputAsignacionBusqueda')?.value || '').trim();
             if(txt.length < 3) { alert('Escribe al menos 3 caracteres para buscar en catálogo.'); return; }
@@ -2091,6 +2286,16 @@ Fallidos: ${fallidos}`);
             if(lista) lista.innerHTML = `<div class="flex justify-center py-10"><div class="w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div></div>`;
             setSerieMensaje('', 'info');
             try {
+                const filtrosEstatus = getAsignacionSerieFiltros();
+                if(!filtrosEstatus.length) {
+                    asignacionSerieItems = [];
+                    asignacionSerieCatalogoBase = [];
+                    limpiarGruposAsignacionSerie();
+                    renderAsignacionSerie();
+                    if(lista) lista.innerHTML = `<p class="text-center text-orange-500 mt-10 font-bold">Selecciona al menos un filtro de catálogo.</p>`;
+                    setSerieMensaje('Selecciona al menos un filtro: CONT, compra especial, DESC o sobre pedido.', 'warn');
+                    return;
+                }
                 const words = txt.split(/\s+/).filter(Boolean);
                 const p1 = words[0].replace(/'/g, "''");
                 const filter = `or=(articulo.ilike.*${encodeURIComponent(p1)}*,nombre.ilike.*${encodeURIComponent(p1)}*,clave_proveedor.ilike.*${encodeURIComponent(p1)}*,proveedor.ilike.*${encodeURIComponent(p1)}*)`;
@@ -2099,45 +2304,37 @@ Fallidos: ${fallidos}`);
                 });
                 const filtrado = (Array.isArray(catalogo) ? catalogo : []).filter(item => {
                     const haystack = `${item.articulo || ''} ${item.nombre || ''} ${item.clave_proveedor || ''} ${item.proveedor || ''} ${item.grupo || ''}`.toLowerCase();
-                    return words.every(w => haystack.includes(w.toLowerCase()));
+                    const coincideTexto = words.every(w => haystack.includes(w.toLowerCase()));
+                    const estatus = dashboardEstatus(item.nombre);
+                    return coincideTexto && filtrosEstatus.includes(estatus);
                 });
                 if(!filtrado.length) {
                     asignacionSerieItems = [];
+                    asignacionSerieCatalogoBase = [];
+                    limpiarGruposAsignacionSerie();
                     renderAsignacionSerie();
                     if(lista) lista.innerHTML = `<p class="text-center text-slate-500 mt-10 italic">Sin resultados.</p>`;
                     return;
                 }
 
-                const codigos = [...new Set(filtrado.map(x => normalizarSku(x.articulo)).filter(Boolean))];
-                const barcodePorSku = new Map();
-                for(let i = 0; i < codigos.length; i += 80) {
-                    const chunk = codigos.slice(i, i + 80);
-                    const inList = chunk.map(x => `"${x}"`).join(',');
-                    const rows = await fetchJsonOrThrow(`${SB_URL}almacen_datos?select=codigo,codigo_barra&codigo=in.(${inList})&limit=5000`, {
-                        headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` }
-                    });
-                    (Array.isArray(rows) ? rows : []).forEach(r => {
-                        const code = normalizarSku(r.codigo);
-                        const bar = String(r.codigo_barra || '').trim();
-                        if(code && bar && !barcodePorSku.has(code)) barcodePorSku.set(code, bar);
-                    });
+                asignacionSerieCatalogoBase = filtrado;
+                asignacionSerieBusquedaActual = txt;
+                const gruposUnicos = [...new Set(filtrado.map(x => serieGrupoKey(x.grupo)))];
+                if(gruposUnicos.length > 1) {
+                    asignacionSerieItems = [];
+                    renderAsignacionSerie();
+                    renderGruposAsignacionSerie(filtrado, filtrosEstatus);
+                    if(lista) lista.innerHTML = `<p class="text-center text-slate-500 mt-6 font-bold">Selecciona un grupo para cargar el listado.</p>`;
+                    setSerieMensaje(`Se encontraron ${filtrado.length} artículos en ${gruposUnicos.length} grupos. Selecciona el grupo correcto.`, 'warn');
+                    return;
                 }
 
-                asignacionSerieItems = filtrado.map(x => ({
-                    articulo: normalizarSku(x.articulo),
-                    nombre: x.nombre || '',
-                    clave_proveedor: x.clave_proveedor || '',
-                    proveedor: x.proveedor || '',
-                    grupo: x.grupo || '',
-                    codigo_barra: barcodePorSku.get(normalizarSku(x.articulo)) || ''
-                }));
-                asignacionSerieIndex = asignacionSerieItems.findIndex(x => !String(x.codigo_barra || '').trim());
-                if(asignacionSerieIndex < 0) asignacionSerieIndex = 0;
-                renderAsignacionSerie();
-                setSerieMensaje(`Listado cargado: ${asignacionSerieItems.length} artículo(s).`, 'ok');
-                setTimeout(() => document.getElementById('inputAsignacionSerie')?.focus(), 200);
+                limpiarGruposAsignacionSerie();
+                await cargarAsignacionSerieDesdeCatalogo(filtrado, `Listado cargado: ${filtrado.length} artículo(s). Filtros: ${filtrosEstatus.map(serieEstatusLabel).join(' + ')}.`);
             } catch(e) {
                 asignacionSerieItems = [];
+                asignacionSerieCatalogoBase = [];
+                limpiarGruposAsignacionSerie();
                 renderAsignacionSerie();
                 if(lista) lista.innerHTML = `<p class="text-center text-red-500 mt-10 font-bold">Error al buscar.</p>`;
                 setSerieMensaje(`Error: ${e.message || e}`, 'error');
