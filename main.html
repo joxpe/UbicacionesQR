@@ -103,6 +103,16 @@
                 </div>
             </button>
 
+            <button onclick="irADashboardLogistico()" class="card-modulo w-full bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center gap-5 text-left">
+                <div class="bg-cyan-600 p-4 rounded-2xl text-white shadow-lg shadow-cyan-100">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M5 7v10a2 2 0 002 2h10a2 2 0 002-2V7M8 11h8M8 15h5"/></svg>
+                </div>
+                <div>
+                    <h3 class="font-black text-slate-800 uppercase text-sm tracking-tight">Dashboard Logístico</h3>
+                    <p class="text-xs text-slate-500 mt-1">Avance de captura, pendientes y resumen por proveedor/grupo.</p>
+                </div>
+            </button>
+
             <button onclick="irAEditorLogisticoPC()" class="card-modulo w-full bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center gap-5 text-left">
                 <div class="bg-violet-600 p-4 rounded-2xl text-white shadow-lg shadow-violet-100">
                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16M8 4v16m8-16v16"/></svg>
@@ -583,6 +593,35 @@
         </main>
     </div>
 
+    <div id="pantallaDashboardLogistico" class="hidden flex flex-col min-h-screen safe-pb">
+        <header class="bg-white border-b p-4 sticky top-0 z-30 shadow-sm flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <button onclick="regresarAlMenuPrincipal()" class="p-2 hover:bg-slate-100 rounded-full">
+                    <svg class="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                </button>
+                <div>
+                    <h1 class="text-lg font-bold text-slate-800">Dashboard Logístico</h1>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Avance de captura y pendientes</p>
+                </div>
+            </div>
+            <button onclick="cargarDashboardLogistico(true)" class="bg-cyan-600 text-white px-4 py-2 rounded-xl text-xs font-black uppercase shadow-sm">Actualizar</button>
+        </header>
+        <main class="max-w-md mx-auto p-4 space-y-4 w-full">
+            <div id="dashLogLoader" class="hidden bg-white border border-slate-200 rounded-3xl p-6 text-center text-sm font-bold text-slate-500">Cargando dashboard logístico...</div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-white border border-slate-200 rounded-3xl p-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total códigos</p><p id="dashLogTotal" class="mt-2 text-2xl font-black text-slate-800">--</p></div>
+                <div class="bg-white border border-slate-200 rounded-3xl p-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Completa</p><p id="dashLogCompleta" class="mt-2 text-2xl font-black text-emerald-600">--</p><p id="dashLogCompletaPct" class="text-[11px] font-bold text-slate-400">--</p></div>
+                <div class="bg-white border border-slate-200 rounded-3xl p-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Con logística</p><p id="dashLogConAlgo" class="mt-2 text-2xl font-black text-indigo-600">--</p></div>
+                <div class="bg-white border border-slate-200 rounded-3xl p-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sin logística</p><p id="dashLogSinAlgo" class="mt-2 text-2xl font-black text-red-500">--</p></div>
+                <div class="bg-white border border-slate-200 rounded-3xl p-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Falta barcode</p><p id="dashLogFaltaBarcode" class="mt-2 text-2xl font-black text-amber-600">--</p></div>
+                <div class="bg-white border border-slate-200 rounded-3xl p-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Prioridad alta</p><p id="dashLogAlta" class="mt-2 text-2xl font-black text-rose-600">--</p></div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-3xl p-4 space-y-3"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Avance por bloque</p><div id="dashLogBloques" class="space-y-2"></div></div>
+            <div class="bg-white border border-slate-200 rounded-3xl p-4 space-y-3"><div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Resumen</p><p class="text-[11px] text-slate-500 font-bold">Agrupado por grupo o proveedor del catálogo</p></div><select id="dashLogAgrupar" onchange="renderDashboardLogistico()" class="border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white w-full"><option value="grupo">Grupo</option><option value="proveedor">Proveedor</option><option value="um_venta">UM venta</option></select><div id="dashLogResumen" class="space-y-2 max-h-80 overflow-auto pr-1"></div></div>
+            <div class="bg-white border border-slate-200 rounded-3xl p-4 space-y-3"><div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Detalle de pendientes</p><p class="text-[11px] text-slate-500 font-bold">Filtra lo que debe corregirse primero</p></div><div class="grid grid-cols-2 gap-2"><select id="dashLogFiltroPrioridad" onchange="renderDashboardLogisticoDetalle()" class="border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white"><option value="">Todas las prioridades</option><option value="alta">Alta</option><option value="media">Media</option><option value="baja">Baja</option><option value="completa">Completa</option></select><select id="dashLogFiltroFalta" onchange="renderDashboardLogisticoDetalle()" class="border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white"><option value="">Cualquier pendiente</option><option value="barcode">Falta barcode</option><option value="unidad">Falta unidad</option><option value="caja">Falta caja/bolsa</option><option value="tarima">Falta tarima</option></select></div><input type="text" id="dashLogBusqueda" oninput="renderDashboardLogisticoDetalle()" placeholder="Buscar código, descripción, proveedor o clave..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700"><div id="dashLogDetalleResumen" class="text-xs font-bold text-slate-500"></div><div id="dashLogDetalleLista" class="space-y-2 max-h-[32rem] overflow-auto pr-1"></div></div>
+        </main>
+    </div>
+
     <div id="pantallaEditorPC" class="hidden min-h-screen bg-slate-50">
         <header class="bg-white border-b p-4 sticky top-0 z-30 shadow-sm">
             <div class="max-w-[96vw] mx-auto flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -869,6 +908,8 @@
         let dashboardBarcodeData = [];
         let dashboardBarcodeLoaded = false;
         let dashboardAlmacenRows = [];
+        let dashboardLogisticoData = [];
+        let dashboardLogisticoLoaded = false;
         let asignacionSerieItems = [];
         let asignacionSerieIndex = 0;
         let asignacionSerieCatalogoBase = [];
@@ -884,7 +925,9 @@
             document.getElementById('pantallaSelectorAlmacen').classList.add('hidden'); 
             document.getElementById('pantallaCorrelacion').classList.add('hidden'); 
             document.getElementById('pantallaAsignacionSerie')?.classList.add('hidden');
+            document.getElementById('pantallaDashboardLogistico')?.classList.add('hidden');
             document.getElementById('pantallaDashboardBarcode').classList.add('hidden'); 
+            document.getElementById('pantallaDashboardLogistico')?.classList.add('hidden'); 
             document.getElementById('pantallaMenuPrincipal').classList.remove('hidden'); 
             limpiarTodo(); 
         }
@@ -901,8 +944,21 @@
             document.getElementById('pantallaAuditoria').classList.add('hidden');
             document.getElementById('pantallaCorrelacion').classList.add('hidden');
             document.getElementById('pantallaAsignacionSerie')?.classList.add('hidden');
+            document.getElementById('pantallaDashboardLogistico')?.classList.add('hidden');
             document.getElementById('pantallaDashboardBarcode').classList.remove('hidden');
             cargarDashboardBarcode();
+        }
+        function irADashboardLogistico() {
+            document.getElementById('pantallaMenuPrincipal').classList.add('hidden');
+            document.getElementById('pantallaSelectorAlmacen').classList.add('hidden');
+            document.getElementById('pantallaApp').classList.add('hidden');
+            document.getElementById('pantallaAuditoria').classList.add('hidden');
+            document.getElementById('pantallaCorrelacion').classList.add('hidden');
+            document.getElementById('pantallaAsignacionSerie')?.classList.add('hidden');
+            document.getElementById('pantallaDashboardLogistico')?.classList.add('hidden');
+            document.getElementById('pantallaDashboardBarcode').classList.add('hidden');
+            document.getElementById('pantallaDashboardLogistico').classList.remove('hidden');
+            cargarDashboardLogistico();
         }
         function regresarAAlmacenes() { 
             document.getElementById('pantallaApp').classList.add('hidden'); 
@@ -1980,6 +2036,42 @@ Fallidos: ${fallidos}`);
             } finally {
                 if (loader) loader.classList.add('hidden');
             }
+        }
+        function dashLogBool(v) { return v === true || v === 'true' || v === 1 || v === '1'; }
+        function dashLogPct(a, b) { return b ? `${((a * 100) / b).toFixed(1)}%` : '0.0%'; }
+        function dashLogNum(n) { return Number(n || 0).toLocaleString('es-MX'); }
+        function dashLogBar(label, value, total) { const pct = total ? Math.round((value * 1000) / total) / 10 : 0; return `<div><div class="flex justify-between text-[11px] font-black uppercase text-slate-500 mb-1"><span>${label}</span><span>${dashLogNum(value)} / ${dashLogPct(value,total)}</span></div><div class="h-2 rounded-full bg-slate-100 overflow-hidden"><div class="h-full bg-cyan-600" style="width:${Math.min(100, pct)}%"></div></div></div>`; }
+        function dashLogPrioridad(row) { if (dashLogBool(row.logistica_completa) && dashLogBool(row.tiene_barcode)) return 'completa'; if (dashLogBool(row.tiene_alguna_logistica) && !dashLogBool(row.logistica_completa)) return 'alta'; if (!dashLogBool(row.tiene_barcode) && dashLogBool(row.tiene_alguna_logistica)) return 'media'; return 'baja'; }
+        function dashLogFaltantes(row) { const out = []; if (!dashLogBool(row.tiene_barcode)) out.push('barcode'); if (!dashLogBool(row.unidad_completa)) out.push('unidad'); if (!dashLogBool(row.caja_bolsa_completa)) out.push('caja'); if (!dashLogBool(row.tarima_completa)) out.push('tarima'); return out; }
+        async function cargarDashboardLogistico(force = false) {
+            if (dashboardLogisticoLoaded && !force) { renderDashboardLogistico(); renderDashboardLogisticoDetalle(); return; }
+            const loader = document.getElementById('dashLogLoader'); if (loader) loader.classList.remove('hidden');
+            try {
+                dashboardLogisticoData = await fetchAllSupabaseRows('v_dashboard_logistico','codigo_limsa,descripcion,grupo,um_venta,factor,proveedor,clave_proveedor,bodegas_count,tiene_barcode,tiene_alguna_logistica,unidad_completa,caja_bolsa_completa,tarima_completa,logistica_completa,falta_barcode,falta_unidad,falta_caja_bolsa,falta_tarima','order=codigo_limsa.asc',1000);
+                dashboardLogisticoData = (dashboardLogisticoData || []).map(row => ({...row, prioridad: dashLogPrioridad(row), faltantes: dashLogFaltantes(row), _search: [row.codigo_limsa,row.descripcion,row.grupo,row.proveedor,row.clave_proveedor,row.um_venta].map(v => String(v || '').toLowerCase()).join(' | ')}));
+                dashboardLogisticoLoaded = true; renderDashboardLogistico(); renderDashboardLogisticoDetalle();
+            } catch (e) { alert(`Error al cargar dashboard logístico. Revisa que ya exista la vista v_dashboard_logistico en Supabase.\n\n${e.message || e}`); }
+            finally { if (loader) loader.classList.add('hidden'); }
+        }
+        function renderDashboardLogistico() {
+            const rows = dashboardLogisticoData || []; const total = rows.length;
+            const completa = rows.filter(x => dashLogBool(x.logistica_completa) && dashLogBool(x.tiene_barcode)).length;
+            const conAlgo = rows.filter(x => dashLogBool(x.tiene_alguna_logistica)).length; const sinAlgo = total - conAlgo;
+            const faltaBarcode = rows.filter(x => !dashLogBool(x.tiene_barcode)).length; const alta = rows.filter(x => x.prioridad === 'alta').length;
+            const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+            set('dashLogTotal', dashLogNum(total)); set('dashLogCompleta', dashLogNum(completa)); set('dashLogCompletaPct', dashLogPct(completa,total)); set('dashLogConAlgo', dashLogNum(conAlgo)); set('dashLogSinAlgo', dashLogNum(sinAlgo)); set('dashLogFaltaBarcode', dashLogNum(faltaBarcode)); set('dashLogAlta', dashLogNum(alta));
+            const bloques = document.getElementById('dashLogBloques'); if (bloques) bloques.innerHTML = [dashLogBar('Código de barras', rows.filter(x => dashLogBool(x.tiene_barcode)).length, total),dashLogBar('Unidad completa', rows.filter(x => dashLogBool(x.unidad_completa)).length, total),dashLogBar('Caja / bolsa completa', rows.filter(x => dashLogBool(x.caja_bolsa_completa)).length, total),dashLogBar('Tarima completa', rows.filter(x => dashLogBool(x.tarima_completa)).length, total),dashLogBar('Logística completa', rows.filter(x => dashLogBool(x.logistica_completa)).length, total)].join('');
+            const groupBy = document.getElementById('dashLogAgrupar')?.value || 'grupo'; const map = new Map();
+            rows.forEach(r => { const key = String(r[groupBy] || 'SIN DATO').trim() || 'SIN DATO'; if (!map.has(key)) map.set(key, { total: 0, completa: 0, alta: 0 }); const o = map.get(key); o.total++; if (dashLogBool(r.logistica_completa) && dashLogBool(r.tiene_barcode)) o.completa++; if (r.prioridad === 'alta') o.alta++; });
+            const cont = document.getElementById('dashLogResumen'); const resumen = [...map.entries()].sort((a,b) => b[1].total - a[1].total).slice(0,80);
+            if (cont) cont.innerHTML = resumen.map(([k,v]) => `<div class="border border-slate-100 rounded-2xl p-3"><div class="flex justify-between gap-3"><div class="min-w-0"><p class="text-xs font-black text-slate-700 uppercase truncate">${escapeHtmlEditor(k)}</p><p class="text-[11px] font-bold text-slate-400">Total: ${dashLogNum(v.total)} · Alta: ${dashLogNum(v.alta)}</p></div><p class="text-sm font-black text-emerald-600">${dashLogPct(v.completa,v.total)}</p></div><div class="mt-2 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-emerald-600" style="width:${v.total ? (v.completa*100/v.total) : 0}%"></div></div></div>`).join('') || '<p class="text-xs font-bold text-slate-400">Sin datos.</p>';
+        }
+        function renderDashboardLogisticoDetalle() {
+            const prioridad = document.getElementById('dashLogFiltroPrioridad')?.value || ''; const falta = document.getElementById('dashLogFiltroFalta')?.value || ''; const q = String(document.getElementById('dashLogBusqueda')?.value || '').trim().toLowerCase();
+            let rows = dashboardLogisticoData || []; if (prioridad) rows = rows.filter(x => x.prioridad === prioridad); if (falta) rows = rows.filter(x => (x.faltantes || []).includes(falta)); if (q) rows = rows.filter(x => x._search.includes(q));
+            rows = rows.sort((a,b) => ({alta:0,media:1,baja:2,completa:3}[a.prioridad] ?? 9) - ({alta:0,media:1,baja:2,completa:3}[b.prioridad] ?? 9)).slice(0,200);
+            const resumen = document.getElementById('dashLogDetalleResumen'); if (resumen) resumen.textContent = `Mostrando ${dashLogNum(rows.length)} registro(s).`; const lista = document.getElementById('dashLogDetalleLista'); if (!lista) return;
+            lista.innerHTML = rows.map(r => { const badge = r.prioridad === 'alta' ? 'bg-rose-50 text-rose-700 border-rose-100' : r.prioridad === 'media' ? 'bg-amber-50 text-amber-700 border-amber-100' : r.prioridad === 'completa' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-50 text-slate-600 border-slate-100'; const faltas = (r.faltantes || []).join(', ') || 'sin pendientes'; return `<div class="border border-slate-100 rounded-2xl p-3 bg-white"><div class="flex justify-between gap-3"><div class="min-w-0"><p class="text-sm font-black text-slate-800 uppercase">${escapeHtmlEditor(r.codigo_limsa || '')}</p><p class="text-xs font-bold text-slate-500 truncate">${escapeHtmlEditor(r.descripcion || '')}</p><p class="text-[11px] font-bold text-slate-400 truncate">${escapeHtmlEditor(r.grupo || 'SIN GRUPO')} · ${escapeHtmlEditor(r.proveedor || 'SIN PROVEEDOR')}</p></div><span class="h-fit px-2 py-1 rounded-full border text-[10px] font-black uppercase ${badge}">${escapeHtmlEditor(r.prioridad)}</span></div><p class="mt-2 text-[11px] font-bold text-slate-500">Falta: ${escapeHtmlEditor(faltas)} · Bodegas: ${dashLogNum(r.bodegas_count)}</p></div>`; }).join('') || '<p class="text-xs font-bold text-slate-400 text-center py-6">Sin pendientes con esos filtros.</p>';
         }
         async function obtenerFactorCatalogo(codigo) { if(!codigo) return ''; const data = await fetchJsonOrThrow(`${SB_URL}catalogo_articulos?articulo=eq.${codigo.toLowerCase()}&select=factor&limit=1`, { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${getAccessToken()}` } }); const factor = data?.[0]?.factor; return factor == null ? '' : String(factor).trim(); }
 
