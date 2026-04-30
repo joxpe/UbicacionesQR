@@ -652,7 +652,7 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Proveedor</label>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Proveedor (SKU)</label>
                         <select id="editorPcFiltroProveedor" class="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white">
                             <option value="">Todos</option>
                         </select>
@@ -3161,12 +3161,26 @@ Fallidos: ${fallidos}`);
             return true;
         }
 
-        function editorPcPoblarSelect(id, valores, placeholder='Todos') {
+        function editorPcContarValores(rows, campo) {
+            const map = new Map();
+            (rows || []).forEach(row => {
+                const valor = String(row?.[campo] || '').trim();
+                if (!valor) return;
+                map.set(valor, (map.get(valor) || 0) + 1);
+            });
+            return map;
+        }
+
+        function editorPcPoblarSelect(id, valores, placeholder='Todos', conteos = null) {
             const select = document.getElementById(id);
             if (!select) return;
             const actual = select.value;
             const opciones = ['<option value="">' + placeholder + '</option>'].concat(
-                valores.map(v => '<option value="' + escapeHtmlEditor(v) + '">' + escapeHtmlEditor(v) + '</option>')
+                valores.map(v => {
+                    const count = conteos instanceof Map ? (conteos.get(v) || 0) : null;
+                    const label = count == null ? v : (v + " (" + count + ")");
+                    return '<option value="' + escapeHtmlEditor(v) + '">' + escapeHtmlEditor(label) + '</option>';
+                })
             );
             select.innerHTML = opciones.join('');
             select.value = valores.includes(actual) ? actual : '';
@@ -3192,7 +3206,7 @@ Fallidos: ${fallidos}`);
             const rowsEstado = editorPcRows.filter(r => editorPcRowCumpleFiltros(r, 'estado'));
 
             editorPcPoblarSelect('editorPcFiltroGrupo', editorPcValoresUnicos(rowsGrupo, 'grupo'));
-            editorPcPoblarSelect('editorPcFiltroProveedor', editorPcValoresUnicos(rowsProveedor, 'proveedor'));
+            editorPcPoblarSelect('editorPcFiltroProveedor', editorPcValoresUnicos(rowsProveedor, 'proveedor'), 'Todos', editorPcContarValores(rowsProveedor, 'proveedor'));
             editorPcPoblarSelect('editorPcFiltroUmVenta', editorPcValoresUnicos(rowsUmVenta, 'um_venta'));
 
             const barcodePermitidos = [];
