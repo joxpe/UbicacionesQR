@@ -3126,24 +3126,88 @@ Fallidos: ${fallidos}`);
             return 'de_linea';
         }
 
+        function editorPcNormalizarFiltro(valor) {
+            return String(valor ?? '').trim().toLowerCase();
+        }
+
+        function editorPcValorFiltro(id) {
+            return String(document.getElementById(id)?.value || '').trim();
+        }
+
+        function editorPcValoresUnicos(rows, campo) {
+            return [...new Set((rows || []).map(r => String(r?.[campo] || '').trim()).filter(Boolean))]
+                .sort((a,b) => a.localeCompare(b, 'es'));
+        }
+
+        function editorPcRowCumpleFiltros(row, omitir = '') {
+            const q = editorPcNormalizarFiltro(document.getElementById('editorPcBusqueda')?.value || '');
+            const filtroGrupo = editorPcNormalizarFiltro(omitir === 'grupo' ? '' : editorPcValorFiltro('editorPcFiltroGrupo'));
+            const filtroProveedor = editorPcNormalizarFiltro(omitir === 'proveedor' ? '' : editorPcValorFiltro('editorPcFiltroProveedor'));
+            const filtroUmVenta = editorPcNormalizarFiltro(omitir === 'um_venta' ? '' : editorPcValorFiltro('editorPcFiltroUmVenta'));
+            const filtroBarcode = omitir === 'barcode' ? '' : editorPcValorFiltro('editorPcFiltroBarcode');
+            const filtroLogistica = omitir === 'logistica' ? '' : editorPcValorFiltro('editorPcFiltroLogistica');
+            const filtroEstado = omitir === 'estado' ? '' : editorPcValorFiltro('editorPcFiltroEstado');
+
+            if (filtroGrupo && row._grupo !== filtroGrupo) return false;
+            if (filtroProveedor && row._proveedor !== filtroProveedor) return false;
+            if (filtroUmVenta && row._um_venta !== filtroUmVenta) return false;
+            if (filtroBarcode === 'con_barcode' && !row._codigo_barra) return false;
+            if (filtroBarcode === 'sin_barcode' && row._codigo_barra) return false;
+            if (filtroLogistica === 'sin_logistica' && row._tiene_logistica) return false;
+            if (filtroLogistica === 'completa' && !row._logistica_completa) return false;
+            if (filtroLogistica === 'incompleta' && (!row._tiene_logistica || row._logistica_completa)) return false;
+            if (filtroEstado && String(row.estado_comercial || '') !== filtroEstado) return false;
+            if (q && !row._search.includes(q)) return false;
+            return true;
+        }
+
         function editorPcPoblarSelect(id, valores, placeholder='Todos') {
             const select = document.getElementById(id);
             if (!select) return;
             const actual = select.value;
             const opciones = ['<option value="">' + placeholder + '</option>'].concat(
-                valores.map(v => `<option value="${escapeHtmlEditor(v)}">${escapeHtmlEditor(v)}</option>`)
+                valores.map(v => '<option value="' + escapeHtmlEditor(v) + '">' + escapeHtmlEditor(v) + '</option>')
             );
             select.innerHTML = opciones.join('');
             select.value = valores.includes(actual) ? actual : '';
         }
 
+        function editorPcSetSelectDisponible(id, valoresPermitidos) {
+            const select = document.getElementById(id);
+            if (!select) return;
+            [...select.options].forEach(opt => {
+                if (!opt.value) { opt.disabled = false; return; }
+                opt.disabled = !valoresPermitidos.includes(opt.value);
+            });
+            if (select.value && !valoresPermitidos.includes(select.value)) select.value = '';
+        }
+
         function editorPcActualizarOpcionesFiltros() {
-            const grupos = [...new Set(editorPcRows.map(r => String(r.grupo || '').trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
-            const proveedores = [...new Set(editorPcRows.map(r => String(r.proveedor || '').trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
-            const ums = [...new Set(editorPcRows.map(r => String(r.um_venta || '').trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
-            editorPcPoblarSelect('editorPcFiltroGrupo', grupos);
-            editorPcPoblarSelect('editorPcFiltroProveedor', proveedores);
-            editorPcPoblarSelect('editorPcFiltroUmVenta', ums);
+            if (!editorPcRows.length) return;
+            const rowsGrupo = editorPcRows.filter(r => editorPcRowCumpleFiltros(r, 'grupo'));
+            const rowsProveedor = editorPcRows.filter(r => editorPcRowCumpleFiltros(r, 'proveedor'));
+            const rowsUmVenta = editorPcRows.filter(r => editorPcRowCumpleFiltros(r, 'um_venta'));
+            const rowsBarcode = editorPcRows.filter(r => editorPcRowCumpleFiltros(r, 'barcode'));
+            const rowsLogistica = editorPcRows.filter(r => editorPcRowCumpleFiltros(r, 'logistica'));
+            const rowsEstado = editorPcRows.filter(r => editorPcRowCumpleFiltros(r, 'estado'));
+
+            editorPcPoblarSelect('editorPcFiltroGrupo', editorPcValoresUnicos(rowsGrupo, 'grupo'));
+            editorPcPoblarSelect('editorPcFiltroProveedor', editorPcValoresUnicos(rowsProveedor, 'proveedor'));
+            editorPcPoblarSelect('editorPcFiltroUmVenta', editorPcValoresUnicos(rowsUmVenta, 'um_venta'));
+
+            const barcodePermitidos = [];
+            if (rowsBarcode.some(r => r._codigo_barra)) barcodePermitidos.push('con_barcode');
+            if (rowsBarcode.some(r => !r._codigo_barra)) barcodePermitidos.push('sin_barcode');
+            editorPcSetSelectDisponible('editorPcFiltroBarcode', barcodePermitidos);
+
+            const logisticaPermitidos = [];
+            if (rowsLogistica.some(r => r._logistica_completa)) logisticaPermitidos.push('completa');
+            if (rowsLogistica.some(r => r._tiene_logistica && !r._logistica_completa)) logisticaPermitidos.push('incompleta');
+            if (rowsLogistica.some(r => !r._tiene_logistica)) logisticaPermitidos.push('sin_logistica');
+            editorPcSetSelectDisponible('editorPcFiltroLogistica', logisticaPermitidos);
+
+            const estadoPermitidos = [...new Set(rowsEstado.map(r => String(r.estado_comercial || '').trim()).filter(Boolean))];
+            editorPcSetSelectDisponible('editorPcFiltroEstado', estadoPermitidos);
         }
 
         function editorPcLimpiarFiltros() {
@@ -3213,31 +3277,20 @@ Fallidos: ${fallidos}`);
         }
 
         function aplicarFiltrosEditorPC() {
-            const q = String(document.getElementById('editorPcBusqueda').value || '').trim().toLowerCase();
-            const filtroGrupo = String(document.getElementById('editorPcFiltroGrupo')?.value || '').trim().toLowerCase();
-            const filtroProveedor = String(document.getElementById('editorPcFiltroProveedor')?.value || '').trim().toLowerCase();
-            const filtroUmVenta = String(document.getElementById('editorPcFiltroUmVenta')?.value || '').trim().toLowerCase();
-            const filtroBarcode = String(document.getElementById('editorPcFiltroBarcode')?.value || '').trim();
-            const filtroLogistica = String(document.getElementById('editorPcFiltroLogistica')?.value || '').trim();
-            const filtroEstado = String(document.getElementById('editorPcFiltroEstado')?.value || '').trim();
+            editorPcActualizarOpcionesFiltros();
+            const q = editorPcNormalizarFiltro(document.getElementById('editorPcBusqueda')?.value || '');
+            const filtroGrupo = editorPcNormalizarFiltro(editorPcValorFiltro('editorPcFiltroGrupo'));
+            const filtroProveedor = editorPcNormalizarFiltro(editorPcValorFiltro('editorPcFiltroProveedor'));
+            const filtroUmVenta = editorPcNormalizarFiltro(editorPcValorFiltro('editorPcFiltroUmVenta'));
+            const filtroBarcode = editorPcValorFiltro('editorPcFiltroBarcode');
+            const filtroLogistica = editorPcValorFiltro('editorPcFiltroLogistica');
+            const filtroEstado = editorPcValorFiltro('editorPcFiltroEstado');
             const signature = [q,filtroGrupo,filtroProveedor,filtroUmVenta,filtroBarcode,filtroLogistica,filtroEstado,editorPcSortField,editorPcSortDir].join('|');
             if (signature !== editorPcLastFilterSignature) {
                 editorPcCurrentPage = 1;
                 editorPcLastFilterSignature = signature;
             }
-            editorPcRowsFiltered = editorPcRows.filter(row => {
-                if (filtroGrupo && row._grupo !== filtroGrupo) return false;
-                if (filtroProveedor && row._proveedor !== filtroProveedor) return false;
-                if (filtroUmVenta && row._um_venta !== filtroUmVenta) return false;
-                if (filtroBarcode === 'con_barcode' && !row._codigo_barra) return false;
-                if (filtroBarcode === 'sin_barcode' && row._codigo_barra) return false;
-                if (filtroLogistica === 'sin_logistica' && row._tiene_logistica) return false;
-                if (filtroLogistica === 'completa' && !row._logistica_completa) return false;
-                if (filtroLogistica === 'incompleta' && (!row._tiene_logistica || row._logistica_completa)) return false;
-                if (filtroEstado && String(row.estado_comercial || '') !== filtroEstado) return false;
-                if (!q) return true;
-                return row._search.includes(q);
-            });
+            editorPcRowsFiltered = editorPcRows.filter(row => editorPcRowCumpleFiltros(row));
             editorPcApplySort();
             renderEditorPcTable();
         }
