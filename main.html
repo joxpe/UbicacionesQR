@@ -49,7 +49,7 @@
             <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight">LIMSA</h1>
             <p class="text-slate-500 font-medium mt-2">Gestión de Inventario</p>
             <p id="appVersion" class="text-[11px] text-slate-400 font-bold mt-1"></p>
-            <button onclick="cerrarSesion()" class="mt-4 text-[11px] font-bold text-red-600 uppercase">Cerrar sesión</button>
+            <button onclick="cerrarSesion()" class="mt-4 text-[11px] font-bold text-red-500 uppercase">Cerrar sesión</button>
         </header>
 
         <div class="space-y-4">
@@ -83,16 +83,6 @@
                 </div>
             </button>
 
-            <button onclick="irAAsignacionSerie()" class="card-modulo w-full bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center gap-5 text-left">
-                <div class="bg-cyan-600 p-4 rounded-2xl text-white shadow-lg shadow-cyan-100">
-                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h10M7 4v16M17 4v10"/></svg>
-                </div>
-                <div>
-                    <h3 class="font-black text-slate-800 uppercase text-sm tracking-tight">Asignación en Serie</h3>
-                    <p class="text-xs text-slate-500 mt-1">Buscar catálogo y asignar códigos de barras en lista.</p>
-                </div>
-            </button>
-
             <button onclick="irADashboardBarcode()" class="card-modulo w-full bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center gap-5 text-left">
                 <div class="bg-emerald-600 p-4 rounded-2xl text-white shadow-lg shadow-emerald-100">
                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6m4 6V7m4 10v-4M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
@@ -109,7 +99,7 @@
                 </div>
                 <div>
                     <h3 class="font-black text-slate-800 uppercase text-sm tracking-tight">Dashboard Logístico</h3>
-                    <p class="text-xs text-slate-500 mt-1">Avance de captura, pendientes y resumen por proveedor/grupo.</p>
+                    <p class="text-xs text-slate-500 mt-1">Avance operativo por unidad, caja y tarima.</p>
                 </div>
             </button>
 
@@ -300,7 +290,11 @@
                             <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">CÓDIGO DE BARRAS</p>
                             <div class="flex items-center justify-between gap-3">
                                 <p id="corrBarras" class="font-black text-2xl text-slate-800 uppercase tracking-tight break-all">--</p>
-                                <button id="btnEliminarCorrMini" onclick="eliminarRelacionTotal()" title="Borrar vinculo" aria-label="Borrar vinculo" class="hidden inline-flex shrink-0 w-11 h-11 items-center justify-center bg-red-50 text-red-600 border border-red-100 rounded-full active:bg-red-100 active:scale-95 transition-transform"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.3"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-7 0l1-3h6l1 3" /></svg></button>
+                                <button id="btnEliminarCorrMini"
+                                    onclick="eliminarRelacionTotal()"
+                                    class="hidden shrink-0 bg-red-50 text-red-500 border border-red-100 px-3 py-2 rounded-xl text-[10px] font-bold uppercase active:bg-red-100">
+                                    ✕
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -436,77 +430,6 @@
         </main>
     </div>
 
-    <div id="pantallaAsignacionSerie" class="hidden flex flex-col min-h-screen safe-pb">
-        <header class="bg-white border-b p-4 flex items-center gap-3 sticky top-0 z-30 shadow-sm">
-            <button onclick="regresarAlMenuPrincipal()" class="p-2 hover:bg-slate-100 rounded-full">
-                <svg class="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
-            </button>
-            <div class="flex-1">
-                <h1 class="text-lg font-bold text-slate-800">Asignación en Serie</h1>
-                <p class="text-[11px] font-bold text-slate-400 uppercase">Almacén: <span id="serieTxtAlmacen">--</span></p>
-            </div>
-        </header>
-
-        <main class="max-w-md mx-auto p-4 space-y-4 w-full">
-            <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-3">
-                <p class="text-[10px] font-black text-cyan-700 uppercase tracking-widest">Buscar en catálogo</p>
-                <div class="flex gap-2">
-                    <input type="text" id="inputAsignacionBusqueda" placeholder="Ej. 30perjun10, pegazulejo..." class="flex-1 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-cyan-500 outline-none uppercase">
-                    <button onclick="abrirCatalogo('asignacionSerie')" class="bg-slate-100 p-3 rounded-xl border border-slate-200 active:bg-slate-200">🔍</button>
-                </div>
-                <div class="space-y-2">
-                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Filtros de catálogo</p>
-                    <div id="serieFiltrosCatalogo" class="grid grid-cols-2 gap-2">
-                        <label class="flex items-center gap-2 bg-cyan-50 border border-cyan-100 rounded-xl px-3 py-2 text-[10px] font-black text-cyan-700 uppercase active:scale-95">
-                            <input type="checkbox" class="serieFiltroEstatus accent-cyan-600" value="linea" checked> CONT
-                        </label>
-                        <label class="flex items-center gap-2 bg-cyan-50 border border-cyan-100 rounded-xl px-3 py-2 text-[10px] font-black text-cyan-700 uppercase active:scale-95">
-                            <input type="checkbox" class="serieFiltroEstatus accent-cyan-600" value="compra especial" checked> Compra especial
-                        </label>
-                        <label class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2 text-[10px] font-black text-slate-600 uppercase active:scale-95">
-                            <input type="checkbox" class="serieFiltroEstatus accent-cyan-600" value="descontinuado"> DESC
-                        </label>
-                        <label class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2 text-[10px] font-black text-slate-600 uppercase active:scale-95">
-                            <input type="checkbox" class="serieFiltroEstatus accent-cyan-600" value="sobre pedido"> Sobre pedido
-                        </label>
-                    </div>
-                    <p class="text-[10px] text-slate-400 font-bold leading-snug">Por default se cargan CONT + compra especial. Puedes combinarlos libremente.</p>
-                </div>
-                <button onclick="buscarAsignacionSerie()" class="w-full bg-cyan-600 text-white py-3 rounded-xl font-bold text-xs uppercase shadow-md active:scale-95">Cargar listado</button>
-                <div id="serieGruposCatalogo" class="hidden space-y-2"></div>
-                <p class="text-[11px] text-slate-500 font-bold leading-snug">Carga varios SKUs del catálogo y asigna códigos de barras uno por uno. El código de barras se replica globalmente en todas las bodegas donde exista el SKU LIMSA.</p>
-            </div>
-
-            <div id="seriePanelCaptura" class="hidden bg-cyan-50 p-5 rounded-3xl border border-cyan-100 shadow-sm space-y-3">
-                <div class="flex items-start justify-between gap-3">
-                    <div>
-                        <p class="text-[10px] font-black text-cyan-700 uppercase tracking-widest">Captura en serie</p>
-                        <p id="serieSkuActual" class="text-xl font-black text-cyan-700 uppercase break-all">--</p>
-                        <p id="serieNombreActual" class="text-xs font-bold text-slate-600 uppercase break-words">--</p>
-                    </div>
-                    <span id="serieContador" class="shrink-0 bg-white border border-cyan-100 rounded-xl px-3 py-2 text-xs font-black text-cyan-700">0/0</span>
-                </div>
-                <div class="flex gap-2">
-                    <input type="text" id="inputAsignacionSerie" placeholder="Escanea o escribe barcode" class="flex-1 border border-cyan-200 rounded-xl px-4 py-4 text-center font-black text-cyan-700 text-lg">
-                    <button onclick="abrirScanner('asignacionSerie')" class="bg-cyan-600 text-white p-4 rounded-xl shadow-sm">📷</button>
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="guardarAsignacionSerieActual()" class="bg-cyan-600 text-white py-3 rounded-xl font-bold text-xs uppercase shadow-sm active:scale-95">Guardar y siguiente</button>
-                    <button onclick="siguienteAsignacionSeriePendiente()" class="bg-white text-slate-600 py-3 rounded-xl font-bold text-xs uppercase border border-slate-200 active:bg-slate-100">Saltar</button>
-                </div>
-                <p id="serieMensaje" class="hidden p-3 rounded-xl text-xs font-bold text-center"></p>
-            </div>
-
-            <div id="serieResumen" class="hidden grid grid-cols-3 gap-2">
-                <div class="bg-white rounded-2xl border border-slate-200 p-3 text-center"><p class="text-[9px] font-black text-slate-400 uppercase">Total</p><p id="serieTotal" class="text-xl font-black text-slate-700">0</p></div>
-                <div class="bg-white rounded-2xl border border-slate-200 p-3 text-center"><p class="text-[9px] font-black text-slate-400 uppercase">Con barcode</p><p id="serieCon" class="text-xl font-black text-emerald-600">0</p></div>
-                <div class="bg-white rounded-2xl border border-slate-200 p-3 text-center"><p class="text-[9px] font-black text-slate-400 uppercase">Pendientes</p><p id="seriePend" class="text-xl font-black text-orange-600">0</p></div>
-            </div>
-
-            <div id="listaAsignacionSerie" class="space-y-3"></div>
-        </main>
-    </div>
-
     <div id="pantallaDashboardBarcode" class="hidden flex flex-col min-h-screen safe-pb">
         <header class="bg-white border-b p-4 sticky top-0 z-30 shadow-sm flex items-center justify-between gap-3">
             <div class="flex items-center gap-3">
@@ -593,6 +516,7 @@
         </main>
     </div>
 
+
     <div id="pantallaDashboardLogistico" class="hidden flex flex-col min-h-screen safe-pb">
         <header class="bg-white border-b p-4 sticky top-0 z-30 shadow-sm flex items-center justify-between gap-3">
             <div class="flex items-center gap-3">
@@ -601,24 +525,25 @@
                 </button>
                 <div>
                     <h1 class="text-lg font-bold text-slate-800">Dashboard Logístico</h1>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Avance de captura y pendientes</p>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Avance real y focos de trabajo</p>
                 </div>
             </div>
             <button onclick="cargarDashboardLogistico(true)" class="bg-cyan-600 text-white px-4 py-2 rounded-xl text-xs font-black uppercase shadow-sm">Actualizar</button>
         </header>
-        <main class="max-w-md mx-auto p-4 space-y-4 w-full">
+        <main class="max-w-5xl mx-auto p-4 space-y-4 w-full">
             <div id="dashLogLoader" class="hidden bg-white border border-slate-200 rounded-3xl p-6 text-center text-sm font-bold text-slate-500">Cargando dashboard logístico...</div>
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-white border border-slate-200 rounded-3xl p-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total códigos</p><p id="dashLogTotal" class="mt-2 text-2xl font-black text-slate-800">--</p></div>
-                <div class="bg-white border border-slate-200 rounded-3xl p-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Completa</p><p id="dashLogCompleta" class="mt-2 text-2xl font-black text-emerald-600">--</p><p id="dashLogCompletaPct" class="text-[11px] font-bold text-slate-400">--</p></div>
-                <div class="bg-white border border-slate-200 rounded-3xl p-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Con logística</p><p id="dashLogConAlgo" class="mt-2 text-2xl font-black text-indigo-600">--</p></div>
-                <div class="bg-white border border-slate-200 rounded-3xl p-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sin logística</p><p id="dashLogSinAlgo" class="mt-2 text-2xl font-black text-red-500">--</p></div>
-                <div class="bg-white border border-slate-200 rounded-3xl p-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Falta barcode</p><p id="dashLogFaltaBarcode" class="mt-2 text-2xl font-black text-amber-600">--</p></div>
-                <div class="bg-white border border-slate-200 rounded-3xl p-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Prioridad alta</p><p id="dashLogAlta" class="mt-2 text-2xl font-black text-rose-600">--</p></div>
+            <div class="bg-cyan-50 border border-cyan-100 rounded-3xl p-4"><p class="text-[11px] font-black text-cyan-800 uppercase tracking-widest">Regla especial de avance</p><p class="mt-1 text-xs font-bold text-cyan-900">Si un SKU existe únicamente en bodegas que empiezan con “A” (ej. AI), el avance completo solo exige unidad + caja/bolsa. No exige tarima.</p></div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="bg-white border border-slate-200 rounded-3xl p-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total SKUs</p><p id="dashLogTotal" class="mt-2 text-2xl font-black text-slate-800">--</p></div>
+                <div class="bg-white border border-slate-200 rounded-3xl p-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Logística completa</p><p id="dashLogCompleta" class="mt-2 text-2xl font-black text-emerald-600">--</p><p id="dashLogCompletaPct" class="text-[11px] font-bold text-slate-400">--</p></div>
+                <div class="bg-white border border-slate-200 rounded-3xl p-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Solo bodegas A</p><p id="dashLogSoloA" class="mt-2 text-2xl font-black text-cyan-600">--</p><p class="text-[11px] font-bold text-slate-400">Sin exigir tarima</p></div>
+                <div class="bg-white border border-slate-200 rounded-3xl p-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pendientes</p><p id="dashLogPendientes" class="mt-2 text-2xl font-black text-rose-600">--</p></div>
             </div>
-            <div class="bg-white border border-slate-200 rounded-3xl p-4 space-y-3"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Avance por bloque</p><div id="dashLogBloques" class="space-y-2"></div></div>
-            <div class="bg-white border border-slate-200 rounded-3xl p-4 space-y-3"><div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Resumen</p><p class="text-[11px] text-slate-500 font-bold">Agrupado por grupo o proveedor del catálogo</p></div><select id="dashLogAgrupar" onchange="renderDashboardLogistico()" class="border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white w-full"><option value="grupo">Grupo</option><option value="proveedor">Proveedor</option><option value="um_venta">UM venta</option></select><div id="dashLogResumen" class="space-y-2 max-h-80 overflow-auto pr-1"></div></div>
-            <div class="bg-white border border-slate-200 rounded-3xl p-4 space-y-3"><div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Detalle de pendientes</p><p class="text-[11px] text-slate-500 font-bold">Filtra lo que debe corregirse primero</p></div><div class="grid grid-cols-2 gap-2"><select id="dashLogFiltroPrioridad" onchange="renderDashboardLogisticoDetalle()" class="border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white"><option value="">Todas las prioridades</option><option value="alta">Alta</option><option value="media">Media</option><option value="baja">Baja</option><option value="completa">Completa</option></select><select id="dashLogFiltroFalta" onchange="renderDashboardLogisticoDetalle()" class="border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white"><option value="">Cualquier pendiente</option><option value="barcode">Falta barcode</option><option value="unidad">Falta unidad</option><option value="caja">Falta caja/bolsa</option><option value="tarima">Falta tarima</option></select></div><input type="text" id="dashLogBusqueda" oninput="renderDashboardLogisticoDetalle()" placeholder="Buscar código, descripción, proveedor o clave..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700"><div id="dashLogDetalleResumen" class="text-xs font-bold text-slate-500"></div><div id="dashLogDetalleLista" class="space-y-2 max-h-[32rem] overflow-auto pr-1"></div></div>
+            <div class="bg-white border border-slate-200 rounded-3xl p-4 space-y-3"><div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Avance por bloque</p><p class="text-[11px] text-slate-500 font-bold">Tarima solo aplica cuando el SKU está en bodegas que no empiezan con A.</p></div><div id="dashLogBloques" class="space-y-3"></div></div>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-white border border-slate-200 rounded-3xl p-4 space-y-3"><div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Dónde trabajar primero</p><p class="text-[11px] text-slate-500 font-bold">Grupos con menor avance operativo.</p></div><select id="dashLogFocoAgrupar" onchange="renderDashboardLogistico()" class="border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white w-full"><option value="grupo">Agrupar por grupo</option><option value="proveedor">Agrupar por proveedor</option><option value="um_venta">Agrupar por UM venta</option></select><div id="dashLogFocoTrabajo" class="space-y-2 max-h-96 overflow-auto pr-1"></div></div>
+                <div class="bg-white border border-slate-200 rounded-3xl p-4 space-y-3"><div><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Cuellos de botella</p><p class="text-[11px] text-slate-500 font-bold">Qué dato falta más para completar la logística.</p></div><div id="dashLogCuellos" class="space-y-2"></div></div>
+            </div>
         </main>
     </div>
 
@@ -652,7 +577,7 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Proveedor (SKU)</label>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Proveedor</label>
                         <select id="editorPcFiltroProveedor" class="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white">
                             <option value="">Todos</option>
                         </select>
@@ -785,7 +710,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2026.04.30.14";
+        const APP_VERSION = "2026.04.25.6-auth-rls-proyecto-correcto";
         const SB_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/rest/v1/";
         const SB_AUTH_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/auth/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBodWRmbG10YmZrZHpxanFhb3ViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTUyMjIsImV4cCI6MjA5MjYzMTIyMn0.KbQenxZHHNlsLBdamQtI6CvJQisTzLLcVgN11TY2_XQ";
@@ -794,28 +719,6 @@
         let authSession = null;
         function getAccessToken() { return authSession?.access_token || ""; }
         function getUsuarioActual() { const email = authSession?.user?.email || ""; return email ? email.split("@")[0].toLowerCase() : ""; }
-        function sesionPorVencer() {
-            const exp = Number(authSession?.expires_at || 0);
-            return !!exp && (exp * 1000) < (Date.now() + 60000);
-        }
-        async function refrescarSesionSiHaceFalta(forzar = false) {
-            if(!authSession?.refresh_token) return;
-            if(!forzar && !sesionPorVencer()) return;
-            const res = await fetch(`${SB_AUTH_URL}token?grant_type=refresh_token`, {
-                method: "POST",
-                headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" },
-                body: JSON.stringify({ refresh_token: authSession.refresh_token })
-            });
-            const data = await res.json().catch(() => ({}));
-            if(!res.ok || !data.access_token) {
-                authSession = null;
-                localStorage.removeItem(AUTH_STORAGE_KEY);
-                mostrarLogin("Tu sesión venció. Vuelve a iniciar sesión.");
-                throw new Error("Sesión vencida. Vuelve a iniciar sesión.");
-            }
-            authSession = data;
-            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(data));
-        }
         function mostrarLogin(mensaje = "") {
             document.getElementById("pantallaLogin")?.classList.remove("hidden");
             document.getElementById("pantallaMenuPrincipal")?.classList.add("hidden");
@@ -910,10 +813,6 @@
         let dashboardAlmacenRows = [];
         let dashboardLogisticoData = [];
         let dashboardLogisticoLoaded = false;
-        let asignacionSerieItems = [];
-        let asignacionSerieIndex = 0;
-        let asignacionSerieCatalogoBase = [];
-        let asignacionSerieBusquedaActual = '';
 
         // --- NAVEGACIÓN ---
         function irASelectorAlmacen(mod) { 
@@ -924,18 +823,13 @@
         function regresarAlMenuPrincipal() { 
             document.getElementById('pantallaSelectorAlmacen').classList.add('hidden'); 
             document.getElementById('pantallaCorrelacion').classList.add('hidden'); 
-            document.getElementById('pantallaAsignacionSerie')?.classList.add('hidden');
-            document.getElementById('pantallaDashboardLogistico')?.classList.add('hidden');
             document.getElementById('pantallaDashboardBarcode').classList.add('hidden'); 
-            document.getElementById('pantallaDashboardLogistico')?.classList.add('hidden'); 
+            document.getElementById('pantallaDashboardLogistico')?.classList.add('hidden');
             document.getElementById('pantallaMenuPrincipal').classList.remove('hidden'); 
             limpiarTodo(); 
         }
         function irACorrelacion() { 
             irASelectorAlmacen('correlacion');
-        }
-        function irAAsignacionSerie() {
-            irASelectorAlmacen('asignacionSerie');
         }
         function irADashboardBarcode() {
             document.getElementById('pantallaMenuPrincipal').classList.add('hidden');
@@ -943,19 +837,16 @@
             document.getElementById('pantallaApp').classList.add('hidden');
             document.getElementById('pantallaAuditoria').classList.add('hidden');
             document.getElementById('pantallaCorrelacion').classList.add('hidden');
-            document.getElementById('pantallaAsignacionSerie')?.classList.add('hidden');
-            document.getElementById('pantallaDashboardLogistico')?.classList.add('hidden');
             document.getElementById('pantallaDashboardBarcode').classList.remove('hidden');
             cargarDashboardBarcode();
         }
+
         function irADashboardLogistico() {
             document.getElementById('pantallaMenuPrincipal').classList.add('hidden');
             document.getElementById('pantallaSelectorAlmacen').classList.add('hidden');
             document.getElementById('pantallaApp').classList.add('hidden');
             document.getElementById('pantallaAuditoria').classList.add('hidden');
             document.getElementById('pantallaCorrelacion').classList.add('hidden');
-            document.getElementById('pantallaAsignacionSerie')?.classList.add('hidden');
-            document.getElementById('pantallaDashboardLogistico')?.classList.add('hidden');
             document.getElementById('pantallaDashboardBarcode').classList.add('hidden');
             document.getElementById('pantallaDashboardLogistico').classList.remove('hidden');
             cargarDashboardLogistico();
@@ -982,12 +873,6 @@
                 document.getElementById('pantallaSelectorAlmacen').classList.add('hidden');
                 document.getElementById('pantallaCorrelacion').classList.remove('hidden');
                 setTimeout(() => document.getElementById('inputCorr').focus(), 300);
-            } else if(moduloActivo === 'asignacionSerie') {
-                const txt = document.getElementById('serieTxtAlmacen');
-                if (txt) txt.innerText = alm;
-                document.getElementById('pantallaSelectorAlmacen').classList.add('hidden');
-                document.getElementById('pantallaAsignacionSerie').classList.remove('hidden');
-                setTimeout(() => document.getElementById('inputAsignacionBusqueda').focus(), 300);
             } else {
                 document.getElementById('audTxtAlmacen').innerText = alm;
                 document.getElementById('pantallaSelectorAlmacen').classList.add('hidden');
@@ -1016,8 +901,7 @@
                 const lista = Array.isArray(data)
                     ? data.map(x => String(x.nombre || '').trim().toLowerCase()).filter(Boolean)
                     : [];
-                const listaConCR = Array.from(new Set([...(lista.length ? lista : ALMACENES_FALLBACK), 'cr'])).sort();
-                renderAlmacenes(listaConCR);
+                renderAlmacenes(lista.length ? lista : ALMACENES_FALLBACK);
             } catch (_) {
                 renderAlmacenes(ALMACENES_FALLBACK);
             }
@@ -1039,8 +923,6 @@
         bindScanAwareInput('inputSku', value => procesarSku(value));
         bindScanAwareInput('inputCorr', value => procesarCorrelacion(value));
         bindScanAwareInput('inputVinculo', () => guardarVinculo());
-        bindScanAwareInput('inputAsignacionBusqueda', value => buscarAsignacionSerie(value));
-        bindScanAwareInput('inputAsignacionSerie', value => guardarAsignacionSerieActual(value));
         function corrVal(id) { return (document.getElementById(id)?.value || '').trim(); }
         function setCorrVal(id, value) { const el = document.getElementById(id); if(el) el.value = value || ''; }
         function toggleLogisticaSection(seccion) {
@@ -1107,9 +989,7 @@
             const pesoCaja = parseNumeroCorr(corrVal('corrPesoCajaBolsa'));
             const undTarima = parseNumeroCorr(corrVal('corrUndTarima'));
 
-            // Ancho unidad: calcular automaticamente solo cuando no trae dato.
-            // Si el operador lo captura o modifica manualmente, no se sobrescribe.
-            if (undCaja && undCaja > 0 && anchoCaja != null && !corrVal('corrAnchoUnidad')) {
+            if (undCaja && undCaja > 0 && anchoCaja != null) {
                 setCorrVal('corrAnchoUnidad', formatearNumeroCorr(anchoCaja / undCaja));
             }
             if (undCaja && undCaja > 0 && pesoCaja != null) {
@@ -1641,29 +1521,7 @@ Solo se actualizarán registros ya existentes en almacen_datos.`)) return;
             actualizarResumenCorrelacion();
         }
         function valorCajaVigente(v) { const t = String(v || '').trim(); return t !== '' && t !== '0' && t !== '0.0'; }
-        async function fetchJsonOrThrow(url, options = {}) {
-            await refrescarSesionSiHaceFalta(false);
-            const prepararOpciones = () => {
-                const headers = { ...(options.headers || {}) };
-                if(headers.Authorization || headers.authorization) headers.Authorization = `Bearer ${getAccessToken()}`;
-                return { ...options, headers };
-            };
-            let res = await fetch(url, prepararOpciones());
-            let raw = await res.text();
-            let data = null;
-            try { data = raw ? JSON.parse(raw) : null; } catch(_) { data = raw; }
-            const msg = typeof data === 'string' ? data : JSON.stringify(data || {});
-            const sesionExpirada = res.status === 401 || msg.includes('PGRST303') || msg.toLowerCase().includes('jwt expired');
-            if(!res.ok && sesionExpirada && authSession?.refresh_token) {
-                await refrescarSesionSiHaceFalta(true);
-                res = await fetch(url, prepararOpciones());
-                raw = await res.text();
-                try { data = raw ? JSON.parse(raw) : null; } catch(_) { data = raw; }
-            }
-            if(!res.ok) { throw new Error(typeof data === 'string' ? data : JSON.stringify(data)); }
-            return data;
-        }
-
+        async function fetchJsonOrThrow(url, options = {}) { const res = await fetch(url, options); const raw = await res.text(); let data = null; try { data = raw ? JSON.parse(raw) : null; } catch(_) { data = raw; } if(!res.ok) { throw new Error(typeof data === 'string' ? data : JSON.stringify(data)); } return data; }
 
         async function fetchAllSupabaseRows(table, selectClause, extraQuery = '', batchSize = 1000) {
             const headers = { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` };
@@ -2037,42 +1895,6 @@ Fallidos: ${fallidos}`);
                 if (loader) loader.classList.add('hidden');
             }
         }
-        function dashLogBool(v) { return v === true || v === 'true' || v === 1 || v === '1'; }
-        function dashLogPct(a, b) { return b ? `${((a * 100) / b).toFixed(1)}%` : '0.0%'; }
-        function dashLogNum(n) { return Number(n || 0).toLocaleString('es-MX'); }
-        function dashLogBar(label, value, total) { const pct = total ? Math.round((value * 1000) / total) / 10 : 0; return `<div><div class="flex justify-between text-[11px] font-black uppercase text-slate-500 mb-1"><span>${label}</span><span>${dashLogNum(value)} / ${dashLogPct(value,total)}</span></div><div class="h-2 rounded-full bg-slate-100 overflow-hidden"><div class="h-full bg-cyan-600" style="width:${Math.min(100, pct)}%"></div></div></div>`; }
-        function dashLogPrioridad(row) { if (dashLogBool(row.logistica_completa) && dashLogBool(row.tiene_barcode)) return 'completa'; if (dashLogBool(row.tiene_alguna_logistica) && !dashLogBool(row.logistica_completa)) return 'alta'; if (!dashLogBool(row.tiene_barcode) && dashLogBool(row.tiene_alguna_logistica)) return 'media'; return 'baja'; }
-        function dashLogFaltantes(row) { const out = []; if (!dashLogBool(row.tiene_barcode)) out.push('barcode'); if (!dashLogBool(row.unidad_completa)) out.push('unidad'); if (!dashLogBool(row.caja_bolsa_completa)) out.push('caja'); if (!dashLogBool(row.tarima_completa)) out.push('tarima'); return out; }
-        async function cargarDashboardLogistico(force = false) {
-            if (dashboardLogisticoLoaded && !force) { renderDashboardLogistico(); renderDashboardLogisticoDetalle(); return; }
-            const loader = document.getElementById('dashLogLoader'); if (loader) loader.classList.remove('hidden');
-            try {
-                dashboardLogisticoData = await fetchAllSupabaseRows('v_dashboard_logistico','codigo_limsa,descripcion,grupo,um_venta,factor,proveedor,clave_proveedor,bodegas_count,tiene_barcode,tiene_alguna_logistica,unidad_completa,caja_bolsa_completa,tarima_completa,logistica_completa,falta_barcode,falta_unidad,falta_caja_bolsa,falta_tarima','order=codigo_limsa.asc',1000);
-                dashboardLogisticoData = (dashboardLogisticoData || []).map(row => ({...row, prioridad: dashLogPrioridad(row), faltantes: dashLogFaltantes(row), _search: [row.codigo_limsa,row.descripcion,row.grupo,row.proveedor,row.clave_proveedor,row.um_venta].map(v => String(v || '').toLowerCase()).join(' | ')}));
-                dashboardLogisticoLoaded = true; renderDashboardLogistico(); renderDashboardLogisticoDetalle();
-            } catch (e) { alert(`Error al cargar dashboard logístico. Revisa que ya exista la vista v_dashboard_logistico en Supabase.\n\n${e.message || e}`); }
-            finally { if (loader) loader.classList.add('hidden'); }
-        }
-        function renderDashboardLogistico() {
-            const rows = dashboardLogisticoData || []; const total = rows.length;
-            const completa = rows.filter(x => dashLogBool(x.logistica_completa) && dashLogBool(x.tiene_barcode)).length;
-            const conAlgo = rows.filter(x => dashLogBool(x.tiene_alguna_logistica)).length; const sinAlgo = total - conAlgo;
-            const faltaBarcode = rows.filter(x => !dashLogBool(x.tiene_barcode)).length; const alta = rows.filter(x => x.prioridad === 'alta').length;
-            const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-            set('dashLogTotal', dashLogNum(total)); set('dashLogCompleta', dashLogNum(completa)); set('dashLogCompletaPct', dashLogPct(completa,total)); set('dashLogConAlgo', dashLogNum(conAlgo)); set('dashLogSinAlgo', dashLogNum(sinAlgo)); set('dashLogFaltaBarcode', dashLogNum(faltaBarcode)); set('dashLogAlta', dashLogNum(alta));
-            const bloques = document.getElementById('dashLogBloques'); if (bloques) bloques.innerHTML = [dashLogBar('Código de barras', rows.filter(x => dashLogBool(x.tiene_barcode)).length, total),dashLogBar('Unidad completa', rows.filter(x => dashLogBool(x.unidad_completa)).length, total),dashLogBar('Caja / bolsa completa', rows.filter(x => dashLogBool(x.caja_bolsa_completa)).length, total),dashLogBar('Tarima completa', rows.filter(x => dashLogBool(x.tarima_completa)).length, total),dashLogBar('Logística completa', rows.filter(x => dashLogBool(x.logistica_completa)).length, total)].join('');
-            const groupBy = document.getElementById('dashLogAgrupar')?.value || 'grupo'; const map = new Map();
-            rows.forEach(r => { const key = String(r[groupBy] || 'SIN DATO').trim() || 'SIN DATO'; if (!map.has(key)) map.set(key, { total: 0, completa: 0, alta: 0 }); const o = map.get(key); o.total++; if (dashLogBool(r.logistica_completa) && dashLogBool(r.tiene_barcode)) o.completa++; if (r.prioridad === 'alta') o.alta++; });
-            const cont = document.getElementById('dashLogResumen'); const resumen = [...map.entries()].sort((a,b) => b[1].total - a[1].total).slice(0,80);
-            if (cont) cont.innerHTML = resumen.map(([k,v]) => `<div class="border border-slate-100 rounded-2xl p-3"><div class="flex justify-between gap-3"><div class="min-w-0"><p class="text-xs font-black text-slate-700 uppercase truncate">${escapeHtmlEditor(k)}</p><p class="text-[11px] font-bold text-slate-400">Total: ${dashLogNum(v.total)} · Alta: ${dashLogNum(v.alta)}</p></div><p class="text-sm font-black text-emerald-600">${dashLogPct(v.completa,v.total)}</p></div><div class="mt-2 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-emerald-600" style="width:${v.total ? (v.completa*100/v.total) : 0}%"></div></div></div>`).join('') || '<p class="text-xs font-bold text-slate-400">Sin datos.</p>';
-        }
-        function renderDashboardLogisticoDetalle() {
-            const prioridad = document.getElementById('dashLogFiltroPrioridad')?.value || ''; const falta = document.getElementById('dashLogFiltroFalta')?.value || ''; const q = String(document.getElementById('dashLogBusqueda')?.value || '').trim().toLowerCase();
-            let rows = dashboardLogisticoData || []; if (prioridad) rows = rows.filter(x => x.prioridad === prioridad); if (falta) rows = rows.filter(x => (x.faltantes || []).includes(falta)); if (q) rows = rows.filter(x => x._search.includes(q));
-            rows = rows.sort((a,b) => ({alta:0,media:1,baja:2,completa:3}[a.prioridad] ?? 9) - ({alta:0,media:1,baja:2,completa:3}[b.prioridad] ?? 9)).slice(0,200);
-            const resumen = document.getElementById('dashLogDetalleResumen'); if (resumen) resumen.textContent = `Mostrando ${dashLogNum(rows.length)} registro(s).`; const lista = document.getElementById('dashLogDetalleLista'); if (!lista) return;
-            lista.innerHTML = rows.map(r => { const badge = r.prioridad === 'alta' ? 'bg-rose-50 text-rose-700 border-rose-100' : r.prioridad === 'media' ? 'bg-amber-50 text-amber-700 border-amber-100' : r.prioridad === 'completa' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-50 text-slate-600 border-slate-100'; const faltas = (r.faltantes || []).join(', ') || 'sin pendientes'; return `<div class="border border-slate-100 rounded-2xl p-3 bg-white"><div class="flex justify-between gap-3"><div class="min-w-0"><p class="text-sm font-black text-slate-800 uppercase">${escapeHtmlEditor(r.codigo_limsa || '')}</p><p class="text-xs font-bold text-slate-500 truncate">${escapeHtmlEditor(r.descripcion || '')}</p><p class="text-[11px] font-bold text-slate-400 truncate">${escapeHtmlEditor(r.grupo || 'SIN GRUPO')} · ${escapeHtmlEditor(r.proveedor || 'SIN PROVEEDOR')}</p></div><span class="h-fit px-2 py-1 rounded-full border text-[10px] font-black uppercase ${badge}">${escapeHtmlEditor(r.prioridad)}</span></div><p class="mt-2 text-[11px] font-bold text-slate-500">Falta: ${escapeHtmlEditor(faltas)} · Bodegas: ${dashLogNum(r.bodegas_count)}</p></div>`; }).join('') || '<p class="text-xs font-bold text-slate-400 text-center py-6">Sin pendientes con esos filtros.</p>';
-        }
         async function obtenerFactorCatalogo(codigo) { if(!codigo) return ''; const data = await fetchJsonOrThrow(`${SB_URL}catalogo_articulos?articulo=eq.${codigo.toLowerCase()}&select=factor&limit=1`, { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${getAccessToken()}` } }); const factor = data?.[0]?.factor; return factor == null ? '' : String(factor).trim(); }
 
         function bindScanAwareInput(inputId, submitFn, options = {}) {
@@ -2160,350 +1982,9 @@ Fallidos: ${fallidos}`);
                 cont.innerHTML = filtered.map(a => `<div onclick="seleccionarArticuloCat('${a.articulo}')" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm active:bg-blue-50 cursor-pointer animate-in"><div class="flex justify-between"><span class="font-black text-blue-700 text-sm tracking-tighter">${a.articulo.toUpperCase()}</span><span class="text-[9px] bg-slate-100 px-2 py-0.5 rounded font-bold uppercase">ART</span></div><p class="text-xs font-bold mt-1 uppercase text-slate-800">${a.nombre}</p></div>`).join('');
             } catch(e) { cont.innerHTML = "Error."; }
         }
-        function seleccionarArticuloCat(sku) { if(catalogoModo === "registro") procesarSku(sku); else if(catalogoModo === "correlacion") procesarCorrelacion(sku); else if(catalogoModo === "asignacionSerie") { document.getElementById('inputAsignacionBusqueda').value = sku; buscarAsignacionSerie(sku); } else buscarArticuloAuditoria(sku); cerrarCatalogo(); }
+        function seleccionarArticuloCat(sku) { if(catalogoModo === "registro") procesarSku(sku); else if(catalogoModo === "correlacion") procesarCorrelacion(sku); else buscarArticuloAuditoria(sku); cerrarCatalogo(); }
         function abrirCatalogo(modo) { catalogoModo = modo; document.getElementById('modalCatalogo').classList.remove('hidden'); document.getElementById('busquedaCat').focus(); }
         function cerrarCatalogo() { document.getElementById('modalCatalogo').classList.add('hidden'); }
-
-
-        // --- MÓDULO ASIGNACIÓN EN SERIE ---
-        function setSerieMensaje(txt, tipo = 'info') {
-            const el = document.getElementById('serieMensaje');
-            if(!el) return;
-            if(!txt) { el.classList.add('hidden'); return; }
-            const clases = tipo === 'ok'
-                ? 'bg-green-100 text-green-700'
-                : tipo === 'error'
-                    ? 'bg-red-100 text-red-700'
-                    : tipo === 'warn'
-                        ? 'bg-orange-100 text-orange-700'
-                        : 'bg-cyan-100 text-cyan-700';
-            el.innerText = txt;
-            el.className = `p-3 rounded-xl text-xs font-bold text-center ${clases}`;
-            el.classList.remove('hidden');
-        }
-
-        function normalizarSku(v) { return String(v || '').trim().toLowerCase(); }
-
-        function getAsignacionSerieFiltros() {
-            return Array.from(document.querySelectorAll('.serieFiltroEstatus:checked'))
-                .map(x => String(x.value || '').trim())
-                .filter(Boolean);
-        }
-
-        function serieEstatusLabel(estatus) {
-            if(estatus === 'linea') return 'CONT';
-            if(estatus === 'descontinuado') return 'DESC';
-            if(estatus === 'compra especial') return 'COMPRA ESPECIAL';
-            if(estatus === 'sobre pedido') return 'SOBRE PEDIDO';
-            return String(estatus || '').toUpperCase();
-        }
-
-        function serieEstatusBadgeClass(estatus) {
-            if(estatus === 'linea') return 'bg-cyan-50 text-cyan-700';
-            if(estatus === 'compra especial') return 'bg-purple-50 text-purple-700';
-            if(estatus === 'descontinuado') return 'bg-slate-100 text-slate-600';
-            if(estatus === 'sobre pedido') return 'bg-amber-50 text-amber-700';
-            return 'bg-slate-100 text-slate-600';
-        }
-
-        function renderAsignacionSerie() {
-            const lista = document.getElementById('listaAsignacionSerie');
-            const total = asignacionSerieItems.length;
-            const con = asignacionSerieItems.filter(x => String(x.codigo_barra || '').trim()).length;
-            const pend = total - con;
-            document.getElementById('serieResumen')?.classList.toggle('hidden', total === 0);
-            document.getElementById('seriePanelCaptura')?.classList.toggle('hidden', total === 0);
-            document.getElementById('serieTotal').innerText = total;
-            document.getElementById('serieCon').innerText = con;
-            document.getElementById('seriePend').innerText = pend;
-
-            if(!total) {
-                if(lista) lista.innerHTML = '';
-                return;
-            }
-
-            if(asignacionSerieIndex < 0 || asignacionSerieIndex >= total) asignacionSerieIndex = Math.max(0, asignacionSerieItems.findIndex(x => !String(x.codigo_barra || '').trim()));
-            if(asignacionSerieIndex < 0) asignacionSerieIndex = 0;
-            const actual = asignacionSerieItems[asignacionSerieIndex] || asignacionSerieItems[0];
-            document.getElementById('serieSkuActual').innerText = (actual?.articulo || '--').toUpperCase();
-            document.getElementById('serieNombreActual').innerText = actual?.nombre || '--';
-            document.getElementById('serieContador').innerText = `${asignacionSerieIndex + 1}/${total}`;
-            const input = document.getElementById('inputAsignacionSerie');
-            if(input && document.activeElement !== input) input.value = actual?.codigo_barra || '';
-
-            if(lista) {
-                lista.innerHTML = asignacionSerieItems.map((item, idx) => {
-                    const activo = idx === asignacionSerieIndex;
-                    const tiene = String(item.codigo_barra || '').trim();
-                    return `<div class="bg-white p-4 rounded-3xl border ${activo ? 'border-cyan-400 ring-2 ring-cyan-100' : 'border-slate-200'} shadow-sm space-y-3 animate-in">
-                        <div onclick="seleccionarAsignacionSerieIndex(${idx})" class="cursor-pointer">
-                            <div class="flex justify-between gap-3 items-start">
-                                <p class="font-black text-cyan-700 text-sm uppercase break-all">${String(item.articulo || '').toUpperCase()}</p>
-                                <span class="shrink-0 text-[9px] font-black px-2 py-1 rounded-lg ${tiene ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600'}">${tiene ? 'CON BARCODE' : 'PENDIENTE'}</span>
-                            </div>
-                            <p class="text-xs font-bold text-slate-700 uppercase mt-1 break-words">${item.nombre || 'SIN DESCRIPCIÓN'}</p>
-                            <div class="flex flex-wrap gap-2 mt-2">
-                                <span class="text-[9px] font-black px-2 py-1 rounded-lg ${serieEstatusBadgeClass(item.estatus)}">${serieEstatusLabel(item.estatus)}</span>
-                            </div>
-                            <p class="text-[11px] text-slate-500 font-bold mt-1 break-all">Barcode: <span class="text-slate-800">${item.codigo_barra || '--'}</span></p>
-                        </div>
-                        <div class="flex gap-2">
-                            <input type="text" id="serieRowInput_${idx}" value="${item.codigo_barra || ''}" placeholder="Barcode" class="flex-1 border border-slate-200 rounded-xl px-3 py-3 font-black text-slate-700 text-sm">
-                            <button onclick="guardarAsignacionSerieFila(${idx})" class="bg-cyan-600 text-white px-4 rounded-xl font-bold text-xs uppercase active:scale-95">Guardar</button>
-                        </div>
-                    </div>`;
-                }).join('');
-            }
-        }
-
-        function seleccionarAsignacionSerieIndex(idx) {
-            asignacionSerieIndex = idx;
-            renderAsignacionSerie();
-            setTimeout(() => document.getElementById('inputAsignacionSerie')?.focus(), 120);
-        }
-
-        function serieEscapeHtml(v) {
-            return String(v ?? '')
-                .replaceAll('&', '&amp;')
-                .replaceAll('<', '&lt;')
-                .replaceAll('>', '&gt;')
-                .replaceAll('"', '&quot;')
-                .replaceAll("'", '&#39;');
-        }
-
-        function serieGrupoKey(v) {
-            const g = String(v || '').trim();
-            return g || 'SIN GRUPO';
-        }
-
-        function limpiarGruposAsignacionSerie() {
-            const cont = document.getElementById('serieGruposCatalogo');
-            if(cont) {
-                cont.classList.add('hidden');
-                cont.innerHTML = '';
-            }
-        }
-
-        function renderGruposAsignacionSerie(items, filtrosEstatus) {
-            const cont = document.getElementById('serieGruposCatalogo');
-            if(!cont) return;
-            const grupos = new Map();
-            (items || []).forEach(item => {
-                const key = serieGrupoKey(item.grupo);
-                if(!grupos.has(key)) grupos.set(key, []);
-                grupos.get(key).push(item);
-            });
-            const arr = Array.from(grupos.entries()).sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
-            if(arr.length <= 1) {
-                limpiarGruposAsignacionSerie();
-                return;
-            }
-            cont.classList.remove('hidden');
-            const filtrosTxt = (filtrosEstatus || []).map(serieEstatusLabel).join(' + ');
-            cont.innerHTML = `
-                <div class="bg-amber-50 border border-amber-100 rounded-2xl p-3 space-y-2">
-                    <p class="text-[10px] font-black text-amber-700 uppercase tracking-widest">Selecciona grupo</p>
-                    <p class="text-[11px] font-bold text-slate-600 leading-snug">Tu búsqueda encontró varios grupos. Elige el grupo que corresponde para cargar solo esos productos.</p>
-                    <div class="grid grid-cols-1 gap-2">
-                        ${arr.map(([grupo, rows]) => {
-                            const ejemplos = rows.slice(0, 3).map(x => String(x.articulo || '').toUpperCase()).join(' · ');
-                            return `<button onclick="seleccionarGrupoAsignacionSerie('${serieEscapeHtml(grupo)}')" class="text-left bg-white border border-amber-100 rounded-xl p-3 active:scale-95">
-                                <div class="flex items-center justify-between gap-2">
-                                    <span class="text-sm font-black text-slate-800 uppercase">${serieEscapeHtml(grupo)}</span>
-                                    <span class="text-[10px] font-black bg-cyan-50 text-cyan-700 rounded-lg px-2 py-1">${rows.length} artículos</span>
-                                </div>
-                                <p class="text-[10px] font-bold text-slate-400 mt-1 break-words">${serieEscapeHtml(ejemplos)}</p>
-                            </button>`;
-                        }).join('')}
-                    </div>
-                    <button onclick="cargarAsignacionSerieDesdeCatalogo(asignacionSerieCatalogoBase, 'Listado cargado completo: ' + asignacionSerieCatalogoBase.length + ' artículo(s). Filtros: ' + '${serieEscapeHtml(filtrosTxt)}' + '.')" class="w-full bg-white text-slate-600 py-3 rounded-xl font-black text-xs uppercase border border-slate-200 active:bg-slate-100">Cargar todos los grupos</button>
-                </div>`;
-        }
-
-        async function seleccionarGrupoAsignacionSerie(grupo) {
-            const key = serieGrupoKey(grupo);
-            const filtrado = asignacionSerieCatalogoBase.filter(item => serieGrupoKey(item.grupo) === key);
-            limpiarGruposAsignacionSerie();
-            await cargarAsignacionSerieDesdeCatalogo(filtrado, `Grupo ${key}: ${filtrado.length} artículo(s) cargado(s).`);
-        }
-
-        async function cargarAsignacionSerieDesdeCatalogo(filtrado, mensajeOk) {
-            const lista = document.getElementById('listaAsignacionSerie');
-            if(!filtrado || !filtrado.length) {
-                asignacionSerieItems = [];
-                renderAsignacionSerie();
-                if(lista) lista.innerHTML = `<p class="text-center text-slate-500 mt-10 italic">Sin resultados.</p>`;
-                return;
-            }
-
-            const codigos = [...new Set(filtrado.map(x => normalizarSku(x.articulo)).filter(Boolean))];
-            const barcodePorSku = new Map();
-            for(let i = 0; i < codigos.length; i += 80) {
-                const chunk = codigos.slice(i, i + 80);
-                const inList = chunk.map(x => `"${x}"`).join(',');
-                const rows = await fetchJsonOrThrow(`${SB_URL}almacen_datos?select=codigo,codigo_barra&codigo=in.(${inList})&limit=5000`, {
-                    headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` }
-                });
-                (Array.isArray(rows) ? rows : []).forEach(r => {
-                    const code = normalizarSku(r.codigo);
-                    const bar = String(r.codigo_barra || '').trim();
-                    if(code && bar && !barcodePorSku.has(code)) barcodePorSku.set(code, bar);
-                });
-            }
-
-            asignacionSerieItems = filtrado.map(x => ({
-                articulo: normalizarSku(x.articulo),
-                nombre: x.nombre || '',
-                clave_proveedor: x.clave_proveedor || '',
-                proveedor: x.proveedor || '',
-                grupo: x.grupo || '',
-                estatus: dashboardEstatus(x.nombre),
-                codigo_barra: barcodePorSku.get(normalizarSku(x.articulo)) || ''
-            }));
-            asignacionSerieIndex = asignacionSerieItems.findIndex(x => !String(x.codigo_barra || '').trim());
-            if(asignacionSerieIndex < 0) asignacionSerieIndex = 0;
-            renderAsignacionSerie();
-            setSerieMensaje(mensajeOk || `Listado cargado: ${asignacionSerieItems.length} artículo(s).`, 'ok');
-            setTimeout(() => document.getElementById('inputAsignacionSerie')?.focus(), 200);
-        }
-
-        async function buscarAsignacionSerie(manual = null) {
-            const txt = String(manual || document.getElementById('inputAsignacionBusqueda')?.value || '').trim();
-            if(txt.length < 3) { alert('Escribe al menos 3 caracteres para buscar en catálogo.'); return; }
-            const lista = document.getElementById('listaAsignacionSerie');
-            if(lista) lista.innerHTML = `<div class="flex justify-center py-10"><div class="w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div></div>`;
-            setSerieMensaje('', 'info');
-            try {
-                const filtrosEstatus = getAsignacionSerieFiltros();
-                if(!filtrosEstatus.length) {
-                    asignacionSerieItems = [];
-                    asignacionSerieCatalogoBase = [];
-                    limpiarGruposAsignacionSerie();
-                    renderAsignacionSerie();
-                    if(lista) lista.innerHTML = `<p class="text-center text-orange-500 mt-10 font-bold">Selecciona al menos un filtro de catálogo.</p>`;
-                    setSerieMensaje('Selecciona al menos un filtro: CONT, compra especial, DESC o sobre pedido.', 'warn');
-                    return;
-                }
-                const words = txt.split(/\s+/).filter(Boolean);
-                const p1 = words[0].replace(/'/g, "''");
-                const filter = `or=(articulo.ilike.*${encodeURIComponent(p1)}*,nombre.ilike.*${encodeURIComponent(p1)}*,clave_proveedor.ilike.*${encodeURIComponent(p1)}*,proveedor.ilike.*${encodeURIComponent(p1)}*)`;
-                const catalogo = await fetchJsonOrThrow(`${SB_URL}catalogo_articulos?select=articulo,nombre,clave_proveedor,proveedor,grupo&${filter}&limit=150`, {
-                    headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` }
-                });
-                const filtrado = (Array.isArray(catalogo) ? catalogo : []).filter(item => {
-                    const haystack = `${item.articulo || ''} ${item.nombre || ''} ${item.clave_proveedor || ''} ${item.proveedor || ''} ${item.grupo || ''}`.toLowerCase();
-                    const coincideTexto = words.every(w => haystack.includes(w.toLowerCase()));
-                    const estatus = dashboardEstatus(item.nombre);
-                    return coincideTexto && filtrosEstatus.includes(estatus);
-                });
-                if(!filtrado.length) {
-                    asignacionSerieItems = [];
-                    asignacionSerieCatalogoBase = [];
-                    limpiarGruposAsignacionSerie();
-                    renderAsignacionSerie();
-                    if(lista) lista.innerHTML = `<p class="text-center text-slate-500 mt-10 italic">Sin resultados.</p>`;
-                    return;
-                }
-
-                asignacionSerieCatalogoBase = filtrado;
-                asignacionSerieBusquedaActual = txt;
-                const gruposUnicos = [...new Set(filtrado.map(x => serieGrupoKey(x.grupo)))];
-                if(gruposUnicos.length > 1) {
-                    asignacionSerieItems = [];
-                    renderAsignacionSerie();
-                    renderGruposAsignacionSerie(filtrado, filtrosEstatus);
-                    if(lista) lista.innerHTML = `<p class="text-center text-slate-500 mt-6 font-bold">Selecciona un grupo para cargar el listado.</p>`;
-                    setSerieMensaje(`Se encontraron ${filtrado.length} artículos en ${gruposUnicos.length} grupos. Selecciona el grupo correcto.`, 'warn');
-                    return;
-                }
-
-                limpiarGruposAsignacionSerie();
-                await cargarAsignacionSerieDesdeCatalogo(filtrado, `Listado cargado: ${filtrado.length} artículo(s). Filtros: ${filtrosEstatus.map(serieEstatusLabel).join(' + ')}.`);
-            } catch(e) {
-                asignacionSerieItems = [];
-                asignacionSerieCatalogoBase = [];
-                limpiarGruposAsignacionSerie();
-                renderAsignacionSerie();
-                if(lista) lista.innerHTML = `<p class="text-center text-red-500 mt-10 font-bold">Error al buscar.</p>`;
-                setSerieMensaje(`Error: ${e.message || e}`, 'error');
-            }
-        }
-
-        async function validarBarcodeNoDuplicadoSerie(barcode, skuActual) {
-            const b = String(barcode || '').trim();
-            if(!b) return true;
-            const rows = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo_barra=eq.${encodeURIComponent(b)}&select=codigo&limit=20`, {
-                headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` }
-            });
-            const otros = [...new Set((Array.isArray(rows) ? rows : []).map(r => normalizarSku(r.codigo)).filter(c => c && c !== normalizarSku(skuActual)))];
-            if(otros.length) {
-                return confirm(`Este código de barras ya aparece en otro SKU: ${otros.map(x => x.toUpperCase()).join(', ')}. ¿Aun así quieres guardarlo en ${String(skuActual).toUpperCase()}?`);
-            }
-            return true;
-        }
-
-        async function guardarAsignacionSerieFila(idx) {
-            const input = document.getElementById(`serieRowInput_${idx}`);
-            asignacionSerieIndex = idx;
-            await guardarAsignacionSerieActual(input?.value || '');
-        }
-
-        async function guardarAsignacionSerieActual(manual = null) {
-            const item = asignacionSerieItems[asignacionSerieIndex];
-            if(!item?.articulo) { setSerieMensaje('Primero carga un listado del catálogo.', 'warn'); return; }
-            const barcode = String(manual != null ? manual : (document.getElementById('inputAsignacionSerie')?.value || '')).trim();
-            if(!barcode) { setSerieMensaje('Escanea o escribe un código de barras.', 'warn'); return; }
-            try {
-                if(!(await validarBarcodeNoDuplicadoSerie(barcode, item.articulo))) return;
-                const codigo = normalizarSku(item.articulo);
-                const queryGlobal = `${SB_URL}almacen_datos?codigo=eq.${encodeURIComponent(codigo)}`;
-                const existentes = await fetchJsonOrThrow(`${queryGlobal}&select=codigo,almacen&limit=100`, {
-                    headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` }
-                });
-                if(Array.isArray(existentes) && existentes.length > 0) {
-                    await fetchJsonOrThrow(queryGlobal, {
-                        method: 'PATCH',
-                        headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}`, "Content-Type": "application/json", "Prefer": "return=representation" },
-                        body: JSON.stringify({ codigo_barra: barcode })
-                    });
-                } else {
-                    await fetchJsonOrThrow(`${SB_URL}almacen_datos`, {
-                        method: 'POST',
-                        headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}`, "Content-Type": "application/json", "Prefer": "return=representation" },
-                        body: JSON.stringify({ codigo, almacen: (almacenActual || 'ci').toLowerCase(), codigo_barra: barcode })
-                    });
-                }
-                item.codigo_barra = barcode;
-                setSerieMensaje(`Guardado ${String(codigo).toUpperCase()} → ${barcode}`, 'ok');
-                siguienteAsignacionSeriePendiente(true);
-            } catch(e) {
-                setSerieMensaje(`Error al guardar: ${e.message || e}`, 'error');
-            }
-        }
-
-        function siguienteAsignacionSeriePendiente(silencioso = false) {
-            if(!asignacionSerieItems.length) return;
-            let siguiente = -1;
-            for(let i = asignacionSerieIndex + 1; i < asignacionSerieItems.length; i++) {
-                if(!String(asignacionSerieItems[i].codigo_barra || '').trim()) { siguiente = i; break; }
-            }
-            if(siguiente < 0) {
-                for(let i = 0; i < asignacionSerieIndex; i++) {
-                    if(!String(asignacionSerieItems[i].codigo_barra || '').trim()) { siguiente = i; break; }
-                }
-            }
-            if(siguiente >= 0) {
-                asignacionSerieIndex = siguiente;
-                const input = document.getElementById('inputAsignacionSerie');
-                if(input) input.value = '';
-                renderAsignacionSerie();
-                setTimeout(() => document.getElementById('inputAsignacionSerie')?.focus(), 150);
-            } else {
-                renderAsignacionSerie();
-                if(!silencioso) setSerieMensaje('No quedan pendientes en este listado.', 'ok');
-                else setSerieMensaje('Listado completo. No quedan pendientes.', 'ok');
-            }
-        }
 
         // --- MÓDULO AUDITORÍA ---
         async function buscarArticuloAuditoria(manual = null) {
@@ -2587,7 +2068,7 @@ Fallidos: ${fallidos}`);
             document.getElementById('inputVinculo').value = "";
             limpiarCamposCorrelacion();
             correlacionActiva = {
-                limsa: "", barras: "", modo: "", medida: "", nombre: "", umVenta: "", claveProveedor: "", prefijoBusqueda: "", similares: [], sugerenciasBarcode: [], sugerenciaBarcodeElegida: "", sugerenciasLimsa: [], sugerenciaLimsaElegida: null, codigoBarraHeredado: false, bodegaCodigoBarra: "",
+                limsa: "", barras: "", modo: "", medida: "", nombre: "", umVenta: "", claveProveedor: "", prefijoBusqueda: "", similares: [], sugerenciasBarcode: [], sugerenciaBarcodeElegida: "", sugerenciasLimsa: [], sugerenciaLimsaElegida: null,
                 largoUnidad: "", anchoUnidad: "", altoUnidad: "", pesoUnidad: "",
                 unidadesCajaBolsa: "", largoCajaBolsa: "", anchoCajaBolsa: "", altoCajaBolsa: "", pesoCajaBolsa: "",
                 unidadesTarima: "", largoTarima: "", anchoTarima: "", altoTarima: "", pesoTarima: ""
@@ -2604,67 +2085,24 @@ Fallidos: ${fallidos}`);
 
                 const esNumerico = /^\d+$/.test(val);
 
-                const camposLogisticos = "codigo,almacen,codigo_barra,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima";
-
                 if(esNumerico && val.length >= 8) {
                     correlacionActiva.modo = "EAN";
                     correlacionActiva.barras = val;
-
-                    let data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo_barra=eq.${val}&almacen=eq.${almacenActual.toLowerCase()}&select=${camposLogisticos}&limit=1`, {
+                    const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo_barra=eq.${val}&select=codigo,codigo_barra,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima&limit=1`, {
                         headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` }
                     });
                     fila = data?.[0] || null;
-
-                    if(!fila) {
-                        data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo_barra=eq.${val}&select=${camposLogisticos}&limit=1`, {
-                            headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` }
-                        });
-                        const filaGlobal = data?.[0] || null;
-                        if(filaGlobal?.codigo) {
-                            correlacionActiva.codigoBarraHeredado = String(filaGlobal.almacen || '').toLowerCase() !== String(almacenActual || '').toLowerCase();
-                            correlacionActiva.bodegaCodigoBarra = filaGlobal.almacen || "";
-                            correlacionActiva.limsa = filaGlobal.codigo || "";
-                            idN = correlacionActiva.limsa;
-
-                            const dataLocal = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${String(idN).toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}&select=${camposLogisticos}&limit=1`, {
-                                headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` }
-                            });
-                            fila = dataLocal?.[0] || filaGlobal;
-                            if(!fila?.codigo_barra) correlacionActiva.barras = val;
-                        }
-                    } else {
-                        correlacionActiva.limsa = fila?.codigo || "";
-                        idN = correlacionActiva.limsa;
-                    }
-
-                    if(!idN && fila?.codigo) {
-                        correlacionActiva.limsa = fila.codigo;
-                        idN = fila.codigo;
-                    }
-
-                    if(idN) {
-                        const filasSku = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${String(idN).toLowerCase()}&select=${camposLogisticos}&limit=100`, {
-                            headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` }
-                        });
-                        const mejorFila = editorPcElegirBaseLogistica(Array.isArray(filasSku) ? filasSku : []);
-                        if(mejorFila?.codigo) fila = mejorFila;
-                        if(!correlacionActiva.barras && fila?.codigo_barra) correlacionActiva.barras = fila.codigo_barra;
-                    }
+                    correlacionActiva.limsa = fila?.codigo || "";
+                    idN = correlacionActiva.limsa;
                 } else {
                     correlacionActiva.modo = "LIMSA";
                     correlacionActiva.limsa = val;
                     idN = val;
-
-                    // Logistica y codigo de barras son globales por SKU LIMSA.
-                    // Se consultan todas las bodegas del SKU y se toma la fila mas completa.
-                    const filasSku = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${val.toLowerCase()}&select=${camposLogisticos}&limit=100`, {
+                    const data = await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${val.toLowerCase()}&select=codigo,codigo_barra,largo_unidad,ancho_unidad,alto_unidad,peso_unidad,unidades_caja_bolsa,largo_caja_bolsa,ancho_caja_bolsa,alto_caja_bolsa,peso_caja_bolsa,unidades_tarima,largo_tarima,ancho_tarima,alto_tarima,peso_tarima&limit=1`, {
                         headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` }
                     });
-                    const filas = Array.isArray(filasSku) ? filasSku : [];
-                    fila = editorPcElegirBaseLogistica(filas);
+                    fila = data?.[0] || null;
                     correlacionActiva.barras = fila?.codigo_barra || "";
-                    correlacionActiva.codigoBarraHeredado = String(fila?.almacen || '').toLowerCase() !== String(almacenActual || '').toLowerCase() && !!correlacionActiva.barras;
-                    correlacionActiva.bodegaCodigoBarra = fila?.almacen || "";
                 }
 
                 if(idN) {
@@ -2749,14 +2187,9 @@ Fallidos: ${fallidos}`);
                 await cargarSugerenciaLimsaDesdeBarcode(correlacionActiva.barras, !!correlacionActiva.limsa);
 
                 if(correlacionActiva.limsa && correlacionActiva.barras) {
-                    if(correlacionActiva.codigoBarraHeredado && correlacionActiva.bodegaCodigoBarra) {
-                        document.getElementById('corrMensaje').innerText = `Vínculo Correcto · código encontrado en ${String(correlacionActiva.bodegaCodigoBarra).toUpperCase()}`;
-                        document.getElementById('btnEliminarCorrMini').classList.remove('hidden');
-                    } else {
-                        document.getElementById('corrMensaje').innerText = "Vínculo Correcto";
-                        document.getElementById('btnEliminarCorrMini').classList.remove('hidden');
-                    }
+                    document.getElementById('corrMensaje').innerText = "Vínculo Correcto";
                     document.getElementById('corrMensaje').className = "mt-4 p-3 rounded-xl text-xs font-bold text-center bg-green-100 text-green-700";
+                    document.getElementById('btnEliminarCorrMini').classList.remove('hidden');
                     rowVinculo?.classList.add('hidden');
                 } else {
                     document.getElementById('corrMensaje').innerText = "Vínculo Pendiente";
@@ -2800,15 +2233,13 @@ Fallidos: ${fallidos}`);
                     return;
                 }
 
-                // Codigo de barras y datos logisticos son globales por SKU LIMSA.
-                // Al guardar, se replican en todas las filas/bodegas donde exista el mismo codigo.
-                const queryGlobal = `${SB_URL}almacen_datos?codigo=eq.${l.toLowerCase()}`;
-                const rows = await fetchJsonOrThrow(`${queryGlobal}&select=codigo,almacen&limit=100`, {
+                const query = `${SB_URL}almacen_datos?codigo=eq.${l.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`;
+                const rows = await fetchJsonOrThrow(`${query}&select=codigo,almacen&limit=1`, {
                     headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` }
                 });
 
                 if(Array.isArray(rows) && rows.length > 0) {
-                    await fetchJsonOrThrow(queryGlobal, {
+                    await fetchJsonOrThrow(query, {
                         method: 'PATCH',
                         headers: {
                             "apikey": SB_KEY,
@@ -2844,7 +2275,7 @@ Fallidos: ${fallidos}`);
                 alert(`Error al guardar: ${e.message || e}`);
             }
         }
-        async function eliminarRelacionTotal() { if(!confirm("¿Quitar el código de barras de este SKU en todas las bodegas?")) return; try { await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${correlacionActiva.limsa.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo_barra: null }) }); document.getElementById('inputVinculo').value = ""; alert("Vínculo eliminado en todas las bodegas del SKU."); procesarCorrelacion(correlacionActiva.limsa); } catch(e) { alert(`Error al eliminar: ${e.message || e}`); } }
+        async function eliminarRelacionTotal() { if(!confirm("¿Quitar solo el código de barras de este artículo?")) return; try { await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${correlacionActiva.limsa.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo_barra: null }) }); document.getElementById('inputVinculo').value = ""; alert("Vínculo eliminado."); procesarCorrelacion(correlacionActiva.limsa); } catch(e) { alert(`Error al eliminar: ${e.message || e}`); } }
 
         // --- UTILS ---
         function aplicarResultadoEscaneo(t, txt) {
@@ -2857,10 +2288,6 @@ Fallidos: ${fallidos}`);
             else if(t === 'vinculo') {
                 document.getElementById('inputVinculo').value = txt;
                 guardarVinculo();
-            }
-            else if(t === 'asignacionSerie') {
-                document.getElementById('inputAsignacionSerie').value = txt;
-                guardarAsignacionSerieActual(txt);
             }
             else if(t === 'audNuevaUbic') {
                 agregarUbicacionAuditoria(txt);
@@ -3057,6 +2484,58 @@ Fallidos: ${fallidos}`);
         }
 
 
+        function dashLogBool(v) { return v === true || v === 'true' || v === 1 || v === '1'; }
+        function dashLogPct(a, b) { return b ? `${((a * 100) / b).toFixed(1)}%` : '0.0%'; }
+        function dashLogNum(n) { return Number(n || 0).toLocaleString('es-MX'); }
+        function dashLogBar(label, value, total, note = '') {
+            const pct = total ? Math.round((value * 1000) / total) / 10 : 0;
+            return `<div><div class="flex justify-between text-[11px] font-black uppercase text-slate-500 mb-1"><span>${label}${note ? ` <span class="normal-case font-bold text-slate-400">${note}</span>` : ''}</span><span>${dashLogNum(value)} / ${dashLogPct(value,total)}</span></div><div class="h-2 rounded-full bg-slate-100 overflow-hidden"><div class="h-full bg-cyan-600" style="width:${Math.min(100, pct)}%"></div></div></div>`;
+        }
+        function dashLogCompleta(row) { return dashLogBool(row.logistica_completa); }
+        function dashLogFaltaTarima(row) { return dashLogBool(row.tarima_requerida) && !dashLogBool(row.tarima_completa); }
+        function dashLogFaltantes(row) {
+            const out = [];
+            if (!dashLogBool(row.tiene_barcode)) out.push('Código de barras');
+            if (!dashLogBool(row.unidad_completa)) out.push('Unidad');
+            if (!dashLogBool(row.caja_bolsa_completa)) out.push('Caja/bolsa');
+            if (dashLogFaltaTarima(row)) out.push('Tarima');
+            return out;
+        }
+        async function cargarDashboardLogistico(force = false) {
+            if (dashboardLogisticoLoaded && !force) { renderDashboardLogistico(); return; }
+            const loader = document.getElementById('dashLogLoader'); if (loader) loader.classList.remove('hidden');
+            try {
+                dashboardLogisticoData = await fetchAllSupabaseRows('v_dashboard_logistico','codigo_limsa,descripcion,grupo,um_venta,factor,proveedor,clave_proveedor,bodegas_count,bodegas,solo_bodegas_a,tarima_requerida,tiene_barcode,tiene_alguna_logistica,unidad_completa,caja_bolsa_completa,tarima_completa,logistica_completa,falta_barcode,falta_unidad,falta_caja_bolsa,falta_tarima','order=codigo_limsa.asc',1000);
+                dashboardLogisticoData = (dashboardLogisticoData || []).map(row => ({...row, faltantes: dashLogFaltantes(row)}));
+                dashboardLogisticoLoaded = true;
+                renderDashboardLogistico();
+            } catch (e) {
+                alert(`Error al cargar dashboard logístico. Revisa que ya exista la vista v_dashboard_logistico actualizada en Supabase.\n\n${e.message || e}`);
+            } finally { if (loader) loader.classList.add('hidden'); }
+        }
+        function renderDashboardLogistico() {
+            const rows = dashboardLogisticoData || [];
+            const total = rows.length;
+            const completa = rows.filter(dashLogCompleta).length;
+            const soloA = rows.filter(x => dashLogBool(x.solo_bodegas_a)).length;
+            const pendientes = total - completa;
+            const set = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+            set('dashLogTotal', dashLogNum(total)); set('dashLogCompleta', dashLogNum(completa)); set('dashLogCompletaPct', dashLogPct(completa,total)); set('dashLogSoloA', dashLogNum(soloA)); set('dashLogPendientes', dashLogNum(pendientes));
+            const tarimaAplicable = rows.filter(x => dashLogBool(x.tarima_requerida));
+            const bloques = document.getElementById('dashLogBloques');
+            if (bloques) bloques.innerHTML = [dashLogBar('Código de barras', rows.filter(x => dashLogBool(x.tiene_barcode)).length, total), dashLogBar('Unidad completa', rows.filter(x => dashLogBool(x.unidad_completa)).length, total), dashLogBar('Caja / bolsa completa', rows.filter(x => dashLogBool(x.caja_bolsa_completa)).length, total), dashLogBar('Tarima completa', tarimaAplicable.filter(x => dashLogBool(x.tarima_completa)).length, tarimaAplicable.length, '(solo donde aplica)'), dashLogBar('Logística completa', completa, total)].join('');
+            const cuellos = [['Sin código barras', rows.filter(x => !dashLogBool(x.tiene_barcode)).length], ['Falta unidad', rows.filter(x => !dashLogBool(x.unidad_completa)).length], ['Falta caja/bolsa', rows.filter(x => !dashLogBool(x.caja_bolsa_completa)).length], ['Falta tarima', rows.filter(x => dashLogFaltaTarima(x)).length], ['Sin logística', rows.filter(x => !dashLogBool(x.tiene_alguna_logistica)).length]].sort((a,b) => b[1] - a[1]);
+            const cuellosEl = document.getElementById('dashLogCuellos');
+            if (cuellosEl) cuellosEl.innerHTML = cuellos.map(([label,value]) => `<div class="border border-slate-100 rounded-2xl p-3"><div class="flex justify-between gap-3"><p class="text-xs font-black text-slate-700 uppercase">${escapeHtmlEditor(label)}</p><p class="text-sm font-black text-rose-600">${dashLogNum(value)}</p></div><div class="mt-2 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-rose-500" style="width:${total ? (value*100/total) : 0}%"></div></div></div>`).join('');
+            const groupBy = document.getElementById('dashLogFocoAgrupar')?.value || 'grupo';
+            const map = new Map();
+            rows.forEach(r => { const key = String(r[groupBy] || 'SIN DATO').trim() || 'SIN DATO'; if (!map.has(key)) map.set(key, { total: 0, completos: 0, pendientes: 0, soloA: 0 }); const o = map.get(key); o.total++; if (dashLogCompleta(r)) o.completos++; else o.pendientes++; if (dashLogBool(r.solo_bodegas_a)) o.soloA++; });
+            const foco = [...map.entries()].map(([k,v]) => ({k, ...v, avance: v.total ? (v.completos * 100 / v.total) : 0})).sort((a,b) => (a.avance - b.avance) || (b.pendientes - a.pendientes)).slice(0,80);
+            const focoEl = document.getElementById('dashLogFocoTrabajo');
+            if (focoEl) focoEl.innerHTML = foco.map(v => `<div class="border border-slate-100 rounded-2xl p-3"><div class="flex justify-between gap-3"><div class="min-w-0"><p class="text-xs font-black text-slate-700 uppercase truncate">${escapeHtmlEditor(v.k)}</p><p class="text-[11px] font-bold text-slate-400">Total: ${dashLogNum(v.total)} · Completos: ${dashLogNum(v.completos)} · Pendientes: ${dashLogNum(v.pendientes)}${v.soloA ? ` · Solo A: ${dashLogNum(v.soloA)}` : ''}</p></div><p class="text-sm font-black ${v.avance >= 80 ? 'text-emerald-600' : v.avance >= 50 ? 'text-amber-600' : 'text-rose-600'}">${dashLogPct(v.completos,v.total)}</p></div><div class="mt-2 h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-cyan-600" style="width:${v.avance}%"></div></div></div>`).join('') || '<p class="text-xs font-bold text-slate-400">Sin datos.</p>';
+        }
+
+
         function escapeHtmlEditor(v) {
             return String(v ?? '')
                 .replace(/&/g, '&amp;')
@@ -3086,35 +2565,18 @@ Fallidos: ${fallidos}`);
             document.getElementById('pantallaMenuPrincipal').classList.remove('hidden');
         }
 
-        const EDITOR_PC_LOGISTICA_FIELDS = [
-            'codigo_barra','largo_unidad','ancho_unidad','alto_unidad','peso_unidad','unidades_caja_bolsa','largo_caja_bolsa',
-            'ancho_caja_bolsa','alto_caja_bolsa','peso_caja_bolsa','unidades_tarima','largo_tarima','ancho_tarima','alto_tarima','peso_tarima'
-        ];
-
-        function editorPcTieneDatoLogistico(row, campo) {
-            return String(row?.[campo] ?? '').trim() !== '';
-        }
-
-        function editorPcScoreLogistica(row) {
-            return EDITOR_PC_LOGISTICA_FIELDS.reduce((total, campo) => total + (editorPcTieneDatoLogistico(row, campo) ? 1 : 0), 0);
-        }
-
-        function editorPcElegirBaseLogistica(rows) {
-            return [...(rows || [])].sort((a, b) => {
-                const diff = editorPcScoreLogistica(b) - editorPcScoreLogistica(a);
-                if (diff) return diff;
-                const barcodeDiff = (editorPcTieneDatoLogistico(b, 'codigo_barra') ? 1 : 0) - (editorPcTieneDatoLogistico(a, 'codigo_barra') ? 1 : 0);
-                if (barcodeDiff) return barcodeDiff;
-                return String(a?.almacen || '').localeCompare(String(b?.almacen || ''), 'es');
-            })[0] || {};
-        }
-
         function editorPcTieneLogistica(row) {
-            return EDITOR_PC_LOGISTICA_FIELDS.some(k => editorPcTieneDatoLogistico(row, k));
+            return [
+                'codigo_barra','largo_unidad','ancho_unidad','alto_unidad','peso_unidad','unidades_caja_bolsa','largo_caja_bolsa',
+                'ancho_caja_bolsa','alto_caja_bolsa','peso_caja_bolsa','unidades_tarima','largo_tarima','ancho_tarima','alto_tarima','peso_tarima'
+            ].some(k => String(row?.[k] ?? '').trim() !== '');
         }
 
         function editorPcTieneLogisticaCompleta(row) {
-            return EDITOR_PC_LOGISTICA_FIELDS.every(k => editorPcTieneDatoLogistico(row, k));
+            return [
+                'codigo_barra','largo_unidad','ancho_unidad','alto_unidad','peso_unidad','unidades_caja_bolsa','largo_caja_bolsa',
+                'ancho_caja_bolsa','alto_caja_bolsa','peso_caja_bolsa','unidades_tarima','largo_tarima','ancho_tarima','alto_tarima','peso_tarima'
+            ].every(k => String(row?.[k] ?? '').trim() !== '');
         }
 
         function editorPcEstadoComercialDesdeNombre(nombre) {
@@ -3126,102 +2588,24 @@ Fallidos: ${fallidos}`);
             return 'de_linea';
         }
 
-        function editorPcNormalizarFiltro(valor) {
-            return String(valor ?? '').trim().toLowerCase();
-        }
-
-        function editorPcValorFiltro(id) {
-            return String(document.getElementById(id)?.value || '').trim();
-        }
-
-        function editorPcValoresUnicos(rows, campo) {
-            return [...new Set((rows || []).map(r => String(r?.[campo] || '').trim()).filter(Boolean))]
-                .sort((a,b) => a.localeCompare(b, 'es'));
-        }
-
-        function editorPcRowCumpleFiltros(row, omitir = '') {
-            const q = editorPcNormalizarFiltro(document.getElementById('editorPcBusqueda')?.value || '');
-            const filtroGrupo = editorPcNormalizarFiltro(omitir === 'grupo' ? '' : editorPcValorFiltro('editorPcFiltroGrupo'));
-            const filtroProveedor = editorPcNormalizarFiltro(omitir === 'proveedor' ? '' : editorPcValorFiltro('editorPcFiltroProveedor'));
-            const filtroUmVenta = editorPcNormalizarFiltro(omitir === 'um_venta' ? '' : editorPcValorFiltro('editorPcFiltroUmVenta'));
-            const filtroBarcode = omitir === 'barcode' ? '' : editorPcValorFiltro('editorPcFiltroBarcode');
-            const filtroLogistica = omitir === 'logistica' ? '' : editorPcValorFiltro('editorPcFiltroLogistica');
-            const filtroEstado = omitir === 'estado' ? '' : editorPcValorFiltro('editorPcFiltroEstado');
-
-            if (filtroGrupo && row._grupo !== filtroGrupo) return false;
-            if (filtroProveedor && row._proveedor !== filtroProveedor) return false;
-            if (filtroUmVenta && row._um_venta !== filtroUmVenta) return false;
-            if (filtroBarcode === 'con_barcode' && !row._codigo_barra) return false;
-            if (filtroBarcode === 'sin_barcode' && row._codigo_barra) return false;
-            if (filtroLogistica === 'sin_logistica' && row._tiene_logistica) return false;
-            if (filtroLogistica === 'completa' && !row._logistica_completa) return false;
-            if (filtroLogistica === 'incompleta' && (!row._tiene_logistica || row._logistica_completa)) return false;
-            if (filtroEstado && String(row.estado_comercial || '') !== filtroEstado) return false;
-            if (q && !row._search.includes(q)) return false;
-            return true;
-        }
-
-        function editorPcContarValores(rows, campo) {
-            const map = new Map();
-            (rows || []).forEach(row => {
-                const valor = String(row?.[campo] || '').trim();
-                if (!valor) return;
-                map.set(valor, (map.get(valor) || 0) + 1);
-            });
-            return map;
-        }
-
-        function editorPcPoblarSelect(id, valores, placeholder='Todos', conteos = null) {
+        function editorPcPoblarSelect(id, valores, placeholder='Todos') {
             const select = document.getElementById(id);
             if (!select) return;
             const actual = select.value;
             const opciones = ['<option value="">' + placeholder + '</option>'].concat(
-                valores.map(v => {
-                    const count = conteos instanceof Map ? (conteos.get(v) || 0) : null;
-                    const label = count == null ? v : (v + " (" + count + ")");
-                    return '<option value="' + escapeHtmlEditor(v) + '">' + escapeHtmlEditor(label) + '</option>';
-                })
+                valores.map(v => `<option value="${escapeHtmlEditor(v)}">${escapeHtmlEditor(v)}</option>`)
             );
             select.innerHTML = opciones.join('');
             select.value = valores.includes(actual) ? actual : '';
         }
 
-        function editorPcSetSelectDisponible(id, valoresPermitidos) {
-            const select = document.getElementById(id);
-            if (!select) return;
-            [...select.options].forEach(opt => {
-                if (!opt.value) { opt.disabled = false; return; }
-                opt.disabled = !valoresPermitidos.includes(opt.value);
-            });
-            if (select.value && !valoresPermitidos.includes(select.value)) select.value = '';
-        }
-
         function editorPcActualizarOpcionesFiltros() {
-            if (!editorPcRows.length) return;
-            const rowsGrupo = editorPcRows.filter(r => editorPcRowCumpleFiltros(r, 'grupo'));
-            const rowsProveedor = editorPcRows.filter(r => editorPcRowCumpleFiltros(r, 'proveedor'));
-            const rowsUmVenta = editorPcRows.filter(r => editorPcRowCumpleFiltros(r, 'um_venta'));
-            const rowsBarcode = editorPcRows.filter(r => editorPcRowCumpleFiltros(r, 'barcode'));
-            const rowsLogistica = editorPcRows.filter(r => editorPcRowCumpleFiltros(r, 'logistica'));
-            const rowsEstado = editorPcRows.filter(r => editorPcRowCumpleFiltros(r, 'estado'));
-
-            editorPcPoblarSelect('editorPcFiltroGrupo', editorPcValoresUnicos(rowsGrupo, 'grupo'));
-            editorPcPoblarSelect('editorPcFiltroProveedor', editorPcValoresUnicos(rowsProveedor, 'proveedor'), 'Todos', editorPcContarValores(rowsProveedor, 'proveedor'));
-            editorPcPoblarSelect('editorPcFiltroUmVenta', editorPcValoresUnicos(rowsUmVenta, 'um_venta'));
-
-            const barcodePermitidos = [];
-            if (rowsBarcode.some(r => r._codigo_barra)) barcodePermitidos.push('con_barcode');
-            if (rowsBarcode.some(r => !r._codigo_barra)) barcodePermitidos.push('sin_barcode');
-            editorPcSetSelectDisponible('editorPcFiltroBarcode', barcodePermitidos);
-
-            const logisticaPermitidos = [];
-            if (rowsLogistica.some(r => r._logistica_completa)) logisticaPermitidos.push('completa');
-            if (rowsLogistica.some(r => r._tiene_logistica && !r._logistica_completa)) logisticaPermitidos.push('incompleta');
-            if (rowsLogistica.some(r => !r._tiene_logistica)) logisticaPermitidos.push('sin_logistica');
-            editorPcSetSelectDisponible('editorPcFiltroLogistica', logisticaPermitidos);
-
-            const estadoPermitidos = [...new Set(rowsEstado.map(r => String(r.estado_comercial || '').trim()).filter(Boolean))];
-            editorPcSetSelectDisponible('editorPcFiltroEstado', estadoPermitidos);
+            const grupos = [...new Set(editorPcRows.map(r => String(r.grupo || '').trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
+            const proveedores = [...new Set(editorPcRows.map(r => String(r.proveedor || '').trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
+            const ums = [...new Set(editorPcRows.map(r => String(r.um_venta || '').trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
+            editorPcPoblarSelect('editorPcFiltroGrupo', grupos);
+            editorPcPoblarSelect('editorPcFiltroProveedor', proveedores);
+            editorPcPoblarSelect('editorPcFiltroUmVenta', ums);
         }
 
         function editorPcLimpiarFiltros() {
@@ -3291,20 +2675,31 @@ Fallidos: ${fallidos}`);
         }
 
         function aplicarFiltrosEditorPC() {
-            editorPcActualizarOpcionesFiltros();
-            const q = editorPcNormalizarFiltro(document.getElementById('editorPcBusqueda')?.value || '');
-            const filtroGrupo = editorPcNormalizarFiltro(editorPcValorFiltro('editorPcFiltroGrupo'));
-            const filtroProveedor = editorPcNormalizarFiltro(editorPcValorFiltro('editorPcFiltroProveedor'));
-            const filtroUmVenta = editorPcNormalizarFiltro(editorPcValorFiltro('editorPcFiltroUmVenta'));
-            const filtroBarcode = editorPcValorFiltro('editorPcFiltroBarcode');
-            const filtroLogistica = editorPcValorFiltro('editorPcFiltroLogistica');
-            const filtroEstado = editorPcValorFiltro('editorPcFiltroEstado');
+            const q = String(document.getElementById('editorPcBusqueda').value || '').trim().toLowerCase();
+            const filtroGrupo = String(document.getElementById('editorPcFiltroGrupo')?.value || '').trim().toLowerCase();
+            const filtroProveedor = String(document.getElementById('editorPcFiltroProveedor')?.value || '').trim().toLowerCase();
+            const filtroUmVenta = String(document.getElementById('editorPcFiltroUmVenta')?.value || '').trim().toLowerCase();
+            const filtroBarcode = String(document.getElementById('editorPcFiltroBarcode')?.value || '').trim();
+            const filtroLogistica = String(document.getElementById('editorPcFiltroLogistica')?.value || '').trim();
+            const filtroEstado = String(document.getElementById('editorPcFiltroEstado')?.value || '').trim();
             const signature = [q,filtroGrupo,filtroProveedor,filtroUmVenta,filtroBarcode,filtroLogistica,filtroEstado,editorPcSortField,editorPcSortDir].join('|');
             if (signature !== editorPcLastFilterSignature) {
                 editorPcCurrentPage = 1;
                 editorPcLastFilterSignature = signature;
             }
-            editorPcRowsFiltered = editorPcRows.filter(row => editorPcRowCumpleFiltros(row));
+            editorPcRowsFiltered = editorPcRows.filter(row => {
+                if (filtroGrupo && row._grupo !== filtroGrupo) return false;
+                if (filtroProveedor && row._proveedor !== filtroProveedor) return false;
+                if (filtroUmVenta && row._um_venta !== filtroUmVenta) return false;
+                if (filtroBarcode === 'con_barcode' && !row._codigo_barra) return false;
+                if (filtroBarcode === 'sin_barcode' && row._codigo_barra) return false;
+                if (filtroLogistica === 'sin_logistica' && row._tiene_logistica) return false;
+                if (filtroLogistica === 'completa' && !row._logistica_completa) return false;
+                if (filtroLogistica === 'incompleta' && (!row._tiene_logistica || row._logistica_completa)) return false;
+                if (filtroEstado && String(row.estado_comercial || '') !== filtroEstado) return false;
+                if (!q) return true;
+                return row._search.includes(q);
+            });
             editorPcApplySort();
             renderEditorPcTable();
         }
@@ -3553,7 +2948,7 @@ Fallidos: ${fallidos}`);
                 }
                 const mapCat = new Map(catalogo.map(x => [String(x.articulo || '').trim().toLowerCase(), x]));
                 editorPcRows = [...grouped.entries()].map(([code, rows]) => {
-                    const base = editorPcElegirBaseLogistica(rows);
+                    const base = rows[0] || {};
                     const cat = mapCat.get(code) || {};
                     const uniqueAlmacenes = [...new Set(rows.map(x => String(x.almacen || '').trim().toLowerCase()).filter(Boolean))].sort();
                     return {
@@ -3673,12 +3068,8 @@ Fallidos: ${fallidos}`);
             limpiarCamposCorrelacion();
             actualizarResumenCorrelacion();
             document.getElementById('resCorrelacion').classList.add('hidden');
-            document.getElementById('inputAsignacionBusqueda') && (document.getElementById('inputAsignacionBusqueda').value = '');
-            document.getElementById('inputAsignacionSerie') && (document.getElementById('inputAsignacionSerie').value = '');
-            asignacionSerieItems = []; asignacionSerieIndex = 0; renderAsignacionSerie();
             if(!document.getElementById('pantallaApp').classList.contains('hidden')) setTimeout(() => document.getElementById('inputUbicacion').focus(), 300);
             if(!document.getElementById('pantallaAuditoria').classList.contains('hidden')) setTimeout(() => document.getElementById('audInputCodigo').focus(), 300);
-            if(!document.getElementById('pantallaAsignacionSerie')?.classList.contains('hidden')) setTimeout(() => document.getElementById('inputAsignacionBusqueda')?.focus(), 300);
         }
     </script>
 
