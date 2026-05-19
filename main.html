@@ -246,6 +246,7 @@
                 <label class="block text-[11px] font-bold text-slate-400 uppercase mb-2 tracking-wider">1. Ubicación de Destino</label>
                 <div class="flex gap-2">
                     <input type="text" id="inputUbicacion" placeholder="Ej: A08-C" class="flex-1 border border-slate-200 rounded-xl px-4 py-3 uppercase focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                    <button type="button" onclick="abrirTecladoTexto('inputUbicacion', 'Ubicación de destino')" title="Abrir teclado" class="bg-slate-50 text-slate-700 p-3 rounded-xl border border-slate-200 active:scale-95 transition-transform">⌨️</button>
                     <button onclick="abrirScanner('ubicacion')" class="bg-blue-50 text-blue-600 p-3 rounded-xl border border-blue-100 active:scale-95 transition-transform">📷</button>
                 </div>
                 <div id="statusUbicacion" class="mt-3 flex items-center gap-2 text-blue-700 hidden animate-in">
@@ -269,6 +270,7 @@
                 <div class="flex gap-2 mb-4">
                     <input type="text" id="inputSku" placeholder="SKU o EAN..." class="flex-1 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500 outline-none transition-all">
                     <button onclick="abrirCatalogo('registro')" class="bg-slate-100 p-3 rounded-xl border border-slate-200 active:bg-slate-200">🔍</button>
+                    <button type="button" onclick="abrirTecladoTexto('inputSku', 'SKU o código de barras')" title="Abrir teclado" class="bg-slate-50 text-slate-700 p-3 rounded-xl border border-slate-200 active:bg-slate-100">⌨️</button>
                     <button onclick="abrirScanner('sku')" class="bg-green-50 text-green-600 p-3 rounded-xl border border-green-100 active:bg-green-100">📷</button>
                 </div>
                 <div id="contadorNuevos" class="hidden mb-3 text-[11px] font-black text-green-700 uppercase tracking-widest bg-green-50 border border-green-100 rounded-xl px-3 py-2">0 códigos agregados</div>
@@ -296,10 +298,12 @@
             <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 space-y-4">
                 <div class="flex gap-2">
                     <input type="text" id="inputCorr" placeholder="LIMSA o EAN..." class="flex-1 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <button type="button" onclick="abrirTecladoTexto('inputCorr', 'Correlación LIMSA / EAN')" title="Abrir teclado" class="bg-slate-50 text-slate-700 p-3 rounded-xl border border-slate-200 active:scale-95">⌨️</button>
                     <button onclick="abrirScanner('correlacion')" class="bg-indigo-600 text-white p-3 rounded-xl shadow-md active:scale-95">📷</button>
                 </div>
                 <div class="flex gap-2">
                     <button onclick="abrirCatalogo('correlacion')" class="flex-1 bg-slate-100 py-3 rounded-xl font-bold text-xs uppercase text-slate-600 border border-slate-200">Catálogo</button>
+                    <button type="button" onclick="abrirTecladoTexto('inputCorr', 'Correlación LIMSA / EAN')" class="bg-slate-50 text-slate-700 px-4 py-3 rounded-xl border border-slate-200 active:bg-slate-100" title="Abrir teclado">⌨️</button>
                     <button onclick="procesarCorrelacion()" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold text-xs uppercase shadow-md">Validar</button>
                 </div>
             </div>
@@ -845,7 +849,10 @@
                 <button onclick="cerrarCatalogo()" class="text-2xl text-slate-400">&times;</button>
             </header>
             <div class="p-4 bg-white shadow-sm space-y-3">
-                <input type="text" id="busquedaCat" placeholder="Palabras separadas (Ej: MABE ESTUFA)..." class="w-full border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                <div class="flex gap-2">
+                    <input type="text" id="busquedaCat" placeholder="Palabras separadas (Ej: MABE ESTUFA)..." class="flex-1 min-w-0 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                    <button type="button" onclick="abrirTecladoTexto('busquedaCat', 'Buscar en catálogo')" title="Abrir teclado" class="bg-slate-50 text-slate-700 px-4 rounded-xl border border-slate-200 active:bg-slate-100">⌨️</button>
+                </div>
                 <div class="flex items-center gap-2">
                     <input type="checkbox" id="check30x" class="w-4 h-4 text-blue-600 rounded">
                     <label for="check30x" class="text-xs text-slate-500 italic">Incluir códigos 30x</label>
@@ -857,7 +864,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2026.05.18.8";
+        const APP_VERSION = "2026.05.19.1";
         const SB_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/rest/v1/";
         const SB_AUTH_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/auth/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBodWRmbG10YmZrZHpxanFhb3ViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTUyMjIsImV4cCI6MjA5MjYzMTIyMn0.KbQenxZHHNlsLBdamQtI6CvJQisTzLLcVgN11TY2_XQ";
@@ -2636,6 +2643,91 @@ Fallidos: ${fallidos}`);
             return mapa[id] || 'Captura numérica';
         }
 
+
+        let inputTextoActivo = null;
+        let tecladoTextoMayus = true;
+
+        function nombreCampoTexto(id, label) {
+            const mapa = {
+                inputUbicacion: 'Ubicación de destino',
+                inputSku: 'SKU o código de barras',
+                inputCorr: 'Correlación LIMSA / EAN',
+                busquedaCat: 'Buscar en catálogo'
+            };
+            return label || mapa[id] || 'Captura manual';
+        }
+
+        function abrirTecladoTexto(id, label = '') {
+            const el = document.getElementById(id);
+            if (!el) return;
+            inputTextoActivo = id;
+            document.activeElement?.blur?.();
+            const labelEl = document.getElementById('tecladoTextoLabel');
+            const valorEl = document.getElementById('tecladoTextoValor');
+            if (labelEl) labelEl.innerText = nombreCampoTexto(id, label);
+            if (valorEl) valorEl.innerText = (el.value || '').trim() || '---';
+            const modal = document.getElementById('modalTecladoTexto');
+            modal?.classList.remove('hidden');
+            modal?.classList.add('flex');
+        }
+
+        function cerrarTecladoTexto() {
+            const modal = document.getElementById('modalTecladoTexto');
+            modal?.classList.add('hidden');
+            modal?.classList.remove('flex');
+        }
+
+        function valorTecladoTextoActual() {
+            if (!inputTextoActivo) return '';
+            const el = document.getElementById(inputTextoActivo);
+            return el ? (el.value || '') : '';
+        }
+
+        function setValorTecladoTexto(v) {
+            if (!inputTextoActivo) return;
+            const el = document.getElementById(inputTextoActivo);
+            if (!el) return;
+            el.value = v;
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            const valorEl = document.getElementById('tecladoTextoValor');
+            if (valorEl) valorEl.innerText = (v || '').trim() || '---';
+        }
+
+        function teclaTexto(char) {
+            if (!inputTextoActivo) return;
+            setValorTecladoTexto(valorTecladoTextoActual() + (tecladoTextoMayus ? char.toUpperCase() : char.toLowerCase()));
+        }
+
+        function teclaTextoLiteral(char) {
+            if (!inputTextoActivo) return;
+            setValorTecladoTexto(valorTecladoTextoActual() + char);
+        }
+
+        function borrarTeclaTexto() {
+            setValorTecladoTexto(valorTecladoTextoActual().slice(0, -1));
+        }
+
+        function limpiarTecladoTexto() {
+            setValorTecladoTexto('');
+        }
+
+        function alternarMayusTecladoTexto() {
+            tecladoTextoMayus = !tecladoTextoMayus;
+            document.getElementById('tecladoTextoMayus')?.classList.toggle('bg-blue-600', tecladoTextoMayus);
+            document.getElementById('tecladoTextoMayus')?.classList.toggle('text-white', tecladoTextoMayus);
+        }
+
+        function aceptarTecladoTexto() {
+            const id = inputTextoActivo;
+            const value = valorTecladoTextoActual().trim();
+            cerrarTecladoTexto();
+            if (!id || !value) return;
+            if (id === 'inputUbicacion') procesarUbicacion(value);
+            else if (id === 'inputSku') procesarSku(value);
+            else if (id === 'inputCorr') procesarCorrelacion(value);
+            else if (id === 'busquedaCat') ejecutarBusquedaCatalogo();
+        }
+
         function abrirTecladoNumerico(id) {
             const el = document.getElementById(id);
             if (!el) return;
@@ -2809,13 +2901,89 @@ Fallidos: ${fallidos}`);
             select.value = valores.includes(actual) ? actual : '';
         }
 
-        function editorPcActualizarOpcionesFiltros() {
-            const grupos = [...new Set(editorPcRows.map(r => String(r.grupo || '').trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
-            const proveedores = [...new Set(editorPcRows.map(r => String(r.proveedor || '').trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
-            const ums = [...new Set(editorPcRows.map(r => String(r.um_venta || '').trim()).filter(Boolean))].sort((a,b) => a.localeCompare(b, 'es'));
+        function editorPcGetFilterState() {
+            return {
+                q: String(document.getElementById('editorPcBusqueda')?.value || '').trim().toLowerCase(),
+                grupo: String(document.getElementById('editorPcFiltroGrupo')?.value || '').trim().toLowerCase(),
+                proveedor: String(document.getElementById('editorPcFiltroProveedor')?.value || '').trim().toLowerCase(),
+                umVenta: String(document.getElementById('editorPcFiltroUmVenta')?.value || '').trim().toLowerCase(),
+                barcode: String(document.getElementById('editorPcFiltroBarcode')?.value || '').trim(),
+                logistica: String(document.getElementById('editorPcFiltroLogistica')?.value || '').trim(),
+                estado: String(document.getElementById('editorPcFiltroEstado')?.value || '').trim()
+            };
+        }
+
+        function editorPcRowLogisticaValue(row) {
+            if (!row?._tiene_logistica) return 'sin_logistica';
+            return row?._logistica_completa ? 'completa' : 'incompleta';
+        }
+
+        function editorPcRowMatchesFilters(row, state, exclude='') {
+            if (exclude !== 'grupo' && state.grupo && row._grupo !== state.grupo) return false;
+            if (exclude !== 'proveedor' && state.proveedor && row._proveedor !== state.proveedor) return false;
+            if (exclude !== 'umVenta' && state.umVenta && row._um_venta !== state.umVenta) return false;
+            if (exclude !== 'barcode') {
+                if (state.barcode === 'con_barcode' && !row._codigo_barra) return false;
+                if (state.barcode === 'sin_barcode' && row._codigo_barra) return false;
+            }
+            if (exclude !== 'logistica') {
+                if (state.logistica === 'sin_logistica' && row._tiene_logistica) return false;
+                if (state.logistica === 'completa' && !row._logistica_completa) return false;
+                if (state.logistica === 'incompleta' && (!row._tiene_logistica || row._logistica_completa)) return false;
+            }
+            if (exclude !== 'estado' && state.estado && String(row.estado_comercial || '') !== state.estado) return false;
+            if (state.q && !row._search.includes(state.q)) return false;
+            return true;
+        }
+
+        function editorPcValoresFiltro(campo, state, exclude) {
+            return [...new Set(editorPcRows
+                .filter(row => editorPcRowMatchesFilters(row, state, exclude))
+                .map(row => String(row?.[campo] || '').trim())
+                .filter(Boolean)
+            )];
+        }
+
+        function editorPcPoblarSelectMap(id, opciones, placeholder='Todos') {
+            const select = document.getElementById(id);
+            if (!select) return;
+            const actual = String(select.value || '').trim();
+            const disponibles = opciones.filter(op => op && op.value);
+            select.innerHTML = '<option value="">' + placeholder + '</option>' + disponibles
+                .map(op => `<option value="${escapeHtmlEditor(op.value)}">${escapeHtmlEditor(op.label)}</option>`)
+                .join('');
+            select.value = disponibles.some(op => op.value === actual) ? actual : '';
+        }
+
+        function editorPcEstadoComercialLabel(value) {
+            const map = { de_linea: 'De línea', descontinuado: 'Descontinuado', sobre_pedido: 'Sobre pedido', compra_especial: 'Compra especial' };
+            return map[String(value || '').trim()] || 'De línea';
+        }
+
+        function editorPcActualizarOpcionesFiltros(dinamico=false) {
+            const state = dinamico ? editorPcGetFilterState() : { q: '', grupo: '', proveedor: '', umVenta: '', barcode: '', logistica: '', estado: '' };
+            const grupos = editorPcValoresFiltro('grupo', state, dinamico ? 'grupo' : '').sort((a,b) => a.localeCompare(b, 'es', { numeric: true, sensitivity: 'base' }));
+            const proveedores = editorPcValoresFiltro('proveedor', state, dinamico ? 'proveedor' : '').sort((a,b) => a.localeCompare(b, 'es', { numeric: true, sensitivity: 'base' }));
+            const ums = editorPcValoresFiltro('um_venta', state, dinamico ? 'umVenta' : '').sort((a,b) => a.localeCompare(b, 'es', { numeric: true, sensitivity: 'base' }));
+            const barcodeSet = new Set(editorPcRows.filter(row => editorPcRowMatchesFilters(row, state, dinamico ? 'barcode' : '')).map(row => row._codigo_barra ? 'con_barcode' : 'sin_barcode'));
+            const logisticaSet = new Set(editorPcRows.filter(row => editorPcRowMatchesFilters(row, state, dinamico ? 'logistica' : '')).map(editorPcRowLogisticaValue));
+            const estadoSet = new Set(editorPcRows.filter(row => editorPcRowMatchesFilters(row, state, dinamico ? 'estado' : '')).map(row => String(row.estado_comercial || 'de_linea').trim() || 'de_linea'));
+
             editorPcPoblarSelect('editorPcFiltroGrupo', grupos);
             editorPcPoblarSelect('editorPcFiltroProveedor', proveedores);
             editorPcPoblarSelect('editorPcFiltroUmVenta', ums);
+            editorPcPoblarSelectMap('editorPcFiltroBarcode', [
+                { value:'con_barcode', label:'Con código' },
+                { value:'sin_barcode', label:'Sin código' }
+            ].filter(op => barcodeSet.has(op.value)));
+            editorPcPoblarSelectMap('editorPcFiltroLogistica', [
+                { value:'completa', label:'Completa' },
+                { value:'incompleta', label:'Incompleta' },
+                { value:'sin_logistica', label:'Sin logística' }
+            ].filter(op => logisticaSet.has(op.value)));
+            editorPcPoblarSelectMap('editorPcFiltroEstado', ['de_linea','descontinuado','sobre_pedido','compra_especial']
+                .filter(v => estadoSet.has(v))
+                .map(v => ({ value: v, label: editorPcEstadoComercialLabel(v) })));
         }
 
         function editorPcLimpiarFiltros() {
@@ -2885,31 +3053,14 @@ Fallidos: ${fallidos}`);
         }
 
         function aplicarFiltrosEditorPC() {
-            const q = String(document.getElementById('editorPcBusqueda').value || '').trim().toLowerCase();
-            const filtroGrupo = String(document.getElementById('editorPcFiltroGrupo')?.value || '').trim().toLowerCase();
-            const filtroProveedor = String(document.getElementById('editorPcFiltroProveedor')?.value || '').trim().toLowerCase();
-            const filtroUmVenta = String(document.getElementById('editorPcFiltroUmVenta')?.value || '').trim().toLowerCase();
-            const filtroBarcode = String(document.getElementById('editorPcFiltroBarcode')?.value || '').trim();
-            const filtroLogistica = String(document.getElementById('editorPcFiltroLogistica')?.value || '').trim();
-            const filtroEstado = String(document.getElementById('editorPcFiltroEstado')?.value || '').trim();
-            const signature = [q,filtroGrupo,filtroProveedor,filtroUmVenta,filtroBarcode,filtroLogistica,filtroEstado,editorPcSortField,editorPcSortDir].join('|');
+            editorPcActualizarOpcionesFiltros(true);
+            const state = editorPcGetFilterState();
+            const signature = [state.q,state.grupo,state.proveedor,state.umVenta,state.barcode,state.logistica,state.estado,editorPcSortField,editorPcSortDir].join('|');
             if (signature !== editorPcLastFilterSignature) {
                 editorPcCurrentPage = 1;
                 editorPcLastFilterSignature = signature;
             }
-            editorPcRowsFiltered = editorPcRows.filter(row => {
-                if (filtroGrupo && row._grupo !== filtroGrupo) return false;
-                if (filtroProveedor && row._proveedor !== filtroProveedor) return false;
-                if (filtroUmVenta && row._um_venta !== filtroUmVenta) return false;
-                if (filtroBarcode === 'con_barcode' && !row._codigo_barra) return false;
-                if (filtroBarcode === 'sin_barcode' && row._codigo_barra) return false;
-                if (filtroLogistica === 'sin_logistica' && row._tiene_logistica) return false;
-                if (filtroLogistica === 'completa' && !row._logistica_completa) return false;
-                if (filtroLogistica === 'incompleta' && (!row._tiene_logistica || row._logistica_completa)) return false;
-                if (filtroEstado && String(row.estado_comercial || '') !== filtroEstado) return false;
-                if (!q) return true;
-                return row._search.includes(q);
-            });
+            editorPcRowsFiltered = editorPcRows.filter(row => editorPcRowMatchesFilters(row, state));
             editorPcApplySort();
             renderEditorPcTable();
         }
@@ -4083,6 +4234,87 @@ Fallidos: ${fallidos}`);
             if(!document.getElementById('pantallaAuditoria').classList.contains('hidden')) setTimeout(() => document.getElementById('audInputCodigo').focus(), 300);
         }
     </script>
+
+
+    <div id="modalTecladoTexto" class="fixed inset-0 bg-slate-900/40 z-50 hidden items-end justify-center">
+        <div class="w-full max-w-md bg-white rounded-t-3xl shadow-2xl p-4 space-y-3 max-h-[88vh] overflow-y-auto">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Captura manual</p>
+                    <p id="tecladoTextoLabel" class="text-sm font-black text-slate-700">--</p>
+                </div>
+                <button onclick="cerrarTecladoTexto()" class="text-slate-400 text-2xl leading-none px-2">&times;</button>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-right min-h-[54px] flex items-center justify-end">
+                <span id="tecladoTextoValor" class="text-xl font-black text-slate-800 break-all">---</span>
+            </div>
+
+            <div class="grid grid-cols-10 gap-1.5">
+                <button onclick="teclaTextoLiteral('1')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">1</button>
+                <button onclick="teclaTextoLiteral('2')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">2</button>
+                <button onclick="teclaTextoLiteral('3')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">3</button>
+                <button onclick="teclaTextoLiteral('4')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">4</button>
+                <button onclick="teclaTextoLiteral('5')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">5</button>
+                <button onclick="teclaTextoLiteral('6')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">6</button>
+                <button onclick="teclaTextoLiteral('7')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">7</button>
+                <button onclick="teclaTextoLiteral('8')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">8</button>
+                <button onclick="teclaTextoLiteral('9')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">9</button>
+                <button onclick="teclaTextoLiteral('0')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">0</button>
+            </div>
+
+            <div class="grid grid-cols-10 gap-1.5">
+                <button onclick="teclaTexto('q')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">Q</button>
+                <button onclick="teclaTexto('w')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">W</button>
+                <button onclick="teclaTexto('e')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">E</button>
+                <button onclick="teclaTexto('r')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">R</button>
+                <button onclick="teclaTexto('t')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">T</button>
+                <button onclick="teclaTexto('y')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">Y</button>
+                <button onclick="teclaTexto('u')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">U</button>
+                <button onclick="teclaTexto('i')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">I</button>
+                <button onclick="teclaTexto('o')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">O</button>
+                <button onclick="teclaTexto('p')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">P</button>
+            </div>
+
+            <div class="grid grid-cols-9 gap-1.5 px-3">
+                <button onclick="teclaTexto('a')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">A</button>
+                <button onclick="teclaTexto('s')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">S</button>
+                <button onclick="teclaTexto('d')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">D</button>
+                <button onclick="teclaTexto('f')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">F</button>
+                <button onclick="teclaTexto('g')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">G</button>
+                <button onclick="teclaTexto('h')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">H</button>
+                <button onclick="teclaTexto('j')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">J</button>
+                <button onclick="teclaTexto('k')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">K</button>
+                <button onclick="teclaTexto('l')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">L</button>
+            </div>
+
+            <div class="grid grid-cols-10 gap-1.5">
+                <button id="tecladoTextoMayus" onclick="alternarMayusTecladoTexto()" class="bg-blue-600 text-white border border-blue-600 rounded-xl py-3 text-xs font-black active:bg-blue-700">⇧</button>
+                <button onclick="teclaTexto('z')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">Z</button>
+                <button onclick="teclaTexto('x')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">X</button>
+                <button onclick="teclaTexto('c')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">C</button>
+                <button onclick="teclaTexto('v')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">V</button>
+                <button onclick="teclaTexto('b')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">B</button>
+                <button onclick="teclaTexto('n')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">N</button>
+                <button onclick="teclaTexto('m')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">M</button>
+                <button onclick="teclaTextoLiteral('-')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">-</button>
+                <button onclick="borrarTeclaTexto()" class="bg-red-50 border border-red-100 rounded-xl py-3 text-xs font-black text-red-600 active:bg-red-100">⌫</button>
+            </div>
+
+            <div class="grid grid-cols-6 gap-2">
+                <button onclick="teclaTextoLiteral('/')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">/</button>
+                <button onclick="teclaTextoLiteral('.')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">.</button>
+                <button onclick="teclaTextoLiteral('*')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">*</button>
+                <button onclick="teclaTextoLiteral('+')" class="bg-white border border-slate-200 rounded-xl py-3 text-sm font-black text-slate-700 active:bg-slate-100">+</button>
+                <button onclick="teclaTextoLiteral(' ')" class="col-span-2 bg-white border border-slate-200 rounded-xl py-3 text-xs font-black text-slate-700 active:bg-slate-100">ESPACIO</button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-1">
+                <button onclick="limpiarTecladoTexto()" class="bg-slate-100 text-slate-700 rounded-2xl py-4 text-sm font-bold uppercase active:bg-slate-200">Limpiar</button>
+                <button onclick="aceptarTecladoTexto()" class="bg-blue-600 text-white rounded-2xl py-4 text-sm font-bold uppercase active:bg-blue-700">Aceptar</button>
+            </div>
+        </div>
+    </div>
 
     <div id="modalTecladoNumerico" class="fixed inset-0 bg-slate-900/40 z-50 hidden items-end justify-center">
         <div class="w-full max-w-md bg-white rounded-t-3xl shadow-2xl p-4 space-y-3">
