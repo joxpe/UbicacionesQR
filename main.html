@@ -21,12 +21,27 @@
         .editor-cell-readonly { background: #f8fafc; color: #475569; }
         .editor-cell-editable { background: white; }
         .editor-cell-modified { background: #fef3c7 !important; }
-        .editor-sticky-col-1 { position: sticky; left: 0; z-index: 13; min-width: 160px; width: 160px; box-shadow: 1px 0 0 #e2e8f0; }
-        .editor-sticky-col-2 { position: sticky; left: 160px; z-index: 12; min-width: 320px; width: 320px; box-shadow: 1px 0 0 #e2e8f0; }
+        .editor-sticky-col-1 { position: sticky; left: 0; z-index: 13; box-shadow: 1px 0 0 #e2e8f0; }
+        .editor-sticky-col-2 { position: sticky; left: 160px; z-index: 12; box-shadow: 1px 0 0 #e2e8f0; }
         .editor-sticky-col-3 { position: sticky; left: 480px; z-index: 11; min-width: 190px; width: 190px; box-shadow: 1px 0 0 #cbd5e1; }
         .editor-header-btn { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; }
         .editor-header-btn:hover { color: #334155; }
         .editor-sort-indicator { font-size: 11px; color: #7c3aed; font-weight: 900; }
+        .editor-col-hidden { display: none !important; }
+        .editor-columns-panel { max-height: 260px; overflow: auto; }
+        .editor-resizable-table { table-layout: fixed; width: max-content; min-width: 100%; }
+        .editor-resizable-table col.editor-col-hidden { display: none; }
+        .editor-resizable-table th[data-col], .editor-resizable-table td[data-col] { position: relative; overflow: hidden; }
+        #pantallaEditorUbicacionesPC .editor-resizable-table th.editor-sticky-col-1,
+        #pantallaEditorUbicacionesPC .editor-resizable-table td.editor-sticky-col-1,
+        #pantallaEditorUbicacionesPC .editor-resizable-table th.editor-sticky-col-2,
+        #pantallaEditorUbicacionesPC .editor-resizable-table td.editor-sticky-col-2 { position: sticky !important; }
+        .editor-resizable-table td[data-col] > div { overflow: hidden; text-overflow: ellipsis; }
+        .editor-resizable-table input { min-width: 0 !important; }
+        .editor-col-resizer { position: absolute; top: 0; right: -3px; width: 8px; height: 100%; cursor: col-resize; user-select: none; touch-action: none; z-index: 30; }
+        .editor-col-resizer::after { content: ''; position: absolute; top: 20%; right: 3px; width: 2px; height: 60%; background: #cbd5e1; border-radius: 999px; opacity: 0; transition: opacity .15s ease; }
+        th:hover .editor-col-resizer::after, .editor-col-resizing .editor-col-resizer::after { opacity: 1; }
+        body.editor-col-resizing { cursor: col-resize !important; user-select: none; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen font-sans">
@@ -68,7 +83,7 @@
                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
                 </div>
                 <div>
-                    <h3 class="font-black text-slate-800 uppercase text-sm tracking-tight">Registro de SKUs</h3>
+                    <h3 class="font-black text-slate-800 uppercase text-sm tracking-tight">REGISTRO DE UBICACIONES</h3>
                     <p class="text-xs text-slate-500 mt-1">Asignar artículos a ubicaciones físicas.</p>
                 </div>
             </button>
@@ -110,6 +125,16 @@
                 <div>
                     <h3 class="font-black text-slate-800 uppercase text-sm tracking-tight">Editor Logístico PC</h3>
                     <p class="text-xs text-slate-500 mt-1">Vista tipo Excel para revisar y editar logística por código.</p>
+                </div>
+            </button>
+
+            <button onclick="irAEditorUbicacionesPC()" class="card-modulo w-full bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center gap-5 text-left">
+                <div class="bg-rose-600 p-4 rounded-2xl text-white shadow-lg shadow-rose-100">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                </div>
+                <div>
+                    <h3 class="font-black text-slate-800 uppercase text-sm tracking-tight">Editor de Ubicaciones</h3>
+                    <p class="text-xs text-slate-500 mt-1">Gestionar ubicaciones por bodega, proveedor, grupo y SKU.</p>
                 </div>
             </button>
         </div>
@@ -210,7 +235,7 @@
                 </button>
                 <div>
                     <p id="txtAlmacen" class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold inline-block uppercase tracking-widest"></p>
-                    <h1 class="text-lg font-bold block text-slate-800">Registro SKUs</h1>
+                    <h1 class="text-lg font-bold block text-slate-800">REGISTRO DE UBICACIONES</h1>
                 </div>
             </div>
             <div id="globalLoader" class="hidden w-5 h-5 border-2 border-blue-500 rounded-full loading-spinner"></div>
@@ -230,7 +255,10 @@
 
             <div id="cardExistentes" class="hidden bg-slate-100 p-4 rounded-2xl border border-dashed border-slate-300 animate-in">
                 <div class="flex justify-between items-center mb-3">
-                    <h3 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">📦 Registrados aquí</h3>
+                    <div>
+                        <h3 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">📦 Registrados aquí</h3>
+                        <p id="contadorExistentes" class="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-0.5">0 registrados</p>
+                    </div>
                     <button onclick="cargarExistentes(ubicacionActiva)" class="text-blue-600 text-[10px] font-bold bg-white px-2 py-1 rounded-lg border border-slate-200 uppercase tracking-tighter shadow-sm">Actualizar</button>
                 </div>
                 <div id="listaExistentes" class="space-y-2"></div>
@@ -243,6 +271,7 @@
                     <button onclick="abrirCatalogo('registro')" class="bg-slate-100 p-3 rounded-xl border border-slate-200 active:bg-slate-200">🔍</button>
                     <button onclick="abrirScanner('sku')" class="bg-green-50 text-green-600 p-3 rounded-xl border border-green-100 active:bg-green-100">📷</button>
                 </div>
+                <div id="contadorNuevos" class="hidden mb-3 text-[11px] font-black text-green-700 uppercase tracking-widest bg-green-50 border border-green-100 rounded-xl px-3 py-2">0 códigos agregados</div>
                 <div id="listaNuevos" class="space-y-3"></div>
             </div>
         </main>
@@ -686,6 +715,124 @@
         </main>
     </div>
 
+    <div id="pantallaEditorUbicacionesPC" class="hidden min-h-screen bg-slate-50">
+        <header class="bg-white border-b p-4 sticky top-0 z-30 shadow-sm">
+            <div class="max-w-[96vw] mx-auto flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div class="flex items-center gap-3">
+                    <button onclick="regresarAlMenuPrincipalDesdeEditorUbicaciones()" class="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                        <svg class="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                    </button>
+                    <div>
+                        <p class="text-[10px] bg-rose-600 text-white px-2 py-0.5 rounded-full font-bold inline-block uppercase tracking-widest">PC / Excel</p>
+                        <h1 class="text-lg font-bold text-slate-800">Editor de Ubicaciones</h1>
+                    </div>
+                </div>
+                <div id="editorUbiStatus" class="text-xs font-bold text-slate-500"></div>
+            </div>
+        </header>
+
+        <main class="max-w-[96vw] mx-auto p-4 space-y-4">
+            <div class="bg-white border border-slate-200 rounded-3xl p-4 shadow-sm space-y-4">
+                <div class="grid grid-cols-1 xl:grid-cols-8 gap-3">
+                    <div class="xl:col-span-2">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Buscar</label>
+                        <input type="text" id="editorUbiBusqueda" placeholder="Código, nombre, ubicación, proveedor..." class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Bodega</label>
+                        <select id="editorUbiFiltroAlmacen" class="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white"><option value="">Todas</option></select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Proveedor</label>
+                        <select id="editorUbiFiltroProveedor" class="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white"><option value="">Todos</option></select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Estado comercial</label>
+                        <select id="editorUbiFiltroEstadoComercial" class="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white"><option value="">Todos</option></select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Grupo</label>
+                        <select id="editorUbiFiltroGrupo" multiple size="4" title="Puedes seleccionar uno o varios grupos" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 bg-white min-h-[94px]"></select>
+                        <p class="text-[10px] text-slate-400 font-bold mt-1">Selecciona uno o varios grupos.</p>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Ubicaciones</label>
+                        <select id="editorUbiFiltroEstado" class="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white">
+                            <option value="">Todas</option>
+                            <option value="con_ubicacion">Con ubicación</option>
+                            <option value="sin_ubicacion">Sin ubicación</option>
+                            <option value="multiples">Con varias ubicaciones</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Inventario temp.</label>
+                        <select id="editorUbiFiltroInventarioTemp" class="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white">
+                            <option value="">Todos</option>
+                            <option value="con_existencia">Con existencia</option>
+                            <option value="sin_existencia">Sin existencia</option>
+                            <option value="existencia_sin_ubicacion">Existencia sin ubicación</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Acciones</label>
+                        <button onclick="cargarEditorUbicacionesPC()" class="w-full bg-rose-600 text-white py-3 rounded-xl font-bold uppercase shadow-md">Cargar</button>
+                    </div>
+                    <div class="flex items-end gap-2">
+                        <button onclick="editorUbiLimpiarFiltros()" class="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-bold uppercase shadow-sm">Limpiar</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <button onclick="guardarCambiosEditorUbicacionesPC()" id="btnGuardarEditorUbi" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold uppercase shadow-md disabled:bg-slate-300" disabled>Guardar cambios</button>
+                    <button onclick="exportarEditorUbicacionesCSV()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold uppercase shadow-md">Exportar CSV</button>
+                    <label class="w-full bg-amber-500 text-white py-3 rounded-xl font-bold uppercase shadow-md text-center cursor-pointer">
+                        Importar CSV
+                        <input type="file" id="editorUbiImportFile" accept=".csv,text/csv" class="hidden" onchange="importarEditorUbicacionesCSV(this.files && this.files[0]); this.value=''">
+                    </label>
+                    <label class="w-full bg-violet-600 text-white py-3 rounded-xl font-bold uppercase shadow-md text-center cursor-pointer">
+                        Cargar inventario temporal
+                        <input type="file" id="editorUbiInventarioTempFile" accept=".csv,text/csv" class="hidden" onchange="cargarInventarioTemporalEditorUbicaciones(this.files && this.files[0]); this.value=''">
+                    </label>
+                </div>
+                <div id="editorUbiInventarioTempInfo" class="hidden rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 text-xs font-bold text-violet-800"></div>
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                    <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Columnas visibles</p>
+                            <p class="text-[11px] text-slate-500 font-bold">Código y descripción quedan fijas; el resto se puede ocultar o mostrar. También puedes arrastrar el borde derecho de cada encabezado para cambiar el ancho.</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" onclick="editorUbiToggleColumnasPanel()" class="bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-black uppercase shadow-sm">Ocultar / ver columnas</button>
+                            <button type="button" onclick="editorUbiMostrarTodasColumnas()" class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-2 rounded-xl text-xs font-black uppercase shadow-sm">Mostrar todas</button>
+                            <button type="button" onclick="editorUbiRestablecerAnchosColumnas()" class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-2 rounded-xl text-xs font-black uppercase shadow-sm">Restablecer anchos</button>
+                        </div>
+                    </div>
+                    <div id="editorUbiColumnasPanel" class="hidden editor-columns-panel grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-2 mt-3"></div>
+                </div>
+                <div id="editorUbiResumen" class="grid grid-cols-2 md:grid-cols-8 gap-3 text-center"></div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-3 border-b bg-slate-50">
+                    <p class="text-xs font-black text-slate-600 uppercase tracking-widest">Registros de ubicación</p>
+                    <div class="flex items-center gap-2 text-xs font-bold text-slate-500">
+                        <button onclick="editorUbiGoPage(-1)" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white">Anterior</button>
+                        <span id="editorUbiPageInfo">Página 1/1</span>
+                        <button onclick="editorUbiGoPage(1)" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white">Siguiente</button>
+                    </div>
+                </div>
+                <div class="overflow-auto max-h-[70vh]">
+                    <table id="editorUbiTable" class="editor-resizable-table text-xs border-collapse">
+                        <colgroup id="editorUbiColgroup"></colgroup>
+                        <thead class="sticky top-0 z-20 text-slate-600 uppercase tracking-tight">
+                            <tr id="editorUbiHeaderRow"></tr>
+                        </thead>
+                        <tbody id="editorUbiBody" class="divide-y divide-slate-100 bg-white"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
     <div id="modalScanner" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex flex-col items-center justify-center p-6">
         <div class="w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl"><div id="reader"></div></div>
         <button onclick="cerrarScanner()" class="mt-8 bg-white/10 text-white border border-white/20 px-10 py-3 rounded-full font-bold backdrop-blur-md">Cerrar Cámara</button>
@@ -710,7 +857,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2026.04.25.6-auth-rls-proyecto-correcto";
+        const APP_VERSION = "2026.05.18.8";
         const SB_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/rest/v1/";
         const SB_AUTH_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/auth/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBodWRmbG10YmZrZHpxanFhb3ViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTUyMjIsImV4cCI6MjA5MjYzMTIyMn0.KbQenxZHHNlsLBdamQtI6CvJQisTzLLcVgN11TY2_XQ";
@@ -780,6 +927,44 @@
         let editorPcCurrentPage = 1;
         const editorPcPageSize = 200;
         let editorPcLastFilterSignature = '';
+        let editorUbiRows = [];
+        let editorUbiRowsFiltered = [];
+        let editorUbiModified = new Map();
+        let editorUbiSortField = 'codigo';
+        let editorUbiSortDir = 'asc';
+        let editorUbiCurrentPage = 1;
+        const editorUbiPageSize = 200;
+        let editorUbiLastFilterSignature = '';
+        let editorUbiInventarioTemporal = new Map();
+        let editorUbiInventarioTemporalInfo = null;
+        let editorUbiColumnVisibility = {};
+        let editorUbiColumnWidths = {};
+        let editorUbiResizeState = null;
+        const EDITOR_UBI_CAMPOS_EDITABLES = ['codigo_barra','ubicacion_1','ubicacion_2','ubicacion_3','ubicacion_4'];
+        const EDITOR_UBI_CSV_EXPORT_FIELDS = ['codigo','nombre','estado_comercial','codigo_barra','almacen','inventario_existencia_temp','inventario_pendiente_temp','inventario_ordenado_temp','inventario_total_temp','proveedor','clave_proveedor','grupo','um_venta','ubicacion_1','ubicacion_2','ubicacion_3','ubicacion_4','fecha_1','fecha_2','fecha_3','fecha_4'];
+        const EDITOR_UBI_COLUMNAS = [
+            { key:'codigo', label:'Código', group:'Base', locked:true, width:160 },
+            { key:'nombre', label:'Descripción', group:'Base', locked:true, width:340 },
+            { key:'estado_comercial', label:'Estado comercial', group:'Base', width:150 },
+            { key:'codigo_barra', label:'Código barras', group:'Base', width:150 },
+            { key:'almacen', label:'Bodega', group:'Base', width:100 },
+            { key:'inventario_existencia_temp', label:'Exist. temp', group:'Inventario temporal', width:115 },
+            { key:'inventario_pendiente_temp', label:'Pend. temp', group:'Inventario temporal', width:115 },
+            { key:'inventario_ordenado_temp', label:'Ord. temp', group:'Inventario temporal', width:105 },
+            { key:'inventario_total_temp', label:'Total temp', group:'Inventario temporal', width:110 },
+            { key:'proveedor', label:'Proveedor', group:'Catálogo', width:190 },
+            { key:'clave_proveedor', label:'Clave proveedor', group:'Catálogo', width:150 },
+            { key:'grupo', label:'Grupo', group:'Catálogo', width:120 },
+            { key:'um_venta', label:'UM', group:'Catálogo', width:80 },
+            { key:'ubicacion_1', label:'Ubicación 1', group:'Ubicaciones', width:150 },
+            { key:'ubicacion_2', label:'Ubicación 2', group:'Ubicaciones', width:150 },
+            { key:'ubicacion_3', label:'Ubicación 3', group:'Ubicaciones', width:150 },
+            { key:'ubicacion_4', label:'Ubicación 4', group:'Ubicaciones', width:150 },
+            { key:'fecha_1', label:'Fecha 1', group:'Fechas', width:150 },
+            { key:'fecha_2', label:'Fecha 2', group:'Fechas', width:150 },
+            { key:'fecha_3', label:'Fecha 3', group:'Fechas', width:150 },
+            { key:'fecha_4', label:'Fecha 4', group:'Fechas', width:150 }
+        ];
         const EDITOR_PC_CAMPOS_EDITABLES = [
             'codigo_barra','largo_unidad','ancho_unidad','alto_unidad','peso_unidad',
             'unidades_caja_bolsa','largo_caja_bolsa','ancho_caja_bolsa','alto_caja_bolsa','peso_caja_bolsa',
@@ -825,6 +1010,7 @@
             document.getElementById('pantallaCorrelacion').classList.add('hidden'); 
             document.getElementById('pantallaDashboardBarcode').classList.add('hidden'); 
             document.getElementById('pantallaDashboardLogistico')?.classList.add('hidden');
+            document.getElementById('pantallaEditorUbicacionesPC')?.classList.add('hidden');
             document.getElementById('pantallaMenuPrincipal').classList.remove('hidden'); 
             limpiarTodo(); 
         }
@@ -837,6 +1023,7 @@
             document.getElementById('pantallaApp').classList.add('hidden');
             document.getElementById('pantallaAuditoria').classList.add('hidden');
             document.getElementById('pantallaCorrelacion').classList.add('hidden');
+            document.getElementById('pantallaEditorUbicacionesPC')?.classList.add('hidden');
             document.getElementById('pantallaDashboardBarcode').classList.remove('hidden');
             cargarDashboardBarcode();
         }
@@ -848,6 +1035,7 @@
             document.getElementById('pantallaAuditoria').classList.add('hidden');
             document.getElementById('pantallaCorrelacion').classList.add('hidden');
             document.getElementById('pantallaDashboardBarcode').classList.add('hidden');
+            document.getElementById('pantallaEditorUbicacionesPC')?.classList.add('hidden');
             document.getElementById('pantallaDashboardLogistico').classList.remove('hidden');
             cargarDashboardLogistico();
         }
@@ -2032,7 +2220,7 @@ Fallidos: ${fallidos}`);
 
         // --- REGISTRO ---
         async function procesarUbicacion(val) { const u = val.toUpperCase().trim(); if(!u) return; ubicacionActiva = u; document.getElementById('valUbicacion').innerText = u; document.getElementById('statusUbicacion').classList.remove('hidden'); document.getElementById('cardCaptura').classList.remove('hidden'); document.getElementById('footerAcciones').classList.remove('hidden'); await cargarExistentes(u); setTimeout(() => document.getElementById('inputSku').focus(), 150); }
-        async function cargarExistentes(u) { const lista = document.getElementById('listaExistentes'); document.getElementById('cardExistentes').classList.remove('hidden'); try { const res = await fetch(`${SB_URL}almacen_datos?almacen=eq.${almacenActual.toLowerCase()}&or=(ubicacion_1.eq.${u},ubicacion_2.eq.${u},ubicacion_3.eq.${u},ubicacion_4.eq.${u})&select=codigo`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` } }); const data = await res.json(); if(data.length === 0) { lista.innerHTML = `<p class="text-xs text-slate-400 text-center py-2 italic">Vacío.</p>`; return; } const codigos = data.map(d => d.codigo.toLowerCase()); const resC = await fetch(`${SB_URL}catalogo_articulos?articulo=in.("${codigos.join('","')}")&select=articulo,nombre`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` } }); const cDat = await resC.json(); const map = Object.fromEntries(cDat.map(c => [c.articulo.toLowerCase(), c.nombre])); lista.innerHTML = data.map(d => `<div class="bg-white p-3 rounded-xl border flex justify-between items-center shadow-sm animate-in"><div class="min-w-0"><p class="font-black text-[11px] text-slate-800 uppercase tracking-tighter">${d.codigo}</p><p class="text-[10px] text-slate-400 font-bold uppercase truncate">${map[d.codigo.toLowerCase()] || '---'}</p></div><button onclick="eliminarFisico('${d.codigo}')" class="text-red-400 p-2 text-xl">&times;</button></div>`).join(''); } catch(e) { lista.innerHTML = "Error."; } }
+        async function cargarExistentes(u) { const lista = document.getElementById('listaExistentes'); const contador = document.getElementById('contadorExistentes'); document.getElementById('cardExistentes').classList.remove('hidden'); if(contador) contador.innerText = "Cargando..."; try { const res = await fetch(`${SB_URL}almacen_datos?almacen=eq.${almacenActual.toLowerCase()}&or=(ubicacion_1.eq.${u},ubicacion_2.eq.${u},ubicacion_3.eq.${u},ubicacion_4.eq.${u})&select=codigo`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` } }); const data = await res.json(); const totalRegistrados = Array.isArray(data) ? data.length : 0; if(contador) contador.innerText = `${totalRegistrados} ${totalRegistrados === 1 ? 'registrado' : 'registrados'}`; if(totalRegistrados === 0) { lista.innerHTML = `<p class="text-xs text-slate-400 text-center py-2 italic">Vacío.</p>`; return; } const codigos = data.map(d => d.codigo.toLowerCase()); const resC = await fetch(`${SB_URL}catalogo_articulos?articulo=in.("${codigos.join('","')}")&select=articulo,nombre`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` } }); const cDat = await resC.json(); const map = Object.fromEntries(cDat.map(c => [c.articulo.toLowerCase(), c.nombre])); lista.innerHTML = data.map((d, idx) => `<div class="bg-white p-3 rounded-xl border flex justify-between items-center shadow-sm animate-in"><div class="flex items-start gap-2 min-w-0"><span class="shrink-0 min-w-6 h-6 px-2 rounded-full bg-slate-100 text-slate-500 text-[10px] font-black flex items-center justify-center">${idx + 1}</span><div class="min-w-0"><p class="font-black text-[11px] text-slate-800 uppercase tracking-tighter">${d.codigo}</p><p class="text-[10px] text-slate-400 font-bold uppercase truncate">${map[d.codigo.toLowerCase()] || '---'}</p></div></div><button onclick="eliminarFisico('${d.codigo}')" class="text-red-400 p-2 text-xl">&times;</button></div>`).join(''); } catch(e) { if(contador) contador.innerText = "Error"; lista.innerHTML = "Error."; } }
         async function procesarSku(val) {
             const raw = val.trim();
             if(!raw) return;
@@ -2046,7 +2234,8 @@ Fallidos: ${fallidos}`);
                 const res = await fetch(`${SB_URL}catalogo_articulos?articulo=eq.${finalSku.toLowerCase()}&select=nombre`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` } });
                 const data = await res.json();
                 if(!skusNuevos.find(s => s.articulo.toLowerCase() === finalSku.toLowerCase())) {
-                    skusNuevos.push({ articulo: finalSku, nombre: data[0]?.nombre || "SIN DESCRIPCIÓN" });
+                    // Igual que en preconteos AFITMEX: el último capturado debe mostrarse arriba.
+                    skusNuevos.unshift({ articulo: finalSku, nombre: data[0]?.nombre || "SIN DESCRIPCIÓN" });
                     renderNuevos();
                     document.getElementById('btnGuardar').disabled = false;
                 }
@@ -2055,7 +2244,28 @@ Fallidos: ${fallidos}`);
                 alert("Error.");
             }
         }
-        function renderNuevos() { document.getElementById('listaNuevos').innerHTML = skusNuevos.map((s, i) => `<div class="bg-green-50 p-3 rounded-xl border border-green-100 flex justify-between animate-in shadow-sm"><div class="min-w-0"><p class="font-black text-[11px] text-green-800 uppercase tracking-tighter">${s.articulo}</p><p class="text-[10px] text-green-600 font-bold uppercase truncate">${s.nombre}</p></div><button onclick="skusNuevos.splice(${i},1);renderNuevos();" class="text-green-800 p-2">&times;</button></div>`).join(''); }
+        function renderNuevos() {
+            const lista = document.getElementById('listaNuevos');
+            const contador = document.getElementById('contadorNuevos');
+            if(contador) {
+                contador.classList.toggle('hidden', skusNuevos.length === 0);
+                contador.innerText = `${skusNuevos.length} código${skusNuevos.length === 1 ? '' : 's'} agregado${skusNuevos.length === 1 ? '' : 's'}`;
+            }
+            lista.innerHTML = skusNuevos.map((s, i) => {
+                // El arreglo se mantiene con el último agregado hasta arriba.
+                // La numeración conserva el consecutivo real de captura: el más reciente muestra el número mayor.
+                const numeroCaptura = skusNuevos.length - i;
+                return `<div class="bg-green-50 p-3 rounded-xl border border-green-100 flex justify-between items-center gap-3 animate-in shadow-sm">
+                    <div class="shrink-0 w-9 h-9 rounded-full bg-green-600 text-white flex items-center justify-center text-xs font-black shadow-sm">${numeroCaptura}</div>
+                    <div class="min-w-0 flex-1">
+                        <p class="font-black text-[11px] text-green-800 uppercase tracking-tighter">${s.articulo}</p>
+                        <p class="text-[10px] text-green-600 font-bold uppercase truncate">${s.nombre}</p>
+                    </div>
+                    <button onclick="skusNuevos.splice(${i},1);renderNuevos();" class="text-green-800 p-2 text-xl leading-none">&times;</button>
+                </div>`;
+            }).join('');
+            document.getElementById('btnGuardar').disabled = skusNuevos.length === 0;
+        }
         async function guardarLote() { for (const item of skusNuevos) { const r = await fetch(`${SB_URL}almacen_datos?codigo=eq.${item.articulo.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` } }); const fila = (await r.json())[0]; const now = new Date().toLocaleString('sv-SE').replace('T', ' '); if(fila) { let s = !fila.ubicacion_1 ? 1 : !fila.ubicacion_2 ? 2 : !fila.ubicacion_3 ? 3 : 4; let p = {}; p[`ubicacion_${s}`] = ubicacionActiva; p[`estado_${s}`] = "OK"; p[`fecha_${s}`] = now; await fetch(`${SB_URL}almacen_datos?codigo=eq.${item.articulo.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}`, "Content-Type": "application/json" }, body: JSON.stringify(p) }); } else { await fetch(`${SB_URL}almacen_datos`, { method: 'POST', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo: item.articulo, almacen: almacenActual.toLowerCase(), ubicacion_1: ubicacionActiva, estado_1: "OK", fecha_1: now }) }); } } alert("✅ Guardado."); limpiarTodo(); }
         async function eliminarFisico(cod) { if(!confirm(`¿Quitar ${cod.toUpperCase()}?`)) return; const r = await fetch(`${SB_URL}almacen_datos?codigo=eq.${cod.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` } }); const f = (await r.json())[0]; if(!f) return; let s = (f.ubicacion_1===ubicacionActiva)?1:(f.ubicacion_2===ubicacionActiva)?2:(f.ubicacion_3===ubicacionActiva)?3:(f.ubicacion_4===ubicacionActiva)?4:0; if(s>0) { let p = {}; p[`ubicacion_${s}`]=null; p[`estado_${s}`]=null; p[`fecha_${s}`]=null; await fetch(`${SB_URL}almacen_datos?codigo=eq.${cod.toLowerCase()}&almacen=eq.${almacenActual.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}`, "Content-Type": "application/json" }, body: JSON.stringify(p) }); await cargarExistentes(ubicacionActiva); } }
 
@@ -2972,6 +3182,7 @@ Fallidos: ${fallidos}`);
                         alto_tarima: base.alto_tarima ?? '',
                         peso_tarima: base.peso_tarima ?? '',
                         nombre: cat.nombre || '',
+                        estado_comercial: editorPcEstadoComercialDesdeNombre(cat.nombre || ''),
                         grupo: cat.grupo || '',
                         um_venta: cat.um_venta || '',
                         factor: cat.factor == null ? '' : String(cat.factor),
@@ -3043,6 +3254,798 @@ Fallidos: ${fallidos}`);
             aplicarFiltrosEditorPC();
         }
 
+        function editorUbiEstadoComercialLabel(value) {
+            const map = { de_linea: 'De línea', descontinuado: 'Descontinuado', sobre_pedido: 'Sobre pedido', compra_especial: 'Compra especial' };
+            return map[String(value || '').trim()] || 'De línea';
+        }
+
+        function editorUbiEstadoComercialValue(value) {
+            const raw = String(value || '').trim();
+            return raw || 'de_linea';
+        }
+
+        function editorUbiPoblarFiltroEstadoComercial(valores) {
+            const select = document.getElementById('editorUbiFiltroEstadoComercial');
+            if (!select) return;
+            const actual = String(select.value || '').trim();
+            const orden = ['de_linea','descontinuado','sobre_pedido','compra_especial'];
+            const disponibles = [...new Set((valores || []).map(editorUbiEstadoComercialValue))]
+                .sort((a,b) => {
+                    const ia = orden.indexOf(a), ib = orden.indexOf(b);
+                    if (ia >= 0 || ib >= 0) return (ia >= 0 ? ia : 99) - (ib >= 0 ? ib : 99);
+                    return editorUbiEstadoComercialLabel(a).localeCompare(editorUbiEstadoComercialLabel(b), 'es', { sensitivity: 'base' });
+                });
+            select.innerHTML = '<option value="">Todos</option>' + disponibles.map(v => `<option value="${escapeHtmlEditor(v)}">${escapeHtmlEditor(editorUbiEstadoComercialLabel(v))}</option>`).join('');
+            select.value = disponibles.includes(actual) ? actual : '';
+        }
+
+        function editorUbiColumnMeta(key) {
+            return EDITOR_UBI_COLUMNAS.find(col => col.key === key) || null;
+        }
+
+        function editorUbiVisibleColumnCount() {
+            return EDITOR_UBI_COLUMNAS.reduce((acc, col) => acc + (editorUbiColumnVisibility[col.key] === false ? 0 : 1), 0);
+        }
+
+        function editorUbiInitColumnVisibility() {
+            const saved = (() => {
+                try { return JSON.parse(localStorage.getItem('editorUbiColumnVisibility_v2') || '{}') || {}; }
+                catch (_) { return {}; }
+            })();
+            editorUbiColumnVisibility = {};
+            EDITOR_UBI_COLUMNAS.forEach(col => {
+                editorUbiColumnVisibility[col.key] = col.locked ? true : saved[col.key] !== false;
+            });
+            editorUbiLoadColumnWidths();
+            editorUbiRenderColumnasPanel();
+            editorUbiApplyColumnVisibility();
+            editorUbiInitResizableColumns();
+        }
+
+        function editorUbiLoadColumnWidths() {
+            const saved = (() => {
+                try { return JSON.parse(localStorage.getItem('editorUbiColumnWidths_v2') || '{}') || {}; }
+                catch (_) { return {}; }
+            })();
+            editorUbiColumnWidths = {};
+            EDITOR_UBI_COLUMNAS.forEach(col => {
+                const n = Number(saved[col.key] || col.width || 120);
+                editorUbiColumnWidths[col.key] = Math.max(70, Math.min(700, Number.isFinite(n) ? n : (col.width || 120)));
+            });
+        }
+
+        function editorUbiSaveColumnWidths() {
+            try { localStorage.setItem('editorUbiColumnWidths_v2', JSON.stringify(editorUbiColumnWidths)); } catch (_) {}
+        }
+
+        function editorUbiColumnWidth(key) {
+            const col = editorUbiColumnMeta(key);
+            const n = Number(editorUbiColumnWidths[key] || col?.width || 120);
+            return Math.max(70, Math.min(700, Number.isFinite(n) ? n : 120));
+        }
+
+        function editorUbiIsColumnVisible(key) {
+            return editorUbiColumnVisibility[key] !== false;
+        }
+
+        function editorUbiColumnHeaderClass(col) {
+            const sticky = col.key === 'codigo' ? ' editor-sticky-col-1' : (col.key === 'nombre' ? ' editor-sticky-col-2' : '');
+            const hidden = editorUbiIsColumnVisible(col.key) ? '' : ' editor-col-hidden';
+            return `px-3 py-3 text-left border-b border-slate-200 bg-slate-100${sticky}${hidden}`;
+        }
+
+        function editorUbiRenderHeaderAndColgroup() {
+            const header = document.getElementById('editorUbiHeaderRow');
+            const colgroup = document.getElementById('editorUbiColgroup');
+            if (!header || !colgroup) return;
+            colgroup.innerHTML = EDITOR_UBI_COLUMNAS.map(col => {
+                const hidden = editorUbiIsColumnVisible(col.key) ? '' : ' class="editor-col-hidden"';
+                return `<col data-col="${escapeHtmlEditor(col.key)}"${hidden}>`;
+            }).join('');
+            header.innerHTML = EDITOR_UBI_COLUMNAS.map(col => `
+                <th data-col="${escapeHtmlEditor(col.key)}" class="${editorUbiColumnHeaderClass(col)}">
+                    <button onclick="editorUbiSortBy('${escapeHtmlEditor(col.key)}')" class="editor-header-btn">${escapeHtmlEditor(col.label)} <span id="editorUbiSort_${escapeHtmlEditor(col.key)}" class="editor-sort-indicator"></span></button>
+                </th>
+            `).join('');
+            editorUbiInitResizableColumns();
+        }
+
+        function editorUbiApplyColumnWidths() {
+            const table = document.getElementById('editorUbiTable');
+            if (!table) return;
+            let visibleWidth = 0;
+            EDITOR_UBI_COLUMNAS.forEach(col => {
+                const visible = editorUbiIsColumnVisible(col.key);
+                const w = visible ? editorUbiColumnWidth(col.key) : 0;
+                if (visible) visibleWidth += w;
+                table.querySelectorAll(`col[data-col="${col.key}"], th[data-col="${col.key}"], td[data-col="${col.key}"]`).forEach(el => {
+                    el.style.width = `${w}px`;
+                    el.style.minWidth = `${w}px`;
+                    el.style.maxWidth = `${w}px`;
+                });
+            });
+            table.style.width = `${Math.max(900, visibleWidth)}px`;
+            table.style.minWidth = `${Math.max(900, visibleWidth)}px`;
+            editorUbiActualizarStickyOffsets();
+        }
+
+        function editorUbiActualizarStickyOffsets() {
+            const wCodigo = editorUbiColumnVisibility.codigo === false ? 0 : editorUbiColumnWidth('codigo');
+            document.querySelectorAll('#pantallaEditorUbicacionesPC [data-col="codigo"]').forEach(el => {
+                el.style.left = '0px';
+                el.style.zIndex = el.tagName === 'TH' ? '24' : '14';
+            });
+            document.querySelectorAll('#pantallaEditorUbicacionesPC [data-col="nombre"]').forEach(el => {
+                el.style.left = `${wCodigo}px`;
+                el.style.zIndex = el.tagName === 'TH' ? '23' : '13';
+            });
+        }
+
+        function editorUbiInitResizableColumns() {
+            editorUbiLoadColumnWidths();
+            const table = document.getElementById('editorUbiTable');
+            if (!table) return;
+            table.querySelectorAll('thead th[data-col]').forEach(th => {
+                if (th.querySelector('.editor-col-resizer')) return;
+                const resizer = document.createElement('span');
+                resizer.className = 'editor-col-resizer';
+                resizer.title = 'Arrastra para cambiar el ancho de esta columna';
+                resizer.addEventListener('mousedown', editorUbiStartResize);
+                resizer.addEventListener('touchstart', editorUbiStartResize, { passive: false });
+                th.appendChild(resizer);
+            });
+            editorUbiApplyColumnWidths();
+        }
+
+        function editorUbiEventClientX(event) {
+            return event.touches?.[0]?.clientX ?? event.clientX ?? 0;
+        }
+
+        function editorUbiStartResize(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const th = event.target.closest('th[data-col]');
+            if (!th) return;
+            const key = th.dataset.col;
+            editorUbiResizeState = {
+                key,
+                startX: editorUbiEventClientX(event),
+                startWidth: editorUbiColumnWidth(key)
+            };
+            document.body.classList.add('editor-col-resizing');
+            document.addEventListener('mousemove', editorUbiDoResize);
+            document.addEventListener('mouseup', editorUbiStopResize);
+            document.addEventListener('touchmove', editorUbiDoResize, { passive: false });
+            document.addEventListener('touchend', editorUbiStopResize);
+        }
+
+        function editorUbiDoResize(event) {
+            if (!editorUbiResizeState) return;
+            event.preventDefault();
+            const dx = editorUbiEventClientX(event) - editorUbiResizeState.startX;
+            const next = Math.max(70, Math.min(700, editorUbiResizeState.startWidth + dx));
+            editorUbiColumnWidths[editorUbiResizeState.key] = next;
+            editorUbiApplyColumnWidths();
+        }
+
+        function editorUbiStopResize() {
+            if (!editorUbiResizeState) return;
+            editorUbiSaveColumnWidths();
+            editorUbiResizeState = null;
+            document.body.classList.remove('editor-col-resizing');
+            document.removeEventListener('mousemove', editorUbiDoResize);
+            document.removeEventListener('mouseup', editorUbiStopResize);
+            document.removeEventListener('touchmove', editorUbiDoResize);
+            document.removeEventListener('touchend', editorUbiStopResize);
+        }
+
+        function editorUbiColumnClass(key) {
+            return editorUbiColumnVisibility[key] === false ? ' editor-col-hidden' : '';
+        }
+
+        function editorUbiToggleColumnasPanel() {
+            const panel = document.getElementById('editorUbiColumnasPanel');
+            if (panel) panel.classList.toggle('hidden');
+        }
+
+        function editorUbiRenderColumnasPanel() {
+            const panel = document.getElementById('editorUbiColumnasPanel');
+            if (!panel) return;
+            panel.innerHTML = EDITOR_UBI_COLUMNAS.map(col => {
+                const checked = editorUbiColumnVisibility[col.key] !== false;
+                const disabled = col.locked ? 'disabled' : '';
+                const badge = col.locked ? '<span class="ml-auto text-[9px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-400">Fija</span>' : '';
+                return `
+                    <label class="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 ${col.locked ? 'opacity-75 cursor-not-allowed' : 'cursor-pointer'}" title="${escapeHtmlEditor(col.group || '')}">
+                        <input type="checkbox" class="rounded border-slate-300" ${checked ? 'checked' : ''} ${disabled} onchange="editorUbiSetColumnVisible('${col.key}', this.checked)">
+                        <span>${escapeHtmlEditor(col.label)}</span>
+                        ${badge}
+                    </label>
+                `;
+            }).join('');
+        }
+
+        function editorUbiSetColumnVisible(key, visible) {
+            const col = editorUbiColumnMeta(key);
+            if (col?.locked) visible = true;
+            editorUbiColumnVisibility[key] = !!visible;
+            try { localStorage.setItem('editorUbiColumnVisibility_v2', JSON.stringify(editorUbiColumnVisibility)); } catch (_) {}
+            editorUbiApplyColumnVisibility();
+            editorUbiRenderColumnasPanel();
+        }
+
+        function editorUbiMostrarTodasColumnas() {
+            EDITOR_UBI_COLUMNAS.forEach(col => { editorUbiColumnVisibility[col.key] = true; });
+            try { localStorage.setItem('editorUbiColumnVisibility_v2', JSON.stringify(editorUbiColumnVisibility)); } catch (_) {}
+            editorUbiApplyColumnVisibility();
+            editorUbiRenderColumnasPanel();
+        }
+
+        function editorUbiApplyColumnVisibility() {
+            EDITOR_UBI_COLUMNAS.forEach(col => {
+                const hidden = !editorUbiIsColumnVisible(col.key);
+                document.querySelectorAll(`#pantallaEditorUbicacionesPC [data-col="${col.key}"]`).forEach(el => {
+                    el.classList.toggle('editor-col-hidden', hidden);
+                    el.classList.remove('hidden');
+                });
+            });
+            const emptyCell = document.querySelector('#editorUbiBody td[data-editor-empty="1"]');
+            if (emptyCell) emptyCell.colSpan = Math.max(1, editorUbiVisibleColumnCount());
+            editorUbiRenderHeaderAndColgroup();
+            editorUbiApplyColumnWidths();
+            editorUbiRefreshSortIndicators();
+        }
+
+        function editorUbiRestablecerAnchosColumnas() {
+            editorUbiColumnWidths = {};
+            EDITOR_UBI_COLUMNAS.forEach(col => { editorUbiColumnWidths[col.key] = col.width || 120; });
+            try { localStorage.setItem('editorUbiColumnWidths_v2', JSON.stringify(editorUbiColumnWidths)); } catch (_) {}
+            editorUbiApplyColumnWidths();
+        }
+
+        function editorUbiKey(row) {
+            return String(row.id || `${row.codigo}|${row.almacen}`).trim();
+        }
+
+        function editorUbiGetSelectedValues(id) {
+            const select = document.getElementById(id);
+            if (!select) return [];
+            return Array.from(select.selectedOptions || [])
+                .map(opt => String(opt.value || '').trim())
+                .filter(Boolean);
+        }
+
+        function editorUbiPoblarSelect(id, valores, placeholder='Todos') {
+            const select = document.getElementById(id);
+            if (!select) return;
+            const esMultiple = !!select.multiple;
+            const actuales = esMultiple ? editorUbiGetSelectedValues(id) : [String(select.value || '')].filter(Boolean);
+            const opciones = esMultiple ? [] : ['<option value="">' + placeholder + '</option>'];
+            opciones.push(...valores.map(v => `<option value="${escapeHtmlEditor(v)}">${escapeHtmlEditor(v)}</option>`));
+            select.innerHTML = opciones.join('');
+            if (esMultiple) {
+                const disponibles = new Set(valores.map(v => String(v || '')));
+                const mantener = actuales.filter(v => disponibles.has(v));
+                Array.from(select.options || []).forEach(opt => { opt.selected = mantener.includes(opt.value); });
+            } else {
+                const actual = actuales[0] || '';
+                select.value = valores.includes(actual) ? actual : '';
+            }
+        }
+
+        function editorUbiGetFilterState() {
+            const grupos = editorUbiGetSelectedValues('editorUbiFiltroGrupo').map(v => v.toLowerCase());
+            return {
+                q: String(document.getElementById('editorUbiBusqueda')?.value || '').trim().toLowerCase(),
+                almacen: String(document.getElementById('editorUbiFiltroAlmacen')?.value || '').trim().toLowerCase(),
+                proveedor: String(document.getElementById('editorUbiFiltroProveedor')?.value || '').trim().toLowerCase(),
+                estadoComercial: String(document.getElementById('editorUbiFiltroEstadoComercial')?.value || '').trim(),
+                grupo: grupos[0] || '',
+                grupos,
+                estado: String(document.getElementById('editorUbiFiltroEstado')?.value || '').trim(),
+                inventarioTemp: String(document.getElementById('editorUbiFiltroInventarioTemp')?.value || '').trim()
+            };
+        }
+
+        function editorUbiRowMatchesFilters(row, state, exclude='') {
+            if (exclude !== 'almacen' && state.almacen && row._almacen !== state.almacen) return false;
+            if (exclude !== 'proveedor' && state.proveedor && row._proveedor !== state.proveedor) return false;
+            if (exclude !== 'estadoComercial' && state.estadoComercial && editorUbiEstadoComercialValue(row.estado_comercial) !== state.estadoComercial) return false;
+            if (exclude !== 'grupo' && Array.isArray(state.grupos) && state.grupos.length && !state.grupos.includes(row._grupo)) return false;
+            if (exclude !== 'grupo' && !Array.isArray(state.grupos) && state.grupo && row._grupo !== state.grupo) return false;
+            if (exclude !== 'estado') {
+                if (state.estado === 'con_ubicacion' && row._ubicaciones_count <= 0) return false;
+                if (state.estado === 'sin_ubicacion' && row._ubicaciones_count > 0) return false;
+                if (state.estado === 'multiples' && row._ubicaciones_count < 2) return false;
+            }
+            if (exclude !== 'inventarioTemp') {
+                if (state.inventarioTemp === 'con_existencia' && !row._inv_temp_con_existencia) return false;
+                if (state.inventarioTemp === 'sin_existencia' && row._inv_temp_con_existencia) return false;
+                if (state.inventarioTemp === 'existencia_sin_ubicacion' && (!row._inv_temp_con_existencia || row._ubicaciones_count > 0)) return false;
+            }
+            if (state.q && !row._search.includes(state.q)) return false;
+            return true;
+        }
+
+        function editorUbiValoresFiltro(campo, state, exclude) {
+            return [...new Set(editorUbiRows
+                .filter(row => editorUbiRowMatchesFilters(row, state, exclude))
+                .map(row => String(row?.[campo] || '').trim())
+                .filter(Boolean)
+            )];
+        }
+
+        function editorUbiActualizarOpcionesFiltros(dinamico=false) {
+            const state = dinamico ? editorUbiGetFilterState() : { q: '', almacen: '', proveedor: '', estadoComercial: '', grupo: '', grupos: [], estado: '', inventarioTemp: '' };
+            const almacenes = editorUbiValoresFiltro('almacen', state, dinamico ? 'almacen' : '').map(v => v.toUpperCase()).sort((a,b) => a.localeCompare(b, 'es', { numeric: true, sensitivity: 'base' }));
+            const proveedores = editorUbiValoresFiltro('proveedor', state, dinamico ? 'proveedor' : '').sort((a,b) => a.localeCompare(b, 'es', { numeric: true, sensitivity: 'base' }));
+            const estadosComerciales = editorUbiValoresFiltro('estado_comercial', state, dinamico ? 'estadoComercial' : '');
+            const grupos = editorUbiValoresFiltro('grupo', state, dinamico ? 'grupo' : '').sort((a,b) => a.localeCompare(b, 'es', { numeric: true, sensitivity: 'base' }));
+            editorUbiPoblarSelect('editorUbiFiltroAlmacen', almacenes, 'Todas');
+            editorUbiPoblarSelect('editorUbiFiltroProveedor', proveedores, 'Todos');
+            editorUbiPoblarFiltroEstadoComercial(estadosComerciales);
+            editorUbiPoblarSelect('editorUbiFiltroGrupo', grupos, 'Todos');
+        }
+
+        async function irAEditorUbicacionesPC() {
+            limpiarTodo();
+            document.getElementById('pantallaMenuPrincipal').classList.add('hidden');
+            document.getElementById('pantallaEditorPC')?.classList.add('hidden');
+            document.getElementById('pantallaEditorUbicacionesPC').classList.remove('hidden');
+            document.getElementById('editorUbiStatus').innerText = 'Carga la vista de ubicaciones para revisar y editar por bodega, proveedor y SKU.';
+            editorUbiInitColumnVisibility();
+            setTimeout(() => document.getElementById('editorUbiBusqueda')?.focus(), 50);
+        }
+
+        function regresarAlMenuPrincipalDesdeEditorUbicaciones() {
+            document.getElementById('pantallaEditorUbicacionesPC').classList.add('hidden');
+            document.getElementById('pantallaMenuPrincipal').classList.remove('hidden');
+        }
+
+        function editorUbiTieneUbicacion(row) {
+            return ['ubicacion_1','ubicacion_2','ubicacion_3','ubicacion_4'].some(k => String(row?.[k] || '').trim() !== '');
+        }
+
+        function editorUbiConteoUbicaciones(row) {
+            return ['ubicacion_1','ubicacion_2','ubicacion_3','ubicacion_4'].filter(k => String(row?.[k] || '').trim() !== '').length;
+        }
+
+        function editorUbiInvKey(codigo, almacen) {
+            return `${String(codigo || '').trim().toLowerCase()}|${String(almacen || '').trim().toLowerCase()}`;
+        }
+
+        function editorUbiParseNumber(value) {
+            const raw = String(value ?? '').trim().replace(/,/g, '');
+            if (!raw) return 0;
+            const n = Number(raw);
+            return Number.isFinite(n) ? n : 0;
+        }
+
+        function editorUbiFormatNumber(value) {
+            const n = Number(value || 0);
+            if (!Number.isFinite(n) || n === 0) return '';
+            return n.toLocaleString('es-MX', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        }
+
+        function editorUbiAplicarInventarioTemporal(row) {
+            const inv = editorUbiInventarioTemporal.get(editorUbiInvKey(row.codigo, row.almacen));
+            const existencia = inv ? Number(inv.existencia || 0) : 0;
+            const pendiente = inv ? Number(inv.pendiente || 0) : 0;
+            const ordenado = inv ? Number(inv.ordenado || 0) : 0;
+            const total = inv ? Number(inv.total || existencia + pendiente) : 0;
+            return {
+                ...row,
+                inventario_existencia_temp: existencia,
+                inventario_pendiente_temp: pendiente,
+                inventario_ordenado_temp: ordenado,
+                inventario_total_temp: total,
+                _inv_temp: inv || null,
+                _inv_temp_con_existencia: existencia > 0,
+                _inv_temp_con_total: total > 0
+            };
+        }
+
+        function editorUbiNormalizarRow(row) {
+            const proveedor = String(row.proveedor || '').trim();
+            const grupo = String(row.grupo || '').trim();
+            const almacen = String(row.almacen || '').trim().toUpperCase();
+            const base = editorUbiAplicarInventarioTemporal({
+                ...row,
+                almacen,
+                _almacen: almacen.toLowerCase(),
+                _proveedor: proveedor.toLowerCase(),
+                _grupo: grupo.toLowerCase(),
+                _ubicaciones_count: editorUbiConteoUbicaciones(row)
+            });
+            return {
+                ...base,
+                _search: [base.codigo,base.codigo_barra,base.nombre,base.estado_comercial,editorUbiEstadoComercialLabel(base.estado_comercial),almacen,base.proveedor,base.clave_proveedor,base.grupo,base.um_venta,base.ubicacion_1,base.ubicacion_2,base.ubicacion_3,base.ubicacion_4,base.inventario_existencia_temp,base.inventario_total_temp]
+                    .map(v => String(v || '').toLowerCase()).join(' | ')
+            };
+        }
+
+        async function cargarEditorUbicacionesPC() {
+            document.getElementById('editorUbiStatus').innerText = 'Cargando ubicaciones...';
+            const body = document.getElementById('editorUbiBody');
+            editorUbiRenderHeaderAndColgroup();
+            body.innerHTML = '<tr><td colspan="21" class="px-4 py-8 text-center text-sm font-bold text-slate-400">Cargando...</td></tr>';
+            editorUbiModified = new Map();
+            try {
+                const allRows = await fetchAllSupabaseRows(
+                    'almacen_datos',
+                    'id,codigo,almacen,codigo_barra,ubicacion_1,fecha_1,ubicacion_2,fecha_2,ubicacion_3,fecha_3,ubicacion_4,fecha_4',
+                    'order=almacen.asc,codigo.asc',
+                    1000
+                );
+                const codes = [...new Set((allRows || []).map(r => String(r.codigo || '').trim().toLowerCase()).filter(Boolean))];
+                const catalogo = [];
+                for (let i = 0; i < codes.length; i += 150) {
+                    const chunk = codes.slice(i, i + 150);
+                    const q = `articulo=in.(${chunk.map(x => `"${x}"`).join(',')})`;
+                    const part = await fetchJsonOrThrow(`${SB_URL}catalogo_articulos?select=articulo,nombre,grupo,um_venta,proveedor,clave_proveedor&${q}`, { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${getAccessToken()}` } });
+                    catalogo.push(...(Array.isArray(part) ? part : []));
+                }
+                const mapCat = new Map(catalogo.map(x => [String(x.articulo || '').trim().toLowerCase(), x]));
+                editorUbiRows = (allRows || []).map(r => {
+                    const code = String(r.codigo || '').trim().toLowerCase();
+                    const cat = mapCat.get(code) || {};
+                    return editorUbiNormalizarRow({
+                        id: r.id,
+                        codigo: String(r.codigo || '').trim().toUpperCase(),
+                        codigo_barra: String(r.codigo_barra || '').trim(),
+                        almacen: String(r.almacen || '').trim().toUpperCase(),
+                        nombre: cat.nombre || '',
+                        estado_comercial: editorPcEstadoComercialDesdeNombre(cat.nombre || ''),
+                        grupo: cat.grupo || '',
+                        um_venta: cat.um_venta || '',
+                        proveedor: cat.proveedor || '',
+                        clave_proveedor: cat.clave_proveedor || '',
+                        ubicacion_1: r.ubicacion_1 || '', fecha_1: r.fecha_1 || '',
+                        ubicacion_2: r.ubicacion_2 || '', fecha_2: r.fecha_2 || '',
+                        ubicacion_3: r.ubicacion_3 || '', fecha_3: r.fecha_3 || '',
+                        ubicacion_4: r.ubicacion_4 || '', fecha_4: r.fecha_4 || ''
+                    });
+                });
+                editorUbiActualizarOpcionesFiltros();
+                editorUbiCurrentPage = 1;
+                editorUbiLastFilterSignature = '';
+                document.getElementById('editorUbiStatus').innerText = `Vista de ubicaciones cargada. Registros: ${editorUbiRows.length}.`;
+                aplicarFiltrosEditorUbicacionesPC();
+            } catch (e) {
+                body.innerHTML = `<tr><td colspan="21" class="px-4 py-8 text-center text-sm font-bold text-red-500">${escapeHtmlEditor(e.message || 'Error al cargar.')}</td></tr>`;
+                document.getElementById('editorUbiStatus').innerText = 'Error al cargar ubicaciones.';
+            }
+        }
+
+        function editorUbiLimpiarFiltros() {
+            ['editorUbiBusqueda','editorUbiFiltroAlmacen','editorUbiFiltroProveedor','editorUbiFiltroEstadoComercial','editorUbiFiltroGrupo','editorUbiFiltroEstado','editorUbiFiltroInventarioTemp'].forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                if (el.multiple) {
+                    Array.from(el.options || []).forEach(opt => { opt.selected = false; });
+                } else {
+                    el.value = '';
+                }
+            });
+            aplicarFiltrosEditorUbicacionesPC();
+        }
+
+        function aplicarFiltrosEditorUbicacionesPC() {
+            editorUbiActualizarOpcionesFiltros(true);
+            const state = editorUbiGetFilterState();
+            const signature = [state.q,state.almacen,state.proveedor,state.estadoComercial,(state.grupos || []).join(','),state.estado,state.inventarioTemp,editorUbiSortField,editorUbiSortDir,editorUbiInventarioTemporalInfo?.loadedAt || ''].join('|');
+            if (signature !== editorUbiLastFilterSignature) {
+                editorUbiCurrentPage = 1;
+                editorUbiLastFilterSignature = signature;
+            }
+            editorUbiRowsFiltered = editorUbiRows.filter(row => editorUbiRowMatchesFilters(row, state));
+            editorUbiApplySort();
+            renderEditorUbicacionesTable();
+        }
+
+        function editorUbiFechaTimestamp(value) {
+            const raw = String(value || '').trim();
+            if (!raw) return 0;
+            const t = Date.parse(raw);
+            if (!Number.isNaN(t)) return t;
+            const m = raw.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:\s+(\d{1,2}):(\d{2}))?/);
+            if (m) return new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]), Number(m[4] || 0), Number(m[5] || 0)).getTime();
+            return 0;
+        }
+
+        function editorUbiApplySort() {
+            const field = editorUbiSortField;
+            const dir = editorUbiSortDir === 'desc' ? -1 : 1;
+            editorUbiRowsFiltered.sort((a,b) => {
+                if (/^fecha_[1-4]$/.test(field)) {
+                    const av = editorUbiFechaTimestamp(a?.[field]);
+                    const bv = editorUbiFechaTimestamp(b?.[field]);
+                    return (av - bv) * dir;
+                }
+                if (/^inventario_(existencia|pendiente|ordenado|total)_temp$/.test(field)) {
+                    const av = Number(a?.[field] || 0);
+                    const bv = Number(b?.[field] || 0);
+                    return (av - bv) * dir;
+                }
+                const av = String(a?.[field] ?? '').toLowerCase();
+                const bv = String(b?.[field] ?? '').toLowerCase();
+                return av.localeCompare(bv, 'es', { numeric: true, sensitivity: 'base' }) * dir;
+            });
+        }
+
+        function editorUbiSortBy(field) {
+            if (editorUbiSortField === field) editorUbiSortDir = editorUbiSortDir === 'asc' ? 'desc' : 'asc';
+            else { editorUbiSortField = field; editorUbiSortDir = 'asc'; }
+            aplicarFiltrosEditorUbicacionesPC();
+        }
+
+        function editorUbiRefreshSortIndicators() {
+            document.querySelectorAll('[id^="editorUbiSort_"]').forEach(el => el.textContent = '');
+            const el = document.getElementById(`editorUbiSort_${editorUbiSortField}`);
+            if (el) el.textContent = editorUbiSortDir === 'asc' ? '▲' : '▼';
+        }
+
+        function editorUbiReadonlyCell(value, extra='', col='') {
+            const attr = col ? ` data-col="${col}"` : '';
+            return `<td${attr} class="px-2 py-1.5 border-b border-slate-100 editor-cell-readonly ${extra}${col ? editorUbiColumnClass(col) : ''}"><div class="min-h-[38px] flex items-center">${escapeHtmlEditor(value || '')}</div></td>`;
+        }
+
+        function editorUbiFormatFecha(value) {
+            const raw = String(value || '').trim();
+            if (!raw) return '';
+            const d = new Date(raw);
+            if (Number.isNaN(d.getTime())) {
+                return raw.replace('T', ' ').replace(/\+00:00$/, '').replace(/:\d{2}$/, '');
+            }
+            const pad = n => String(n).padStart(2, '0');
+            return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        }
+
+        function editorUbiFechaCell(value, col='') {
+            return editorUbiReadonlyCell(editorUbiFormatFecha(value), '', col);
+        }
+
+        function editorUbiEditableCell(row, field, col='') {
+            const val = row?.[field] ?? '';
+            const key = editorUbiKey(row);
+            const mod = editorUbiModified.get(key) || {};
+            const modified = Object.prototype.hasOwnProperty.call(mod, field);
+            const attr = col ? ` data-col="${col}"` : '';
+            return `<td${attr} class="px-2 py-1.5 border-b border-slate-100 ${modified ? 'editor-cell-modified' : 'editor-cell-editable'}${col ? editorUbiColumnClass(col) : ''}"><input data-key="${escapeHtmlEditor(key)}" data-field="${field}" value="${escapeHtmlEditor(val)}" oninput="editorUbiOnInput(this)" class="w-full min-w-[120px] border ${modified ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-white'} rounded-lg px-2 py-2 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-rose-400 uppercase"></td>`;
+        }
+
+        function editorUbiRenderCell(row, col) {
+            switch (col.key) {
+                case 'codigo': return editorUbiReadonlyCell(row.codigo, 'editor-sticky-col-1 bg-slate-50', col.key);
+                case 'nombre': return editorUbiReadonlyCell(row.nombre, 'editor-sticky-col-2 bg-slate-50', col.key);
+                case 'estado_comercial': return editorUbiReadonlyCell(editorUbiEstadoComercialLabel(row.estado_comercial), '', col.key);
+                case 'codigo_barra': return editorUbiEditableCell(row, 'codigo_barra', col.key);
+                case 'almacen': return editorUbiReadonlyCell(row.almacen, '', col.key);
+                case 'inventario_existencia_temp': return editorUbiReadonlyCell(editorUbiFormatNumber(row.inventario_existencia_temp), '', col.key);
+                case 'inventario_pendiente_temp': return editorUbiReadonlyCell(editorUbiFormatNumber(row.inventario_pendiente_temp), '', col.key);
+                case 'inventario_ordenado_temp': return editorUbiReadonlyCell(editorUbiFormatNumber(row.inventario_ordenado_temp), '', col.key);
+                case 'inventario_total_temp': return editorUbiReadonlyCell(editorUbiFormatNumber(row.inventario_total_temp), '', col.key);
+                case 'proveedor': return editorUbiReadonlyCell(row.proveedor, '', col.key);
+                case 'clave_proveedor': return editorUbiReadonlyCell(row.clave_proveedor, '', col.key);
+                case 'grupo': return editorUbiReadonlyCell(row.grupo, '', col.key);
+                case 'um_venta': return editorUbiReadonlyCell(row.um_venta, '', col.key);
+                case 'ubicacion_1':
+                case 'ubicacion_2':
+                case 'ubicacion_3':
+                case 'ubicacion_4': return editorUbiEditableCell(row, col.key, col.key);
+                case 'fecha_1':
+                case 'fecha_2':
+                case 'fecha_3':
+                case 'fecha_4': return editorUbiFechaCell(row[col.key], col.key);
+                default: return editorUbiReadonlyCell(row[col.key], '', col.key);
+            }
+        }
+
+        function renderEditorUbicacionesTable() {
+            editorUbiRenderHeaderAndColgroup();
+            const body = document.getElementById('editorUbiBody');
+            if (!editorUbiRowsFiltered.length) {
+                body.innerHTML = `<tr><td data-editor-empty="1" colspan="${Math.max(1, editorUbiVisibleColumnCount())}" class="px-4 py-8 text-center text-sm font-bold text-slate-400">Sin registros para mostrar.</td></tr>`;
+                editorUbiResumen();
+                editorUbiRefreshSortIndicators();
+                editorUbiApplyColumnVisibility();
+                return;
+            }
+            const start = (editorUbiCurrentPage - 1) * editorUbiPageSize;
+            const rowsToRender = editorUbiRowsFiltered.slice(start, start + editorUbiPageSize);
+            body.innerHTML = rowsToRender.map(row => `
+                <tr class="hover:bg-slate-50 align-top">
+                    ${EDITOR_UBI_COLUMNAS.map(col => editorUbiRenderCell(row, col)).join('')}
+                </tr>
+            `).join('');
+            editorUbiResumen();
+            editorUbiRefreshSortIndicators();
+            editorUbiApplyColumnVisibility();
+        }
+
+        function editorUbiOnInput(input) {
+            const key = input.dataset.key;
+            const field = input.dataset.field;
+            const row = editorUbiRows.find(x => editorUbiKey(x) === key);
+            if (!row) return;
+            const value = field === 'codigo_barra' ? String(input.value || '').trim() : String(input.value || '').trim().toUpperCase();
+            row[field] = value;
+            const mod = editorUbiModified.get(key) || {};
+            mod[field] = value;
+            editorUbiModified.set(key, mod);
+            const updated = editorUbiNormalizarRow(row);
+            Object.assign(row, updated);
+            input.closest('td')?.classList.add('editor-cell-modified');
+            input.classList.remove('border-slate-200', 'bg-white');
+            input.classList.add('border-amber-300', 'bg-amber-50');
+            editorUbiResumen();
+        }
+
+        function editorUbiResumen() {
+            const total = editorUbiRowsFiltered.length;
+            const conUbi = editorUbiRowsFiltered.filter(editorUbiTieneUbicacion).length;
+            const sinUbi = total - conUbi;
+            const multiples = editorUbiRowsFiltered.filter(r => r._ubicaciones_count >= 2).length;
+            const conBarcode = editorUbiRowsFiltered.filter(r => String(r.codigo_barra || '').trim() !== '').length;
+            const conExistTemp = editorUbiRowsFiltered.filter(r => r._inv_temp_con_existencia).length;
+            const existTempSinUbi = editorUbiRowsFiltered.filter(r => r._inv_temp_con_existencia && r._ubicaciones_count <= 0).length;
+            const pendientes = editorUbiModified.size;
+            const totalPages = Math.max(1, Math.ceil(total / editorUbiPageSize));
+            editorUbiCurrentPage = Math.min(editorUbiCurrentPage, totalPages);
+            document.getElementById('editorUbiPageInfo').innerText = `Página ${editorUbiCurrentPage}/${totalPages}`;
+            document.getElementById('btnGuardarEditorUbi').disabled = pendientes === 0;
+            document.getElementById('editorUbiResumen').innerHTML = [
+                ['Registros', total], ['Con ubicación', conUbi], ['Sin ubicación', sinUbi], ['Exist. temp', conExistTemp], ['Exist. sin ubi', existTempSinUbi], ['Varias ubicaciones', multiples], ['Con barcode', conBarcode], ['Pendientes', pendientes]
+            ].map(([label, value]) => `<div class="bg-slate-50 rounded-2xl p-3 border border-slate-200"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${label}</p><p class="text-xl font-black text-slate-800">${value}</p></div>`).join('');
+        }
+
+        function editorUbiGoPage(delta) {
+            const totalPages = Math.max(1, Math.ceil(editorUbiRowsFiltered.length / editorUbiPageSize));
+            editorUbiCurrentPage = Math.min(totalPages, Math.max(1, editorUbiCurrentPage + delta));
+            renderEditorUbicacionesTable();
+        }
+
+        async function guardarCambiosEditorUbicacionesPC() {
+            if (!editorUbiModified.size) return;
+            if (!confirm(`¿Guardar cambios de ubicación/código de barras en ${editorUbiModified.size} registro(s)?`)) return;
+            document.getElementById('editorUbiStatus').innerText = 'Guardando cambios de ubicación/código de barras...';
+            let ok = 0, fail = 0;
+            for (const [key, changes] of editorUbiModified.entries()) {
+                const row = editorUbiRows.find(x => editorUbiKey(x) === key);
+                if (!row?.id) { fail++; continue; }
+                const payload = {};
+                EDITOR_UBI_CAMPOS_EDITABLES.forEach(field => {
+                    if (Object.prototype.hasOwnProperty.call(changes, field)) {
+                        const rawValue = String(changes[field] ?? '').trim();
+                        payload[field] = field === 'codigo_barra' ? (rawValue || null) : (rawValue.toUpperCase() || null);
+                    }
+                });
+                const now = new Date().toLocaleString('sv-SE').replace('T', ' ');
+                [1,2,3,4].forEach(n => {
+                    if (Object.prototype.hasOwnProperty.call(changes, `ubicacion_${n}`)) payload[`fecha_${n}`] = payload[`ubicacion_${n}`] ? now : null;
+                    if (Object.prototype.hasOwnProperty.call(changes, `ubicacion_${n}`) && !payload[`ubicacion_${n}`]) payload[`fecha_${n}`] = null;
+                });
+                try {
+                    await fetchJsonOrThrow(`${SB_URL}almacen_datos?id=eq.${encodeURIComponent(row.id)}`, {
+                        method: 'PATCH',
+                        headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${getAccessToken()}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+                        body: JSON.stringify(payload)
+                    });
+                    Object.assign(row, payload);
+                    Object.assign(row, editorUbiNormalizarRow(row));
+                    ok++;
+                } catch (e) {
+                    console.error('Error guardando ubicación', row.codigo, row.almacen, e);
+                    fail++;
+                }
+            }
+            editorUbiModified = new Map();
+            document.getElementById('editorUbiStatus').innerText = `Guardado terminado. OK: ${ok}. Error: ${fail}.`;
+            aplicarFiltrosEditorUbicacionesPC();
+        }
+
+        function exportarEditorUbicacionesCSV() {
+            const rows = editorUbiRowsFiltered.length ? editorUbiRowsFiltered : editorUbiRows;
+            if (!rows.length) { alert('Primero carga el editor de ubicaciones.'); return; }
+            const lines = [EDITOR_UBI_CSV_EXPORT_FIELDS.map(editorPcCsvEscape).join(',')];
+            rows.forEach(row => lines.push(EDITOR_UBI_CSV_EXPORT_FIELDS.map(f => editorPcCsvEscape(f === 'estado_comercial' ? editorUbiEstadoComercialLabel(row?.[f]) : (/^fecha_[1-4]$/.test(f) ? editorUbiFormatFecha(row?.[f]) : (/^inventario_/.test(f) ? (Number(row?.[f] || 0) || '') : (row?.[f] ?? ''))))).join(',')));
+            const fecha = new Date().toISOString().slice(0,10);
+            editorPcDownloadText(`editor_ubicaciones_${fecha}.csv`, lines.join('\n'));
+            document.getElementById('editorUbiStatus').innerText = `CSV exportado: ${rows.length} registro(s).`;
+        }
+
+        async function cargarInventarioTemporalEditorUbicaciones(file) {
+            if (!file) return;
+            try {
+                const text = await file.text();
+                const parsed = editorPcParseCSV(text);
+                if (parsed.length < 2) { alert('El CSV de inventario no tiene datos.'); return; }
+                const headers = parsed[0].map(editorPcNormalizarHeader);
+                const findIdx = (...names) => names.map(n => headers.indexOf(n)).find(i => i >= 0) ?? -1;
+                const idxArticulo = findIdx('articulo','codigo','sku');
+                const idxBodega = findIdx('bodega','almacen');
+                const idxExistencia = findIdx('existencia');
+                const idxPendiente = findIdx('pendiente');
+                const idxOrdenado = findIdx('ordenado');
+                const idxTotal = findIdx('total');
+                if (idxArticulo < 0 || idxBodega < 0 || idxExistencia < 0) {
+                    alert('El inventario temporal debe traer al menos columnas Articulo, Bodega y Existencia.');
+                    return;
+                }
+                const map = new Map();
+                let leidos = 0, omitidos = 0;
+                parsed.slice(1).forEach(cols => {
+                    const codigo = String(cols[idxArticulo] || '').trim().toLowerCase();
+                    const almacen = String(cols[idxBodega] || '').trim().toLowerCase();
+                    if (!codigo || !almacen) { omitidos++; return; }
+                    const key = editorUbiInvKey(codigo, almacen);
+                    const prev = map.get(key) || { codigo, almacen, existencia: 0, pendiente: 0, ordenado: 0, total: 0 };
+                    prev.existencia += editorUbiParseNumber(cols[idxExistencia]);
+                    if (idxPendiente >= 0) prev.pendiente += editorUbiParseNumber(cols[idxPendiente]);
+                    if (idxOrdenado >= 0) prev.ordenado += editorUbiParseNumber(cols[idxOrdenado]);
+                    if (idxTotal >= 0) prev.total += editorUbiParseNumber(cols[idxTotal]);
+                    else prev.total += editorUbiParseNumber(cols[idxExistencia]) + (idxPendiente >= 0 ? editorUbiParseNumber(cols[idxPendiente]) : 0);
+                    map.set(key, prev);
+                    leidos++;
+                });
+                editorUbiInventarioTemporal = map;
+                editorUbiInventarioTemporalInfo = { nombre: file.name || 'inventario.csv', registros: leidos, claves: map.size, omitidos, loadedAt: new Date().toISOString() };
+                editorUbiRows = editorUbiRows.map(row => editorUbiNormalizarRow(row));
+                const info = document.getElementById('editorUbiInventarioTempInfo');
+                if (info) {
+                    info.classList.remove('hidden');
+                    info.innerText = `Inventario temporal cargado solo en esta pantalla: ${editorUbiInventarioTemporalInfo.nombre}. Filas leídas: ${leidos}. Artículo+bodega: ${map.size}. Omitidos: ${omitidos}. No se guardó en Supabase.`;
+                }
+                document.getElementById('editorUbiStatus').innerText = `Inventario temporal cargado: ${map.size} artículo+bodega. Usa el filtro "Existencia sin ubicación" para detectar pendientes.`;
+                aplicarFiltrosEditorUbicacionesPC();
+            } catch (e) {
+                alert(`Error al cargar inventario temporal: ${e.message || e}`);
+            }
+        }
+
+        async function importarEditorUbicacionesCSV(file) {
+            if (!file) return;
+            if (!editorUbiRows.length) { alert('Primero carga el editor de ubicaciones.'); return; }
+            try {
+                const text = await file.text();
+                const parsed = editorPcParseCSV(text);
+                if (parsed.length < 2) { alert('El CSV no tiene datos.'); return; }
+                const headers = parsed[0].map(editorPcNormalizarHeader);
+                const idxCodigo = headers.indexOf('codigo');
+                const idxAlmacen = headers.indexOf('almacen');
+                if (idxCodigo < 0 || idxAlmacen < 0) { alert('El CSV debe traer columnas codigo y almacen.'); return; }
+                let actualizados = 0, omitidos = 0, sinCambios = 0;
+                parsed.slice(1).forEach(cols => {
+                    const codigo = String(cols[idxCodigo] || '').trim().toUpperCase();
+                    const almacen = String(cols[idxAlmacen] || '').trim().toUpperCase();
+                    if (!codigo || !almacen) { omitidos++; return; }
+                    const row = editorUbiRows.find(r => String(r.codigo || '').toUpperCase() === codigo && String(r.almacen || '').toUpperCase() === almacen);
+                    if (!row) { omitidos++; return; }
+                    let cambios = 0;
+                    EDITOR_UBI_CAMPOS_EDITABLES.forEach(field => {
+                        const idx = headers.indexOf(field);
+                        if (idx < 0) return;
+                        const nuevo = field === 'codigo_barra' ? String(cols[idx] || '').trim() : String(cols[idx] || '').trim().toUpperCase();
+                        const actual = field === 'codigo_barra' ? String(row[field] || '').trim() : String(row[field] || '').trim().toUpperCase();
+                        if (nuevo !== actual) {
+                            row[field] = nuevo;
+                            const mod = editorUbiModified.get(editorUbiKey(row)) || {};
+                            mod[field] = nuevo;
+                            editorUbiModified.set(editorUbiKey(row), mod);
+                            cambios++;
+                        }
+                    });
+                    Object.assign(row, editorUbiNormalizarRow(row));
+                    if (cambios) actualizados++; else sinCambios++;
+                });
+                document.getElementById('editorUbiStatus').innerText = `CSV importado. Con cambios: ${actualizados}. Sin cambios: ${sinCambios}. Omitidos: ${omitidos}.`;
+                aplicarFiltrosEditorUbicacionesPC();
+                alert(`Importación cargada en pantalla.\n\nCon cambios: ${actualizados}\nSin cambios: ${sinCambios}\nOmitidos: ${omitidos}\n\nRevisa y presiona Guardar cambios.`);
+            } catch (e) {
+                alert(`Error al importar CSV: ${e.message || e}`);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             let editorPcBusquedaTimer = null;
             document.getElementById('editorPcBusqueda')?.addEventListener('input', () => {
@@ -3051,6 +4054,14 @@ Fallidos: ${fallidos}`);
             });
             ['editorPcFiltroGrupo','editorPcFiltroProveedor','editorPcFiltroUmVenta','editorPcFiltroBarcode','editorPcFiltroLogistica','editorPcFiltroEstado']
                 .forEach(id => document.getElementById(id)?.addEventListener('change', aplicarFiltrosEditorPC));
+            let editorUbiBusquedaTimer = null;
+            document.getElementById('editorUbiBusqueda')?.addEventListener('input', () => {
+                clearTimeout(editorUbiBusquedaTimer);
+                editorUbiBusquedaTimer = setTimeout(aplicarFiltrosEditorUbicacionesPC, 180);
+            });
+            ['editorUbiFiltroAlmacen','editorUbiFiltroProveedor','editorUbiFiltroEstadoComercial','editorUbiFiltroGrupo','editorUbiFiltroEstado','editorUbiFiltroInventarioTemp']
+                .forEach(id => document.getElementById(id)?.addEventListener('change', aplicarFiltrosEditorUbicacionesPC));
+            editorUbiInitColumnVisibility();
         });
 
         function limpiarTodo() {
