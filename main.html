@@ -664,11 +664,22 @@
                         <input type="file" id="editorPcImportFile" accept=".csv,text/csv" class="hidden" onchange="importarEditorLogisticoCSV(this.files && this.files[0]); this.value=''">
                         <button onclick="document.getElementById('editorPcImportFile').click()" class="w-full bg-orange-500 text-white py-3 rounded-xl font-bold uppercase shadow-md">Importar CSV</button>
                     </div>
+                    <div class="xl:col-span-1 flex items-end">
+                        <input type="file" id="editorPcInventarioTempFile" accept=".csv,text/csv" class="hidden" onchange="cargarInventarioTemporalEditorLogistico(this.files && this.files[0]); this.value=''">
+                        <button onclick="document.getElementById('editorPcInventarioTempFile').click()" class="w-full bg-violet-600 text-white py-3 rounded-xl font-bold uppercase shadow-md">Cargar existencia</button>
+                    </div>
+                    <div id="editorPcFiltroBodegaInventarioBox" class="xl:col-span-1 hidden">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Bodega existencia</label>
+                        <select id="editorPcFiltroBodegaInventario" onchange="editorPcAplicarBodegaInventarioTemporal()" class="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold text-slate-700 bg-white">
+                            <option value="">Selecciona bodega</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="flex flex-wrap gap-2 text-[11px] font-bold">
                     <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-600">Una fila por código. Al guardar, se replica en todas las bodegas donde exista.</span>
                     <span id="editorPcResumen" class="px-3 py-1 rounded-full bg-violet-50 text-violet-700">Sin datos cargados</span>
                     <span class="px-3 py-1 rounded-full bg-amber-50 text-amber-700">Amarillo = modificado sin guardar</span>
+                    <span id="editorPcInventarioTempInfo" class="hidden px-3 py-1 rounded-full bg-violet-50 text-violet-700">Existencia temporal no cargada</span>
                 </div>
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
                     <div id="editorPcPagerInfo" class="text-xs font-bold text-slate-500">Página 1 de 1</div>
@@ -710,6 +721,11 @@
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('ancho_tarima')" class="editor-header-btn">Ancho tarima <span id="editorSort_ancho_tarima" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('alto_tarima')" class="editor-header-btn">Alto tarima <span id="editorSort_alto_tarima" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('peso_tarima')" class="editor-header-btn">Peso tarima <span id="editorSort_peso_tarima" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('inventario_bodega_temp')" class="editor-header-btn">Bodega temp <span id="editorSort_inventario_bodega_temp" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('inventario_existencia_temp')" class="editor-header-btn">Exist. temp <span id="editorSort_inventario_existencia_temp" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('inventario_pendiente_temp')" class="editor-header-btn">Pend. temp <span id="editorSort_inventario_pendiente_temp" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('inventario_ordenado_temp')" class="editor-header-btn">Ord. temp <span id="editorSort_inventario_ordenado_temp" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('inventario_total_temp')" class="editor-header-btn">Total temp <span id="editorSort_inventario_total_temp" class="editor-sort-indicator"></span></button></th>
                             </tr>
                         </thead>
                         <tbody id="editorPcBody" class="divide-y divide-slate-100 bg-white"></tbody>
@@ -864,7 +880,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2026.05.19.1";
+        const APP_VERSION = "2026.05.19.2";
         const SB_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/rest/v1/";
         const SB_AUTH_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/auth/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBodWRmbG10YmZrZHpxanFhb3ViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTUyMjIsImV4cCI6MjA5MjYzMTIyMn0.KbQenxZHHNlsLBdamQtI6CvJQisTzLLcVgN11TY2_XQ";
@@ -928,6 +944,8 @@
         let skusNuevos = [];
         let editorPcRows = [];
         let editorPcRowsFiltered = [];
+        let editorPcInventarioTemporalMap = new Map();
+        let editorPcInventarioTemporalInfo = null;
         let editorPcModified = new Map();
         let editorPcSortField = 'codigo';
         let editorPcSortDir = 'asc';
@@ -980,13 +998,15 @@
         const EDITOR_PC_CAMPOS_REFERENCIA = ['nombre','clave_proveedor','grupo','um_venta','factor','proveedor','largo','ancho','alto','bodegas_text'];
         const EDITOR_PC_CSV_EXPORT_FIELDS = [
             'codigo','nombre','clave_proveedor','grupo','um_venta','factor','proveedor','largo','ancho','alto','bodegas_text',
-            ...EDITOR_PC_CAMPOS_EDITABLES
+            ...EDITOR_PC_CAMPOS_EDITABLES,
+            'inventario_bodega_temp','inventario_existencia_temp','inventario_pendiente_temp','inventario_ordenado_temp','inventario_total_temp'
         ];
         const EDITOR_PC_CSV_LABELS = {
             codigo: 'codigo', nombre: 'nombre', clave_proveedor: 'clave_proveedor', grupo: 'grupo', um_venta: 'um_venta', factor: 'factor', proveedor: 'proveedor', largo: 'largo_catalogo', ancho: 'ancho_catalogo', alto: 'alto_catalogo', bodegas_text: 'bodegas',
             codigo_barra: 'codigo_barra', largo_unidad: 'largo_unidad', ancho_unidad: 'ancho_unidad', alto_unidad: 'alto_unidad', peso_unidad: 'peso_unidad',
             unidades_caja_bolsa: 'unidades_caja_bolsa', largo_caja_bolsa: 'largo_caja_bolsa', ancho_caja_bolsa: 'ancho_caja_bolsa', alto_caja_bolsa: 'alto_caja_bolsa', peso_caja_bolsa: 'peso_caja_bolsa',
-            unidades_tarima: 'unidades_tarima', largo_tarima: 'largo_tarima', ancho_tarima: 'ancho_tarima', alto_tarima: 'alto_tarima', peso_tarima: 'peso_tarima'
+            unidades_tarima: 'unidades_tarima', largo_tarima: 'largo_tarima', ancho_tarima: 'ancho_tarima', alto_tarima: 'alto_tarima', peso_tarima: 'peso_tarima',
+            inventario_bodega_temp: 'bodega_temp', inventario_existencia_temp: 'existencia_temp', inventario_pendiente_temp: 'pendiente_temp', inventario_ordenado_temp: 'ordenado_temp', inventario_total_temp: 'total_temp'
         };
         let html5QrCode = null;
         let scannerTargetActual = null;
@@ -2909,7 +2929,8 @@ Fallidos: ${fallidos}`);
                 umVenta: String(document.getElementById('editorPcFiltroUmVenta')?.value || '').trim().toLowerCase(),
                 barcode: String(document.getElementById('editorPcFiltroBarcode')?.value || '').trim(),
                 logistica: String(document.getElementById('editorPcFiltroLogistica')?.value || '').trim(),
-                estado: String(document.getElementById('editorPcFiltroEstado')?.value || '').trim()
+                estado: String(document.getElementById('editorPcFiltroEstado')?.value || '').trim(),
+                invBodega: editorPcSelectedInventoryBodega()
             };
         }
 
@@ -2955,13 +2976,81 @@ Fallidos: ${fallidos}`);
             select.value = disponibles.some(op => op.value === actual) ? actual : '';
         }
 
+
+        function editorPcNormalizeInventoryCode(value) {
+            return String(value ?? '').trim().toLowerCase();
+        }
+
+        function editorPcNormalizeInventoryBodega(value) {
+            return String(value ?? '').trim().toLowerCase();
+        }
+
+        function editorPcParseInventoryNumber(value) {
+            const raw = String(value ?? '').trim();
+            if (!raw) return 0;
+            const normalized = raw.replace(/\s/g, '').replace(/,/g, '');
+            const n = Number(normalized);
+            return Number.isFinite(n) ? n : 0;
+        }
+
+        function editorPcFormatNumber(value) {
+            const n = Number(value);
+            if (!Number.isFinite(n) || n === 0) return '';
+            return n.toLocaleString('es-MX', { maximumFractionDigits: 2 });
+        }
+
+        function editorPcSelectedInventoryBodega() {
+            return editorPcNormalizeInventoryBodega(document.getElementById('editorPcFiltroBodegaInventario')?.value || '');
+        }
+
+        function editorPcLimpiarInventarioTemporalEnFilas() {
+            editorPcRows = editorPcRows.map(row => ({
+                ...row,
+                inventario_bodega_temp: '',
+                inventario_existencia_temp: '',
+                inventario_pendiente_temp: '',
+                inventario_ordenado_temp: '',
+                inventario_total_temp: ''
+            }));
+        }
+
+        function editorPcAplicarBodegaInventarioTemporal() {
+            const bodega = editorPcSelectedInventoryBodega();
+            editorPcRows = editorPcRows.map(row => {
+                const code = editorPcNormalizeInventoryCode(row.codigo);
+                const inv = bodega ? editorPcInventarioTemporalMap.get(code)?.get(bodega) : null;
+                const updated = {
+                    ...row,
+                    inventario_bodega_temp: bodega ? bodega.toUpperCase() : '',
+                    inventario_existencia_temp: inv ? inv.existencia : '',
+                    inventario_pendiente_temp: inv ? inv.pendiente : '',
+                    inventario_ordenado_temp: inv ? inv.ordenado : '',
+                    inventario_total_temp: inv ? inv.total : ''
+                };
+                updated._search = [updated.codigo,updated.nombre,updated.grupo,updated.proveedor,updated.clave_proveedor,updated.codigo_barra,updated.um_venta,updated.estado_comercial,editorPcBuildInventorySearch(updated)]
+                    .map(v => String(v || '').toLowerCase()).join(' | ');
+                return updated;
+            });
+            const info = document.getElementById('editorPcInventarioTempInfo');
+            if (info && editorPcInventarioTemporalInfo) {
+                const conExistencia = editorPcRows.filter(r => Number(r.inventario_existencia_temp || 0) > 0).length;
+                info.classList.remove('hidden');
+                info.textContent = `Existencia temporal: ${editorPcInventarioTemporalInfo.nombre} · Bodega: ${bodega ? bodega.toUpperCase() : 'sin seleccionar'} · SKUs con existencia: ${conExistencia}`;
+            }
+            aplicarFiltrosEditorPC();
+        }
+
+        function editorPcBuildInventorySearch(row) {
+            return [row.inventario_bodega_temp, row.inventario_existencia_temp, row.inventario_pendiente_temp, row.inventario_ordenado_temp, row.inventario_total_temp]
+                .map(v => String(v || '').toLowerCase()).join(' | ');
+        }
         function editorPcEstadoComercialLabel(value) {
             const map = { de_linea: 'De línea', descontinuado: 'Descontinuado', sobre_pedido: 'Sobre pedido', compra_especial: 'Compra especial' };
             return map[String(value || '').trim()] || 'De línea';
         }
 
         function editorPcActualizarOpcionesFiltros(dinamico=false) {
-            const state = dinamico ? editorPcGetFilterState() : { q: '', grupo: '', proveedor: '', umVenta: '', barcode: '', logistica: '', estado: '' };
+            const state = dinamico ? editorPcGetFilterState() : { q: '', grupo: '', proveedor: '', umVenta: '', barcode: '', logistica: '', estado: '', invBodega: '' };
             const grupos = editorPcValoresFiltro('grupo', state, dinamico ? 'grupo' : '').sort((a,b) => a.localeCompare(b, 'es', { numeric: true, sensitivity: 'base' }));
             const proveedores = editorPcValoresFiltro('proveedor', state, dinamico ? 'proveedor' : '').sort((a,b) => a.localeCompare(b, 'es', { numeric: true, sensitivity: 'base' }));
             const ums = editorPcValoresFiltro('um_venta', state, dinamico ? 'umVenta' : '').sort((a,b) => a.localeCompare(b, 'es', { numeric: true, sensitivity: 'base' }));
@@ -3055,7 +3144,7 @@ Fallidos: ${fallidos}`);
         function aplicarFiltrosEditorPC() {
             editorPcActualizarOpcionesFiltros(true);
             const state = editorPcGetFilterState();
-            const signature = [state.q,state.grupo,state.proveedor,state.umVenta,state.barcode,state.logistica,state.estado,editorPcSortField,editorPcSortDir].join('|');
+            const signature = [state.q,state.grupo,state.proveedor,state.umVenta,state.barcode,state.logistica,state.estado,state.invBodega,editorPcSortField,editorPcSortDir].join('|');
             if (signature !== editorPcLastFilterSignature) {
                 editorPcCurrentPage = 1;
                 editorPcLastFilterSignature = signature;
@@ -3080,7 +3169,7 @@ Fallidos: ${fallidos}`);
         function renderEditorPcTable() {
             const body = document.getElementById('editorPcBody');
             if (!editorPcRowsFiltered.length) {
-                body.innerHTML = '<tr><td colspan="26" class="px-4 py-8 text-center text-sm font-bold text-slate-400">Sin registros para mostrar.</td></tr>';
+                body.innerHTML = '<tr><td colspan="31" class="px-4 py-8 text-center text-sm font-bold text-slate-400">Sin registros para mostrar.</td></tr>';
                 editorPcResumen();
                 return;
             }
@@ -3115,6 +3204,11 @@ Fallidos: ${fallidos}`);
                     ${editorPcEditableCell(row, 'ancho_tarima')}
                     ${editorPcEditableCell(row, 'alto_tarima')}
                     ${editorPcEditableCell(row, 'peso_tarima')}
+                    ${editorPcReadonlyCell(row.inventario_bodega_temp || '')}
+                    ${editorPcReadonlyCell(editorPcFormatNumber(row.inventario_existencia_temp))}
+                    ${editorPcReadonlyCell(editorPcFormatNumber(row.inventario_pendiente_temp))}
+                    ${editorPcReadonlyCell(editorPcFormatNumber(row.inventario_ordenado_temp))}
+                    ${editorPcReadonlyCell(editorPcFormatNumber(row.inventario_total_temp))}
                 </tr>
             `).join('');
             editorPcResumen();
@@ -3160,7 +3254,7 @@ Fallidos: ${fallidos}`);
             const headers = EDITOR_PC_CSV_EXPORT_FIELDS.map(f => EDITOR_PC_CSV_LABELS[f] || f);
             const lines = [headers.map(editorPcCsvEscape).join(',')];
             rows.forEach(row => {
-                lines.push(EDITOR_PC_CSV_EXPORT_FIELDS.map(f => editorPcCsvEscape(row?.[f] ?? '')).join(','));
+                lines.push(EDITOR_PC_CSV_EXPORT_FIELDS.map(f => editorPcCsvEscape(/^inventario_/.test(f) ? (row?.[f] ?? '') : (row?.[f] ?? ''))).join(','));
             });
             const fecha = new Date().toISOString().slice(0,10);
             editorPcDownloadText(`editor_logistico_${fecha}.csv`, lines.join('\n'));
@@ -3222,6 +3316,61 @@ Fallidos: ${fallidos}`);
             return aliases[h] || h;
         }
 
+        async function cargarInventarioTemporalEditorLogistico(file) {
+            if (!file) return;
+            if (!editorPcRows.length) {
+                alert('Primero carga el Editor Logístico para poder cruzar la existencia temporal.');
+                return;
+            }
+            try {
+                const text = await file.text();
+                const parsed = editorPcParseCSV(text);
+                if (parsed.length < 2) { alert('El CSV de inventario no tiene datos.'); return; }
+                const headers = parsed[0].map(h => String(h || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
+                const idxArticulo = headers.findIndex(h => ['articulo','codigo','sku'].includes(h));
+                const idxBodega = headers.findIndex(h => ['bodega','almacen'].includes(h));
+                const idxExistencia = headers.findIndex(h => ['existencia','exist'].includes(h));
+                const idxPendiente = headers.findIndex(h => ['pendiente','pend'].includes(h));
+                const idxOrdenado = headers.findIndex(h => ['ordenado','ord'].includes(h));
+                const idxTotal = headers.findIndex(h => ['total'].includes(h));
+                if (idxArticulo < 0 || idxBodega < 0 || idxExistencia < 0) {
+                    alert('El CSV de existencia debe traer al menos columnas Articulo, Bodega y Existencia.');
+                    return;
+                }
+                const map = new Map();
+                const bodegas = new Set();
+                let leidos = 0, omitidos = 0;
+                for (const row of parsed.slice(1)) {
+                    const code = editorPcNormalizeInventoryCode(row[idxArticulo]);
+                    const bodega = editorPcNormalizeInventoryBodega(row[idxBodega]);
+                    if (!code || !bodega) { omitidos++; continue; }
+                    const existencia = editorPcParseInventoryNumber(row[idxExistencia]);
+                    const pendiente = idxPendiente >= 0 ? editorPcParseInventoryNumber(row[idxPendiente]) : 0;
+                    const ordenado = idxOrdenado >= 0 ? editorPcParseInventoryNumber(row[idxOrdenado]) : 0;
+                    const total = idxTotal >= 0 ? editorPcParseInventoryNumber(row[idxTotal]) : existencia + pendiente + ordenado;
+                    if (!map.has(code)) map.set(code, new Map());
+                    map.get(code).set(bodega, { existencia, pendiente, ordenado, total });
+                    bodegas.add(bodega);
+                    leidos++;
+                }
+                editorPcInventarioTemporalMap = map;
+                editorPcInventarioTemporalInfo = { nombre: file.name || 'inventario.csv', registros: leidos, omitidos, bodegas: [...bodegas].sort(), loadedAt: new Date().toISOString() };
+                const sel = document.getElementById('editorPcFiltroBodegaInventario');
+                if (sel) {
+                    const previa = sel.value;
+                    sel.innerHTML = '<option value="">Selecciona bodega</option>' + editorPcInventarioTemporalInfo.bodegas.map(b => `<option value="${escapeHtmlEditor(b)}">${escapeHtmlEditor(b.toUpperCase())}</option>`).join('');
+                    if (previa && editorPcInventarioTemporalInfo.bodegas.includes(previa)) sel.value = previa;
+                    else if (editorPcInventarioTemporalInfo.bodegas.length === 1) sel.value = editorPcInventarioTemporalInfo.bodegas[0];
+                }
+                document.getElementById('editorPcFiltroBodegaInventarioBox')?.classList.remove('hidden');
+                document.getElementById('editorPcInventarioTempInfo')?.classList.remove('hidden');
+                editorPcAplicarBodegaInventarioTemporal();
+                document.getElementById('editorPcStatus').innerText = `Existencia temporal cargada: ${leidos} registro(s), ${editorPcInventarioTemporalInfo.bodegas.length} bodega(s). Omitidos: ${omitidos}. No se guardó nada en Supabase.`;
+            } catch (e) {
+                alert(`Error al cargar existencia temporal: ${e.message || e}`);
+            }
+        }
+
         async function importarEditorLogisticoCSV(file) {
             if (!file) return;
             if (!editorPcRows.length) { alert('Primero carga el editor logístico para comparar contra los códigos existentes.'); return; }
@@ -3270,7 +3419,7 @@ Fallidos: ${fallidos}`);
                     _codigo_barra: String(row.codigo_barra || '').trim(),
                     _tiene_logistica: editorPcTieneLogistica(row),
                     _logistica_completa: editorPcTieneLogisticaCompleta(row),
-                    _search: [row.codigo,row.nombre,row.grupo,row.proveedor,row.clave_proveedor,row.codigo_barra,row.um_venta,row.estado_comercial]
+                    _search: [row.codigo,row.nombre,row.grupo,row.proveedor,row.clave_proveedor,row.codigo_barra,row.um_venta,row.estado_comercial,editorPcBuildInventorySearch(row)]
                         .map(v => String(v || '').toLowerCase()).join(' | ')
                 }));
                 document.getElementById('editorPcStatus').innerText = `CSV importado. Con cambios reales: ${actualizados}. Sin cambios: ${sinCambios}. Omitidos no encontrados: ${omitidos}. Sin código: ${sinCodigo}. Columnas de referencia ignoradas: clave_proveedor, grupo, um_venta, factor y proveedor.`;
@@ -3283,7 +3432,7 @@ Fallidos: ${fallidos}`);
         async function cargarEditorLogisticoPC() {
             document.getElementById('editorPcStatus').innerText = 'Cargando información...';
             const body = document.getElementById('editorPcBody');
-            body.innerHTML = '<tr><td colspan="26" class="px-4 py-8 text-center text-sm font-bold text-slate-400">Cargando...</td></tr>';
+            body.innerHTML = '<tr><td colspan="31" class="px-4 py-8 text-center text-sm font-bold text-slate-400">Cargando...</td></tr>';
             editorPcModified = new Map();
             try {
                 const allRows = await fetchAllSupabaseRows(
@@ -3342,7 +3491,12 @@ Fallidos: ${fallidos}`);
                         largo: cat.largo == null ? '' : String(cat.largo),
                         ancho: cat.ancho == null ? '' : String(cat.ancho),
                         alto: cat.alto == null ? '' : String(cat.alto),
-                        estado_comercial: editorPcEstadoComercialDesdeNombre(cat.nombre || '')
+                        estado_comercial: editorPcEstadoComercialDesdeNombre(cat.nombre || ''),
+                        inventario_bodega_temp: '',
+                        inventario_existencia_temp: '',
+                        inventario_pendiente_temp: '',
+                        inventario_ordenado_temp: '',
+                        inventario_total_temp: ''
                     };
                 }).map(row => ({
                     ...row,
@@ -3352,16 +3506,19 @@ Fallidos: ${fallidos}`);
                     _codigo_barra: String(row.codigo_barra || '').trim(),
                     _tiene_logistica: editorPcTieneLogistica(row),
                     _logistica_completa: editorPcTieneLogisticaCompleta(row),
-                    _search: [row.codigo,row.nombre,row.grupo,row.proveedor,row.clave_proveedor,row.codigo_barra,row.um_venta,row.estado_comercial]
+                    _search: [row.codigo,row.nombre,row.grupo,row.proveedor,row.clave_proveedor,row.codigo_barra,row.um_venta,row.estado_comercial,editorPcBuildInventorySearch(row)]
                         .map(v => String(v || '').toLowerCase()).join(' | ')
                 }));
                 editorPcActualizarOpcionesFiltros();
+                if (editorPcInventarioTemporalInfo) {
+                    editorPcAplicarBodegaInventarioTemporal();
+                }
                 editorPcCurrentPage = 1;
                 editorPcLastFilterSignature = '';
                 document.getElementById('editorPcStatus').innerText = `Vista maestra cargada. Códigos: ${editorPcRows.length}.`;
                 aplicarFiltrosEditorPC();
             } catch (e) {
-                body.innerHTML = `<tr><td colspan="26" class="px-4 py-8 text-center text-sm font-bold text-red-500">${escapeHtmlEditor(e.message || 'Error al cargar.')}</td></tr>`;
+                body.innerHTML = `<tr><td colspan="31" class="px-4 py-8 text-center text-sm font-bold text-red-500">${escapeHtmlEditor(e.message || 'Error al cargar.')}</td></tr>`;
                 document.getElementById('editorPcStatus').innerText = 'Error al cargar.';
             }
         }
@@ -3398,7 +3555,7 @@ Fallidos: ${fallidos}`);
                 _codigo_barra: String(row.codigo_barra || '').trim(),
                 _tiene_logistica: editorPcTieneLogistica(row),
                 _logistica_completa: editorPcTieneLogisticaCompleta(row),
-                _search: [row.codigo,row.nombre,row.grupo,row.proveedor,row.clave_proveedor,row.codigo_barra,row.um_venta,row.estado_comercial]
+                _search: [row.codigo,row.nombre,row.grupo,row.proveedor,row.clave_proveedor,row.codigo_barra,row.um_venta,row.estado_comercial,editorPcBuildInventorySearch(row)]
                     .map(v => String(v || '').toLowerCase()).join(' | ')
             }));
             document.getElementById('editorPcStatus').innerText = `Guardado terminado sin recargar toda la vista. Códigos replicados OK: ${ok}. Error: ${fail}.`;
