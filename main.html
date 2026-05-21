@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         .loading-spinner { border-top-color: #3b82f6; animation: spinner 0.6s linear infinite; }
         @keyframes spinner { to { transform: rotate(360deg); } }
@@ -115,6 +116,16 @@
                 <div>
                     <h3 class="font-black text-slate-800 uppercase text-sm tracking-tight">Dashboard Logístico</h3>
                     <p class="text-xs text-slate-500 mt-1">Avance operativo por unidad, caja y tarima.</p>
+                </div>
+            </button>
+
+            <button onclick="irASelectorAlmacen('etiquetado')" class="card-modulo w-full bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center gap-5 text-left">
+                <div class="bg-amber-600 p-4 rounded-2xl text-white shadow-lg shadow-amber-100">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h10M7 11h10M7 15h6M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg>
+                </div>
+                <div>
+                    <h3 class="font-black text-slate-800 uppercase text-sm tracking-tight">Gestión de Etiquetado QR</h3>
+                    <p class="text-xs text-slate-500 mt-1">Generar CSV por proveedor y bodega para BarTender.</p>
                 </div>
             </button>
 
@@ -580,6 +591,112 @@
         </main>
     </div>
 
+
+    <div id="pantallaEtiquetadoQR" class="hidden min-h-screen bg-slate-50 safe-pb">
+        <header class="bg-white border-b border-slate-200 p-4 sticky top-0 z-30 shadow-sm">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <button onclick="regresarAAlmacenesDesdeEtiquetado()" class="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                        <svg class="h-6 w-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                    </button>
+                    <div>
+                        <p id="etiqTxtAlmacen" class="text-[10px] bg-amber-600 text-white px-2 py-0.5 rounded-full font-bold inline-block uppercase tracking-widest"></p>
+                        <h1 class="text-xl font-black text-slate-800 uppercase tracking-tight">Gestión de Etiquetado QR</h1>
+                        <p class="text-xs text-slate-500 font-semibold">CSV demanda + inventario → CSV BarTender por proveedor.</p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="etiquetadoGenerarCsvSeleccionActual()" class="bg-amber-600 text-white px-4 py-3 rounded-2xl font-black text-xs uppercase shadow-sm active:scale-95">Generar CSV</button>
+                    <button onclick="etiquetadoGenerarPorTodasBodegas()" class="bg-slate-800 text-white px-4 py-3 rounded-2xl font-black text-xs uppercase shadow-sm active:scale-95">Generar por todas las bodegas</button>
+                </div>
+            </div>
+        </header>
+        <main class="max-w-7xl mx-auto p-4 space-y-4">
+            <section class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div class="md:col-span-2">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Archivo demanda + inventario</label>
+                        <input type="file" id="etiqArchivoDemanda" accept=".csv,text/csv" onchange="etiquetadoLeerArchivoDemanda(this.files?.[0])" class="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm bg-white">
+                        <p class="text-[11px] text-slate-400 mt-1">Carga el CSV generado desde “Generar CSV demanda + inventario”.</p>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Bodega</label>
+                        <select id="etiqFiltroBodega" onchange="etiquetadoAplicarFiltros()" class="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold uppercase bg-white"></select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Proveedor</label>
+                        <select id="etiqFiltroProveedor" onchange="etiquetadoAplicarFiltros()" class="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm font-black uppercase bg-white">
+                            <option value="">Todos los proveedores</option>
+                        </select>
+                        <p class="text-[11px] text-slate-400 mt-1">Se genera con las primeras 3 letras del código.</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Estado comercial</label>
+                        <select id="etiqFiltroEstado" onchange="etiquetadoAplicarFiltros()" class="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm bg-white">
+                            <option value="">Todos</option>
+                            <option value="CONT">CONT / línea</option>
+                            <option value="SOBRE PEDIDO">Sobre pedido</option>
+                            <option value="COMPRA ESPECIAL">Compra especial</option>
+                            <option value="DESCONTINUADO">Descontinuado</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Criterio de impresión</label>
+                        <select id="etiqFiltroRotacion" onchange="etiquetadoAplicarFiltros()" class="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm bg-white">
+                            <option value="imprimibles" selected>Imprimibles: existencia o rotación</option>
+                            <option value="todos">Todos los registros</option>
+                            <option value="existencia">Solo con existencia</option>
+                            <option value="rotacion">Solo rotación + / con demanda</option>
+                            <option value="existencia_rotacion">Existencia o rotación</option>
+                            <option value="cero_rotacion">Sin existencia con rotación</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Existencia adicional</label>
+                        <select id="etiqFiltroExistencia" onchange="etiquetadoAplicarFiltros()" class="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm bg-white">
+                            <option value="">Sin filtro adicional</option>
+                            <option value="cero">Existencia 0</option>
+                            <option value="con">Con existencia</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Buscar</label>
+                        <input type="text" id="etiqFiltroTexto" oninput="etiquetadoAplicarFiltros()" placeholder="Código, descripción, grupo..." class="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm" />
+                    </div>
+                </div>
+                <div id="etiqStatus" class="text-xs font-bold text-slate-500 bg-slate-50 rounded-2xl border border-slate-100 p-3">Carga un CSV para comenzar.</div>
+            </section>
+
+            <section class="grid grid-cols-2 md:grid-cols-5 gap-3" id="etiqResumenCards">
+                <div class="bg-white rounded-3xl border border-slate-200 p-4"><p class="text-[10px] font-black text-slate-400 uppercase">Registros</p><p id="etiqResumenTotal" class="text-2xl font-black text-slate-800">0</p></div>
+                <div class="bg-white rounded-3xl border border-slate-200 p-4"><p class="text-[10px] font-black text-slate-400 uppercase">Proveedores</p><p id="etiqResumenProveedores" class="text-2xl font-black text-slate-800">0</p></div>
+                <div class="bg-white rounded-3xl border border-slate-200 p-4"><p class="text-[10px] font-black text-slate-400 uppercase">Con demanda</p><p id="etiqResumenDemanda" class="text-2xl font-black text-slate-800">0</p></div>
+                <div class="bg-white rounded-3xl border border-slate-200 p-4"><p class="text-[10px] font-black text-slate-400 uppercase">Existencia 0</p><p id="etiqResumenCero" class="text-2xl font-black text-slate-800">0</p></div>
+                <div class="bg-white rounded-3xl border border-slate-200 p-4"><p class="text-[10px] font-black text-slate-400 uppercase">Rotación +</p><p id="etiqResumenRotacion" class="text-2xl font-black text-amber-600">0</p></div>
+            </section>
+
+            <section class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-4 border-b border-slate-100 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                    <div>
+                        <h2 class="font-black text-slate-800 uppercase text-sm tracking-tight">Vista previa BarTender</h2>
+                        <p id="etiqResumenArchivo" class="text-xs text-slate-500 font-semibold">Sin archivo generado.</p>
+                    </div>
+                    <button onclick="etiquetadoDescargarMuestra()" class="bg-slate-100 text-slate-700 px-3 py-2 rounded-xl text-xs font-black uppercase">Descargar muestra visible</button>
+                </div>
+                <div class="overflow-auto max-h-[62vh]">
+                    <table class="min-w-full text-xs">
+                        <thead class="bg-slate-100 sticky top-0 z-10">
+                            <tr id="etiqTablaHead"></tr>
+                        </thead>
+                        <tbody id="etiqTablaBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
     <div id="pantallaEditorPC" class="hidden min-h-screen bg-slate-50">
         <header class="bg-white border-b p-4 sticky top-0 z-30 shadow-sm">
             <div class="max-w-[96vw] mx-auto flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -880,7 +997,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2026.05.19.2";
+        const APP_VERSION = "2026.05.20.4-etiquetado-codigo30-fijo";
         const SB_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/rest/v1/";
         const SB_AUTH_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/auth/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBodWRmbG10YmZrZHpxanFhb3ViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTUyMjIsImV4cCI6MjA5MjYzMTIyMn0.KbQenxZHHNlsLBdamQtI6CvJQisTzLLcVgN11TY2_XQ";
@@ -1038,6 +1155,7 @@
             document.getElementById('pantallaDashboardBarcode').classList.add('hidden'); 
             document.getElementById('pantallaDashboardLogistico')?.classList.add('hidden');
             document.getElementById('pantallaEditorUbicacionesPC')?.classList.add('hidden');
+            document.getElementById('pantallaEtiquetadoQR')?.classList.add('hidden');
             document.getElementById('pantallaMenuPrincipal').classList.remove('hidden'); 
             limpiarTodo(); 
         }
@@ -1051,6 +1169,7 @@
             document.getElementById('pantallaAuditoria').classList.add('hidden');
             document.getElementById('pantallaCorrelacion').classList.add('hidden');
             document.getElementById('pantallaEditorUbicacionesPC')?.classList.add('hidden');
+            document.getElementById('pantallaEtiquetadoQR')?.classList.add('hidden');
             document.getElementById('pantallaDashboardBarcode').classList.remove('hidden');
             cargarDashboardBarcode();
         }
@@ -1063,6 +1182,7 @@
             document.getElementById('pantallaCorrelacion').classList.add('hidden');
             document.getElementById('pantallaDashboardBarcode').classList.add('hidden');
             document.getElementById('pantallaEditorUbicacionesPC')?.classList.add('hidden');
+            document.getElementById('pantallaEtiquetadoQR')?.classList.add('hidden');
             document.getElementById('pantallaDashboardLogistico').classList.remove('hidden');
             cargarDashboardLogistico();
         }
@@ -1088,13 +1208,18 @@
                 document.getElementById('pantallaSelectorAlmacen').classList.add('hidden');
                 document.getElementById('pantallaCorrelacion').classList.remove('hidden');
                 setTimeout(() => document.getElementById('inputCorr').focus(), 300);
+            } else if(moduloActivo === 'etiquetado') {
+                document.getElementById('etiqTxtAlmacen').innerText = alm;
+                document.getElementById('pantallaSelectorAlmacen').classList.add('hidden');
+                document.getElementById('pantallaEtiquetadoQR').classList.remove('hidden');
+                etiquetadoInit(alm);
             } else {
                 document.getElementById('audTxtAlmacen').innerText = alm;
                 document.getElementById('pantallaSelectorAlmacen').classList.add('hidden');
                 document.getElementById('pantallaAuditoria').classList.remove('hidden');
                 setTimeout(() => document.getElementById('audInputCodigo').focus(), 300);
             }
-            limpiarTodo();
+            if (moduloActivo !== 'etiquetado') limpiarTodo();
         }
 
         function renderAlmacenes(lista) {
@@ -2858,6 +2983,464 @@ Fallidos: ${fallidos}`);
         }
 
 
+
+        // --- GESTIÓN DE ETIQUETADO QR ---
+        let etiquetadoDemandaRaw = [];
+        let etiquetadoRows = [];
+        let etiquetadoRowsFiltradas = [];
+        let etiquetadoCatalogoMap = new Map();
+        let etiquetadoBarcodeMap = new Map();
+        let etiquetadoAlmacenInicial = '';
+        let etiquetadoUltimaBodegaListado = null;
+        const ETIQ_HEADERS_BASE = ['codigo','status','descripcion','dem','__EXISTENCIA__','MODELOS','GRUPO','CODIGO30','ROTACION','CODIGO_BARRAS'];
+
+        function regresarAAlmacenesDesdeEtiquetado() {
+            document.getElementById('pantallaEtiquetadoQR')?.classList.add('hidden');
+            document.getElementById('pantallaSelectorAlmacen')?.classList.remove('hidden');
+        }
+
+        function etiquetadoInit(alm) {
+            etiquetadoAlmacenInicial = String(alm || '').trim().toLowerCase();
+            const sel = document.getElementById('etiqFiltroBodega');
+            if (sel) {
+                const opciones = ['<option value="__todas__">Todas las bodegas</option>'].concat(ALMACENES_FALLBACK.map(a => `<option value="${a}">${a.toUpperCase()}</option>`));
+                sel.innerHTML = opciones.join('');
+                sel.value = etiquetadoAlmacenInicial || '__todas__';
+            }
+            etiquetadoActualizarListadoProveedores();
+            etiquetadoAplicarFiltros();
+            setTimeout(() => document.getElementById('etiqArchivoDemanda')?.focus(), 80);
+        }
+
+        function etiquetadoActualizarListadoProveedores() {
+            const selProv = document.getElementById('etiqFiltroProveedor');
+            if (!selProv) return;
+            const actual = String(selProv.value || '').trim().toLowerCase();
+            const bodega = String(document.getElementById('etiqFiltroBodega')?.value || etiquetadoAlmacenInicial || '').toLowerCase();
+            const proveedores = new Set();
+            for (const r of etiquetadoDemandaRaw) {
+                const cod = String(r['Articulo'] || '').trim().toLowerCase();
+                const bod = String(r['Bodega'] || '').trim().toLowerCase();
+                if (!cod) continue;
+                if (bodega && bodega !== '__todas__' && bod !== bodega) continue;
+                const prov = etiquetadoModeloDesdeCodigo(cod);
+                if (prov && prov.length === 3) proveedores.add(prov);
+            }
+            const lista = [...proveedores].sort((a,b) => a.localeCompare(b, 'es', { numeric:true, sensitivity:'base' }));
+            selProv.innerHTML = '<option value="">Todos los proveedores</option>' + lista.map(p => `<option value="${p}">${p.toUpperCase()}</option>`).join('');
+            if (actual && lista.includes(actual)) selProv.value = actual;
+            else selProv.value = '';
+        }
+
+        function etiquetadoSetStatus(msg, tipo='info') {
+            const el = document.getElementById('etiqStatus');
+            if (!el) return;
+            const cls = tipo === 'error' ? 'text-red-700 bg-red-50 border-red-100' : tipo === 'ok' ? 'text-emerald-700 bg-emerald-50 border-emerald-100' : 'text-slate-500 bg-slate-50 border-slate-100';
+            el.className = `text-xs font-bold rounded-2xl border p-3 ${cls}`;
+            el.innerText = msg;
+        }
+
+        function etiquetadoParseCsv(text) {
+            const rows = [];
+            let row = [], cur = '', inQuotes = false;
+            for (let i = 0; i < text.length; i++) {
+                const c = text[i], n = text[i + 1];
+                if (c === '"') {
+                    if (inQuotes && n === '"') { cur += '"'; i++; }
+                    else inQuotes = !inQuotes;
+                } else if (c === ',' && !inQuotes) { row.push(cur); cur = ''; }
+                else if ((c === '\n' || c === '\r') && !inQuotes) {
+                    if (c === '\r' && n === '\n') i++;
+                    row.push(cur); cur = '';
+                    if (row.some(v => String(v).trim() !== '')) rows.push(row);
+                    row = [];
+                } else cur += c;
+            }
+            row.push(cur);
+            if (row.some(v => String(v).trim() !== '')) rows.push(row);
+            if (!rows.length) return [];
+            const headers = rows[0].map(h => String(h || '').replace(/^\ufeff/, '').trim());
+            return rows.slice(1).map(r => {
+                const obj = {};
+                headers.forEach((h, i) => obj[h] = r[i] ?? '');
+                return obj;
+            });
+        }
+
+        function etiquetadoCsvEscape(v) {
+            const s = String(v ?? '');
+            return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+        }
+
+        function etiquetadoToNumber(v) {
+            const n = Number(String(v ?? '').replace(/,/g, '').trim());
+            return Number.isFinite(n) ? n : 0;
+        }
+
+        function etiquetadoEstadoDesdeNombre(nombre) {
+            const t = String(nombre || '').trim();
+            if (!t) return 'CONT';
+            if (/^\*+/.test(t)) return 'SOBRE PEDIDO';
+            if (/\+$/.test(t)) return 'COMPRA ESPECIAL';
+            if (/\*+$/.test(t)) return 'DESCONTINUADO';
+            return 'CONT';
+        }
+
+        function etiquetadoModeloDesdeCodigo(codigo) {
+            return String(codigo || '').trim().toLowerCase().substring(0, 3);
+        }
+
+        async function etiquetadoLeerArchivoDemanda(file) {
+            if (!file) return;
+            try {
+                etiquetadoSetStatus('Leyendo CSV...');
+                const text = await file.text();
+                const rows = etiquetadoParseCsv(text);
+                const required = ['Articulo','Cia','Bodega','Tipo SKU','Demanda calculada','Inventario'];
+                const first = rows[0] || {};
+                const faltantes = required.filter(h => !(h in first));
+                if (faltantes.length) throw new Error('El CSV no trae columnas requeridas: ' + faltantes.join(', '));
+                etiquetadoDemandaRaw = rows;
+                etiquetadoActualizarListadoProveedores();
+                etiquetadoSetStatus(`CSV cargado: ${rows.length.toLocaleString('es-MX')} registros. Selecciona proveedor de la lista o deja todos para generar la vista previa.`, 'ok');
+                etiquetadoAplicarFiltros();
+            } catch(e) {
+                etiquetadoSetStatus(`No se pudo leer el CSV: ${e.message || e}`, 'error');
+            }
+        }
+
+        function etiquetadoConsolidar(rows) {
+            const map = new Map();
+            for (const r of rows) {
+                const codigo = String(r['Articulo'] || '').trim().toLowerCase();
+                const bodega = String(r['Bodega'] || '').trim().toLowerCase();
+                const cia = String(r['Cia'] || '').trim();
+                if (!codigo || !bodega) continue;
+                const key = `${bodega}|${codigo}`;
+                const dem = etiquetadoToNumber(r['Demanda calculada']);
+                const inv = etiquetadoToNumber(r['Inventario']);
+                if (!map.has(key)) {
+                    map.set(key, {
+                        codigo,
+                        bodega,
+                        cia,
+                        proveedor3: etiquetadoModeloDesdeCodigo(codigo),
+                        dem,
+                        existencia: inv,
+                        grupo: String(r['Grupo'] || '').trim().toLowerCase(),
+                        tipo_sku: String(r['Tipo SKU'] || '').trim(),
+                        codigo30: `30${codigo}`
+                    });
+                } else {
+                    const prev = map.get(key);
+                    prev.dem += dem;
+                    prev.existencia = Math.max(prev.existencia, inv);
+                    if (!prev.grupo && r['Grupo']) prev.grupo = String(r['Grupo']).trim().toLowerCase();
+                }
+            }
+            return [...map.values()];
+        }
+
+        function etiquetadoCatalogoKeys(rowOrCodigo) {
+            const row = typeof rowOrCodigo === 'object' && rowOrCodigo ? rowOrCodigo : { codigo: rowOrCodigo };
+            const codigo = String(row.codigo || '').trim().toLowerCase();
+            const cia = String(row.cia || '').trim();
+            const keys = new Set();
+            if (codigo) {
+                keys.add(codigo);
+                // Para etiquetado QR, CODIGO30 siempre usa prefijo fijo 30.
+                // El catálogo puede venir con el artículo sin prefijo o con prefijo 30.
+                keys.add(`30${codigo}`);
+            }
+            if (row.codigo30) keys.add(String(row.codigo30).trim().toLowerCase());
+            return [...keys].filter(Boolean);
+        }
+
+        function etiquetadoCatalogoKeySinCia(articulo) {
+            return String(articulo || '').trim().toLowerCase().replace(/^\d+/, '');
+        }
+
+        async function etiquetadoCargarCatalogoPara(baseRows) {
+            const keys = [];
+            const seen = new Set();
+            for (const row of baseRows) {
+                for (const key of etiquetadoCatalogoKeys(row)) {
+                    if (!key || seen.has(key) || etiquetadoCatalogoMap.has(key)) continue;
+                    seen.add(key);
+                    keys.push(key);
+                }
+            }
+            if (!keys.length) return;
+            etiquetadoSetStatus(`Consultando catálogo para ${keys.length.toLocaleString('es-MX')} referencia(s)...`);
+            const chunkSize = 80;
+            for (let i = 0; i < keys.length; i += chunkSize) {
+                const chunk = keys.slice(i, i + chunkSize);
+                const filtro = chunk.map(x => `"${String(x).replace(/"/g, '\"')}"`).join(',');
+                const url = `${SB_URL}catalogo_articulos?articulo=in.(${filtro})&select=articulo,status,nombre,grupo,proveedor,clave_proveedor&limit=${chunk.length}`;
+                const data = await fetchJsonOrThrow(url, { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${getAccessToken()}` } });
+                for (const cat of (Array.isArray(data) ? data : [])) {
+                    const articulo = String(cat.articulo || '').trim().toLowerCase();
+                    if (!articulo) continue;
+                    etiquetadoCatalogoMap.set(articulo, cat);
+                    // También guardamos una llave sin prefijo de compañía para encontrarlo desde el CSV.
+                    const sinCia = etiquetadoCatalogoKeySinCia(articulo);
+                    if (sinCia && !etiquetadoCatalogoMap.has(sinCia)) etiquetadoCatalogoMap.set(sinCia, cat);
+                }
+            }
+        }
+
+        function etiquetadoBuscarCatalogo(row) {
+            for (const key of etiquetadoCatalogoKeys(row)) {
+                const cat = etiquetadoCatalogoMap.get(key);
+                if (cat) return cat;
+            }
+            return etiquetadoCatalogoMap.get(row.codigo) || {};
+        }
+
+        function etiquetadoBarcodeKeys(row) {
+            const codigo = String(row.codigo || '').trim().toLowerCase();
+            const bodega = String(row.bodega || '').trim().toLowerCase();
+            const keys = [];
+            if (bodega && codigo) {
+                keys.push(`${bodega}|${codigo}`);
+                keys.push(`${bodega}|30${codigo}`);
+            }
+            if (codigo) {
+                keys.push(`*|${codigo}`);
+                keys.push(`*|30${codigo}`);
+            }
+            return keys;
+        }
+
+        async function etiquetadoCargarCodigosBarraPara(baseRows) {
+            const codes = [];
+            const seen = new Set();
+            for (const row of baseRows) {
+                const codigo = String(row.codigo || '').trim().toLowerCase();
+                if (!codigo) continue;
+                for (const key of [codigo, `30${codigo}`]) {
+                    if (!seen.has(key)) { seen.add(key); codes.push(key); }
+                }
+            }
+            const faltantes = codes.filter(c => !etiquetadoBarcodeMap.has(`*|${c}`));
+            if (!faltantes.length) return;
+            etiquetadoSetStatus(`Consultando códigos de barras para ${faltantes.length.toLocaleString('es-MX')} referencia(s)...`);
+            const chunkSize = 80;
+            for (let i = 0; i < faltantes.length; i += chunkSize) {
+                const chunk = faltantes.slice(i, i + chunkSize);
+                const filtro = chunk.map(x => `"${String(x).replace(/"/g, '\"')}"`).join(',');
+                const url = `${SB_URL}almacen_datos?codigo=in.(${filtro})&select=codigo,almacen,codigo_barra&limit=${chunk.length * 20}`;
+                const data = await fetchJsonOrThrow(url, { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${getAccessToken()}` } });
+                for (const ad of (Array.isArray(data) ? data : [])) {
+                    const codigo = String(ad.codigo || '').trim().toLowerCase();
+                    const almacen = String(ad.almacen || '').trim().toLowerCase();
+                    const barra = String(ad.codigo_barra || '').trim();
+                    if (!codigo || !barra) continue;
+                    if (almacen) etiquetadoBarcodeMap.set(`${almacen}|${codigo}`, barra);
+                    if (!etiquetadoBarcodeMap.has(`*|${codigo}`)) etiquetadoBarcodeMap.set(`*|${codigo}`, barra);
+                    const sinCia = etiquetadoCatalogoKeySinCia(codigo);
+                    if (sinCia) {
+                        if (almacen) etiquetadoBarcodeMap.set(`${almacen}|${sinCia}`, barra);
+                        if (!etiquetadoBarcodeMap.has(`*|${sinCia}`)) etiquetadoBarcodeMap.set(`*|${sinCia}`, barra);
+                    }
+                }
+            }
+        }
+
+        function etiquetadoBuscarCodigoBarra(row) {
+            for (const key of etiquetadoBarcodeKeys(row)) {
+                const barra = etiquetadoBarcodeMap.get(key);
+                if (barra) return barra;
+            }
+            return '';
+        }
+
+        function etiquetadoConstruirFilas(baseRows) {
+            return baseRows.map(row => {
+                const cat = etiquetadoBuscarCatalogo(row);
+                const descripcion = String(cat.nombre || '').trim();
+                const status = etiquetadoEstadoDesdeNombre(descripcion);
+                // En este módulo, ROTACION representa demanda para impresión BarTender.
+                // Debe marcarse aunque el producto tenga existencia, porque la etiqueta
+                // sigue siendo necesaria si hay movimiento/demanda.
+                const esExcluidoPorNombre = descripcion && (
+                    descripcion.startsWith('*') ||
+                    descripcion.endsWith('*') ||
+                    descripcion.endsWith('+')
+                );
+                const rotacion = row.dem > 0 && !esExcluidoPorNombre ? '+' : '';
+                const codigoBarra = etiquetadoBuscarCodigoBarra(row);
+                return {
+                    ...row,
+                    status,
+                    descripcion,
+                    modelos: String(cat.clave_proveedor || row.proveedor3 || '').trim(),
+                    modeloFinal: String(cat.clave_proveedor || row.proveedor3 || '').trim(),
+                    grupoFinal: String(cat.grupo || row.grupo || '').trim().toLowerCase(),
+                    rotacion,
+                    codigoBarra,
+                    search: [row.codigo, descripcion, row.bodega, row.proveedor3, row.grupo, cat.grupo, row.codigo30, status, codigoBarra].join(' ').toLowerCase()
+                };
+            }).sort((a,b) => a.codigo.localeCompare(b.codigo, 'es', { numeric:true, sensitivity:'base' }));
+        }
+
+        async function etiquetadoAplicarFiltros() {
+            const bodega = String(document.getElementById('etiqFiltroBodega')?.value || etiquetadoAlmacenInicial || '').toLowerCase();
+            if (etiquetadoUltimaBodegaListado !== bodega) {
+                etiquetadoUltimaBodegaListado = bodega;
+                etiquetadoActualizarListadoProveedores();
+            }
+            const prov = String(document.getElementById('etiqFiltroProveedor')?.value || '').trim().toLowerCase();
+            const estado = String(document.getElementById('etiqFiltroEstado')?.value || '').trim();
+            const rot = String(document.getElementById('etiqFiltroRotacion')?.value || '').trim();
+            const exi = String(document.getElementById('etiqFiltroExistencia')?.value || '').trim();
+            const q = String(document.getElementById('etiqFiltroTexto')?.value || '').trim().toLowerCase();
+            if (!etiquetadoDemandaRaw.length) {
+                etiquetadoRows = [];
+                etiquetadoRowsFiltradas = [];
+                etiquetadoRender();
+                return;
+            }
+            let base = etiquetadoDemandaRaw.filter(r => {
+                const cod = String(r['Articulo'] || '').trim().toLowerCase();
+                const bod = String(r['Bodega'] || '').trim().toLowerCase();
+                if (!cod) return false;
+                if (bodega && bodega !== '__todas__' && bod !== bodega) return false;
+                if (prov && etiquetadoModeloDesdeCodigo(cod) !== prov) return false;
+                return true;
+            });
+            const consolidadas = etiquetadoConsolidar(base);
+            try { await etiquetadoCargarCatalogoPara(consolidadas); }
+            catch(e) { etiquetadoSetStatus(`No se pudo completar catálogo: ${e.message || e}. Se mostrará lo disponible.`, 'error'); }
+            try { await etiquetadoCargarCodigosBarraPara(consolidadas); }
+            catch(e) { etiquetadoSetStatus(`No se pudieron completar códigos de barras: ${e.message || e}. Se mostrará lo disponible.`, 'error'); }
+            etiquetadoRows = etiquetadoConstruirFilas(consolidadas);
+            etiquetadoRowsFiltradas = etiquetadoRows.filter(row => {
+                if (estado && row.status !== estado) return false;
+                const tieneExistencia = Number(row.existencia || 0) > 0;
+                const tieneRotacion = row.rotacion === '+';
+                if (rot === 'imprimibles' && !(tieneExistencia || tieneRotacion)) return false;
+                if (rot === 'existencia' && !tieneExistencia) return false;
+                if (rot === 'rotacion' && !tieneRotacion) return false;
+                if (rot === 'existencia_rotacion' && !(tieneExistencia || tieneRotacion)) return false;
+                if (rot === 'cero_rotacion' && (tieneExistencia || !tieneRotacion)) return false;
+                if (exi === 'cero' && row.existencia !== 0) return false;
+                if (exi === 'con' && row.existencia <= 0) return false;
+                if (q && !row.search.includes(q)) return false;
+                return true;
+            });
+            etiquetadoRender();
+            if (etiquetadoRows.length) etiquetadoSetStatus(`Vista lista: ${etiquetadoRowsFiltradas.length.toLocaleString('es-MX')} de ${etiquetadoRows.length.toLocaleString('es-MX')} registros consolidados.`, 'ok');
+        }
+
+        function etiquetadoHeadersParaBodega(bodega) {
+            const existencia = `${String(bodega || 'TOTAL').toUpperCase()} TOTAL`;
+            return ETIQ_HEADERS_BASE.map(h => h === '__EXISTENCIA__' ? existencia : h);
+        }
+
+        function etiquetadoFilaCsv(row, bodega) {
+            return [
+                row.codigo,
+                row.status,
+                row.descripcion,
+                Number(row.dem || 0).toFixed(2).replace(/\.00$/, ''),
+                row.existencia,
+                row.modelos,
+                row.grupoFinal,
+                row.codigo30,
+                row.rotacion,
+                row.codigoBarra || ''
+            ];
+        }
+
+        function etiquetadoBuildCsv(rows, bodega) {
+            const lines = [etiquetadoHeadersParaBodega(bodega).map(etiquetadoCsvEscape).join(',')];
+            rows.forEach(row => lines.push(etiquetadoFilaCsv(row, bodega).map(etiquetadoCsvEscape).join(',')));
+            return lines.join('\r\n');
+        }
+
+        function etiquetadoDownloadBlob(filename, content, mime='text/csv;charset=utf-8;') {
+            const blob = content instanceof Blob ? content : new Blob([content], { type: mime });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 250);
+        }
+
+        function etiquetadoPeriodo() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        }
+
+        function etiquetadoRender() {
+            const rows = etiquetadoRowsFiltradas || [];
+            const bodega = String(document.getElementById('etiqFiltroBodega')?.value || etiquetadoAlmacenInicial || '').toLowerCase();
+            const head = document.getElementById('etiqTablaHead');
+            const body = document.getElementById('etiqTablaBody');
+            const bodegaHeader = bodega === '__todas__' ? 'TOTAL' : bodega;
+            const headers = bodega === '__todas__' ? ['bodega', ...etiquetadoHeadersParaBodega('TOTAL')] : etiquetadoHeadersParaBodega(bodegaHeader);
+            if (head) head.innerHTML = headers.map(h => `<th class="px-3 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">${escapeHtmlEditor(h)}</th>`).join('');
+            if (body) {
+                const visibles = rows.slice(0, 300);
+                body.innerHTML = visibles.length ? visibles.map(row => {
+                    const vals = bodega === '__todas__' ? [row.bodega.toUpperCase(), ...etiquetadoFilaCsv(row, row.bodega)] : etiquetadoFilaCsv(row, bodegaHeader);
+                    return `<tr class="border-b border-slate-100 hover:bg-amber-50/50">${vals.map(v => `<td class="px-3 py-2 whitespace-nowrap text-slate-700 font-semibold">${escapeHtmlEditor(v)}</td>`).join('')}</tr>`;
+                }).join('') : `<tr><td colspan="11" class="px-4 py-10 text-center text-slate-400 font-bold">Sin registros.</td></tr>`;
+            }
+            const provs = new Set(rows.map(x => x.proveedor3).filter(Boolean));
+            document.getElementById('etiqResumenTotal').innerText = rows.length.toLocaleString('es-MX');
+            document.getElementById('etiqResumenProveedores').innerText = provs.size.toLocaleString('es-MX');
+            document.getElementById('etiqResumenDemanda').innerText = rows.filter(x => x.dem > 0).length.toLocaleString('es-MX');
+            document.getElementById('etiqResumenCero').innerText = rows.filter(x => x.existencia === 0).length.toLocaleString('es-MX');
+            document.getElementById('etiqResumenRotacion').innerText = rows.filter(x => x.rotacion === '+').length.toLocaleString('es-MX');
+            const resumen = document.getElementById('etiqResumenArchivo');
+            if (resumen) resumen.innerText = rows.length ? `Mostrando máximo 300 filas. Exportación completa: ${rows.length.toLocaleString('es-MX')} registros.` : 'Sin archivo generado.';
+        }
+
+        function etiquetadoProveedorActual() {
+            return String(document.getElementById('etiqFiltroProveedor')?.value || 'todos').trim().toLowerCase() || 'todos';
+        }
+
+        function etiquetadoGenerarCsvSeleccionActual() {
+            const bodega = String(document.getElementById('etiqFiltroBodega')?.value || etiquetadoAlmacenInicial || '').toLowerCase();
+            if (!etiquetadoRowsFiltradas.length) return alert('No hay registros para exportar.');
+            if (bodega === '__todas__') return etiquetadoGenerarPorTodasBodegas();
+            const prov = etiquetadoProveedorActual();
+            const csv = etiquetadoBuildCsv(etiquetadoRowsFiltradas, bodega);
+            etiquetadoDownloadBlob(`etiquetado_qr_${bodega}_${prov}_${etiquetadoPeriodo()}.csv`, csv);
+        }
+
+        async function etiquetadoGenerarPorTodasBodegas() {
+            const prov = etiquetadoProveedorActual();
+            if (!prov || prov === 'todos' || prov.length < 3) return alert('Selecciona un proveedor de la lista, por ejemplo EMI, para generar por todas las bodegas.');
+            const sel = document.getElementById('etiqFiltroBodega');
+            const prev = sel?.value || etiquetadoAlmacenInicial;
+            if (sel) sel.value = '__todas__';
+            await etiquetadoAplicarFiltros();
+            const rows = (etiquetadoRowsFiltradas || []).filter(x => x.proveedor3 === prov);
+            if (!rows.length) { if (sel) sel.value = prev; await etiquetadoAplicarFiltros(); return alert(`No hay registros para proveedor ${prov.toUpperCase()}.`); }
+            const grupos = new Map();
+            rows.forEach(r => { if (!grupos.has(r.bodega)) grupos.set(r.bodega, []); grupos.get(r.bodega).push(r); });
+            if (window.JSZip) {
+                const zip = new JSZip();
+                for (const [bodega, list] of grupos.entries()) zip.file(`etiquetado_qr_${bodega}_${prov}_${etiquetadoPeriodo()}.csv`, etiquetadoBuildCsv(list, bodega));
+                const blob = await zip.generateAsync({type:'blob'});
+                etiquetadoDownloadBlob(`etiquetado_qr_${prov}_todas_bodegas_${etiquetadoPeriodo()}.zip`, blob, 'application/zip');
+            } else {
+                for (const [bodega, list] of grupos.entries()) etiquetadoDownloadBlob(`etiquetado_qr_${bodega}_${prov}_${etiquetadoPeriodo()}.csv`, etiquetadoBuildCsv(list, bodega));
+            }
+        }
+
+        function etiquetadoDescargarMuestra() {
+            if (!etiquetadoRowsFiltradas.length) return alert('No hay registros visibles.');
+            const bodega = String(document.getElementById('etiqFiltroBodega')?.value || etiquetadoAlmacenInicial || '').toLowerCase();
+            const rows = etiquetadoRowsFiltradas.slice(0, 300);
+            const csv = etiquetadoBuildCsv(rows, bodega === '__todas__' ? 'TOTAL' : bodega);
+            etiquetadoDownloadBlob(`muestra_etiquetado_qr_${etiquetadoProveedorActual()}_${etiquetadoPeriodo()}.csv`, csv);
+        }
+
         function escapeHtmlEditor(v) {
             return String(v ?? '')
                 .replace(/&/g, '&amp;')
@@ -2876,6 +3459,7 @@ Fallidos: ${fallidos}`);
         async function irAEditorLogisticoPC() {
             limpiarTodo();
             document.getElementById('pantallaMenuPrincipal').classList.add('hidden');
+            document.getElementById('pantallaEtiquetadoQR')?.classList.add('hidden');
             document.getElementById('pantallaEditorPC').classList.remove('hidden');
             document.getElementById('editorPcStatus').innerText = 'Carga la vista maestra por código para revisar y editar.';
             await cargarAlmacenesEditorPC();
