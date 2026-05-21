@@ -99,6 +99,16 @@
                 </div>
             </button>
 
+            <button onclick="irARevisionLogistica()" class="card-modulo w-full bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center gap-5 text-left">
+                <div class="bg-amber-600 p-4 rounded-2xl text-white shadow-lg shadow-amber-100">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z"/></svg>
+                </div>
+                <div>
+                    <h3 class="font-black text-slate-800 uppercase text-sm tracking-tight">Revisión Logística</h3>
+                    <p class="text-xs text-slate-500 mt-1">SKUs enviados desde Editor Logístico para revisar barcode y datos logísticos.</p>
+                </div>
+            </button>
+
             <button onclick="irADashboardBarcode()" class="card-modulo w-full bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex items-center gap-5 text-left">
                 <div class="bg-emerald-600 p-4 rounded-2xl text-white shadow-lg shadow-emerald-100">
                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6m4 6V7m4 10v-4M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
@@ -314,7 +324,6 @@
                 </div>
                 <div class="flex gap-2">
                     <button onclick="abrirCatalogo('correlacion')" class="flex-1 bg-slate-100 py-3 rounded-xl font-bold text-xs uppercase text-slate-600 border border-slate-200">Catálogo</button>
-                    <button type="button" onclick="abrirTecladoTexto('inputCorr', 'Correlación LIMSA / EAN')" class="bg-slate-50 text-slate-700 px-4 py-3 rounded-xl border border-slate-200 active:bg-slate-100" title="Abrir teclado">⌨️</button>
                     <button onclick="procesarCorrelacion()" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold text-xs uppercase shadow-md">Validar</button>
                 </div>
             </div>
@@ -349,6 +358,7 @@
                     <p id="labelVinculo" class="text-[10px] font-bold text-indigo-800 uppercase text-center"></p>
                     <div id="rowVinculo" class="flex gap-2">
                         <input type="text" id="inputVinculo" class="flex-1 border border-indigo-200 rounded-xl px-4 py-4 text-center font-black text-indigo-700 uppercase text-lg" placeholder="Vincular código de barras">
+                        <button type="button" onclick="abrirTecladoTexto('inputVinculo', 'Código de barras a vincular')" title="Abrir teclado" class="bg-slate-50 text-slate-700 p-4 rounded-xl border border-indigo-100 active:scale-95">⌨️</button>
                         <button onclick="abrirScanner('vinculo')" class="bg-indigo-600 text-white p-4 rounded-xl shadow-sm">📷</button>
                     </div>
 
@@ -608,6 +618,8 @@
                 <div class="flex flex-wrap gap-2">
                     <button onclick="etiquetadoGenerarCsvSeleccionActual()" class="bg-amber-600 text-white px-4 py-3 rounded-2xl font-black text-xs uppercase shadow-sm active:scale-95">Generar CSV</button>
                     <button onclick="etiquetadoGenerarPorTodasBodegas()" class="bg-slate-800 text-white px-4 py-3 rounded-2xl font-black text-xs uppercase shadow-sm active:scale-95">Generar por todas las bodegas</button>
+                    <button onclick="etiquetadoMarcarCompletoActual()" class="bg-emerald-600 text-white px-4 py-3 rounded-2xl font-black text-xs uppercase shadow-sm active:scale-95">Dar visto bueno</button>
+                    <button onclick="etiquetadoQuitarCompletoActual()" class="bg-rose-50 text-rose-700 border border-rose-200 px-4 py-3 rounded-2xl font-black text-xs uppercase shadow-sm active:scale-95">Quitar visto bueno</button>
                 </div>
             </div>
         </header>
@@ -631,7 +643,7 @@
                         <p class="text-[11px] text-slate-400 mt-1">Se genera con las primeras 3 letras del código.</p>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
                     <div>
                         <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Estado comercial</label>
                         <select id="etiqFiltroEstado" onchange="etiquetadoAplicarFiltros()" class="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm bg-white">
@@ -641,6 +653,14 @@
                             <option value="COMPRA ESPECIAL">Compra especial</option>
                             <option value="DESCONTINUADO">Descontinuado</option>
                         </select>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Grupo</label>
+                            <button type="button" onclick="etiquetadoLimpiarGrupos()" class="text-[10px] font-black text-amber-700 uppercase">Limpiar</button>
+                        </div>
+                        <select id="etiqFiltroGrupo" multiple size="4" onchange="etiquetadoAplicarFiltros()" title="Puedes seleccionar uno o varios grupos" class="w-full border border-slate-200 rounded-2xl px-3 py-2 text-sm font-bold uppercase bg-white min-h-[110px]"></select>
+                        <p class="text-[10px] text-slate-400 font-bold mt-1">Lista dinámica según los demás filtros.</p>
                     </div>
                     <div>
                         <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Criterio de impresión</label>
@@ -675,6 +695,46 @@
                 <div class="bg-white rounded-3xl border border-slate-200 p-4"><p class="text-[10px] font-black text-slate-400 uppercase">Con demanda</p><p id="etiqResumenDemanda" class="text-2xl font-black text-slate-800">0</p></div>
                 <div class="bg-white rounded-3xl border border-slate-200 p-4"><p class="text-[10px] font-black text-slate-400 uppercase">Existencia 0</p><p id="etiqResumenCero" class="text-2xl font-black text-slate-800">0</p></div>
                 <div class="bg-white rounded-3xl border border-slate-200 p-4"><p class="text-[10px] font-black text-slate-400 uppercase">Rotación +</p><p id="etiqResumenRotacion" class="text-2xl font-black text-amber-600">0</p></div>
+            </section>
+
+            <section class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 space-y-4">
+                <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
+                    <div>
+                        <h2 class="font-black text-slate-800 uppercase text-sm tracking-tight">Avance de Etiquetado QR</h2>
+                        <p class="text-xs text-slate-500 font-semibold">Control por combinación real: bodega + proveedor. El tipo se deriva de la bodega: A = Accesorios, C = Cerámica.</p>
+                    </div>
+                    <div id="etiqAvanceActual" class="bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 text-xs font-bold text-slate-600 min-w-[260px]">Selecciona una bodega y proveedor para ver su avance.</div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="bg-slate-50 rounded-2xl border border-slate-100 p-3"><p class="text-[10px] font-black text-slate-400 uppercase">Combinaciones</p><p id="etiqAvanceTotal" class="text-xl font-black text-slate-800">0</p></div>
+                    <div class="bg-emerald-50 rounded-2xl border border-emerald-100 p-3"><p class="text-[10px] font-black text-emerald-600 uppercase">Listas</p><p id="etiqAvanceListas" class="text-xl font-black text-emerald-700">0</p></div>
+                    <div class="bg-amber-50 rounded-2xl border border-amber-100 p-3"><p class="text-[10px] font-black text-amber-600 uppercase">Pendientes</p><p id="etiqAvancePendientes" class="text-xl font-black text-amber-700">0</p></div>
+                    <div class="bg-cyan-50 rounded-2xl border border-cyan-100 p-3"><p class="text-[10px] font-black text-cyan-600 uppercase">Avance</p><p id="etiqAvancePct" class="text-xl font-black text-cyan-700">0%</p></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3 bg-slate-50 border border-slate-100 rounded-3xl p-3">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Filtrar bodega</label>
+                        <select id="etiqAvanceFiltroBodega" onchange="etiquetadoRenderAvance()" class="w-full border border-slate-200 rounded-2xl px-3 py-2 text-xs font-bold uppercase bg-white"><option value="">Todas</option></select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Filtrar tipo</label>
+                        <select id="etiqAvanceFiltroTipo" onchange="etiquetadoRenderAvance()" class="w-full border border-slate-200 rounded-2xl px-3 py-2 text-xs font-bold bg-white"><option value="">Todos</option></select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Filtrar proveedor</label>
+                        <select id="etiqAvanceFiltroProveedor" onchange="etiquetadoRenderAvance()" class="w-full border border-slate-200 rounded-2xl px-3 py-2 text-xs font-bold uppercase bg-white"><option value="">Todos</option></select>
+                    </div>
+                    <div class="flex items-end">
+                        <button type="button" onclick="etiquetadoLimpiarFiltrosAvance()" class="w-full bg-white border border-slate-200 text-slate-600 px-3 py-2 rounded-2xl text-[10px] font-black uppercase hover:bg-slate-100">Limpiar filtros</button>
+                    </div>
+                </div>
+                <div id="etiqAvanceResumen" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+                <div class="overflow-auto max-h-72 border border-slate-100 rounded-2xl">
+                    <table class="min-w-full text-xs">
+                        <thead class="bg-slate-100 sticky top-0"><tr id="etiqAvanceTablaHead"></tr></thead>
+                        <tbody id="etiqAvanceDetalle"><tr><td colspan="7" class="px-4 py-8 text-center text-slate-400 font-bold">Carga un CSV para calcular pendientes.</td></tr></tbody>
+                    </table>
+                </div>
             </section>
 
             <section class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
@@ -777,6 +837,9 @@
                     <div class="xl:col-span-1 flex items-end">
                         <button onclick="exportarEditorLogisticoCSV()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold uppercase shadow-md">Exportar CSV</button>
                     </div>
+                    <div class="xl:col-span-2 flex items-end">
+                        <button onclick="enviarSeleccionEditorARevision()" id="btnEnviarRevisionEditor" class="w-full bg-amber-600 text-white py-3 rounded-xl font-bold uppercase shadow-md disabled:bg-slate-300" disabled>Enviar a revisión</button>
+                    </div>
                     <div class="xl:col-span-1 flex items-end">
                         <input type="file" id="editorPcImportFile" accept=".csv,text/csv" class="hidden" onchange="importarEditorLogisticoCSV(this.files && this.files[0]); this.value=''">
                         <button onclick="document.getElementById('editorPcImportFile').click()" class="w-full bg-orange-500 text-white py-3 rounded-xl font-bold uppercase shadow-md">Importar CSV</button>
@@ -812,6 +875,7 @@
                     <table class="min-w-full text-xs editor-grid">
                         <thead class="bg-slate-100 text-slate-600 uppercase tracking-wider text-[10px]">
                             <tr>
+                                <th class="px-3 py-3 text-center border-b border-slate-200 bg-slate-100"><input type="checkbox" id="editorPcChkAllRevision" onchange="editorPcToggleAllRevision(this.checked)" title="Seleccionar visibles"></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200 bg-slate-100 editor-sticky-col-1"><button onclick="editorPcSortBy('codigo')" class="editor-header-btn">Código <span id="editorSort_codigo" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200 bg-slate-100 editor-sticky-col-2"><button onclick="editorPcSortBy('nombre')" class="editor-header-btn">Nombre <span id="editorSort_nombre" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200 bg-slate-100 editor-sticky-col-3"><button onclick="editorPcSortBy('clave_proveedor')" class="editor-header-btn">Clave proveedor <span id="editorSort_clave_proveedor" class="editor-sort-indicator"></span></button></th>
@@ -996,8 +1060,64 @@
         </div>
     </div>
 
+
+    <div id="pantallaRevisionLogistica" class="hidden min-h-screen bg-slate-50">
+        <header class="bg-white border-b p-4 sticky top-0 z-30 shadow-sm">
+            <div class="max-w-6xl mx-auto flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div class="flex items-center gap-3">
+                    <button onclick="regresarAlMenuPrincipalDesdeRevision()" class="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                        <svg class="h-6 w-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                    </button>
+                    <div>
+                        <p class="text-[10px] bg-amber-600 text-white px-2 py-0.5 rounded-full font-bold inline-block uppercase tracking-widest">Logística</p>
+                        <h1 class="text-lg font-bold text-slate-800">Revisión Logística</h1>
+                        <p class="text-xs text-slate-500 font-bold">Pendientes enviados desde Editor Logístico.</p>
+                    </div>
+                </div>
+                <button onclick="cargarRevisionLogistica()" class="w-full lg:w-auto bg-amber-600 text-white px-5 py-3 rounded-xl text-xs font-black uppercase shadow-md">Actualizar</button>
+            </div>
+        </header>
+        <main class="max-w-6xl mx-auto p-4 space-y-4">
+            <div class="bg-white border border-slate-200 rounded-3xl p-4 shadow-sm grid grid-cols-1 md:grid-cols-5 gap-3">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Estado</label>
+                    <select id="revisionFiltroEstado" onchange="renderRevisionLogistica()" class="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold bg-white"><option value="PENDIENTE">Pendiente</option><option value="REVISADO">Revisado</option><option value="TODOS">Todos</option></select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Bodega</label>
+                    <select id="revisionFiltroAlmacen" onchange="renderRevisionLogistica()" class="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold bg-white"><option value="">Todas</option></select>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Buscar</label>
+                    <input id="revisionBusqueda" oninput="renderRevisionLogistica()" placeholder="Código o descripción" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold">
+                </div>
+                <div class="md:col-span-2 flex items-end">
+                    <div id="revisionResumen" class="w-full bg-amber-50 border border-amber-100 rounded-2xl px-4 py-3 text-xs font-bold text-amber-900">Sin datos.</div>
+                </div>
+            </div>
+            <div id="revisionCards" class="md:hidden space-y-3"></div>
+            <div class="hidden md:block bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+                <div class="overflow-auto max-h-[75vh]">
+                    <table class="min-w-full text-xs">
+                        <thead class="bg-slate-100 text-slate-600 uppercase tracking-wider text-[10px] sticky top-0 z-10">
+                            <tr>
+                                <th class="px-3 py-3 text-left border-b"><button onclick="revisionSortBy('almacen')" class="font-black">Bodega <span id="revSort_almacen"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b"><button onclick="revisionSortBy('codigo_limsa')" class="font-black">Código <span id="revSort_codigo_limsa"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b"><button onclick="revisionSortBy('descripcion')" class="font-black">Descripción <span id="revSort_descripcion"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b"><button onclick="revisionSortBy('estado')" class="font-black">Estado <span id="revSort_estado"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b"><button onclick="revisionSortBy('created_at')" class="font-black">Enviado <span id="revSort_created_at"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="revisionBody" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
     <script>
-        const APP_VERSION = "2026.05.20.6-etiquetado-exportacion-invertida";
+        const APP_VERSION = "2026.05.20.11-revision-logistica-mobile";
         const SB_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/rest/v1/";
         const SB_AUTH_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/auth/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBodWRmbG10YmZrZHpxanFhb3ViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTUyMjIsImV4cCI6MjA5MjYzMTIyMn0.KbQenxZHHNlsLBdamQtI6CvJQisTzLLcVgN11TY2_XQ";
@@ -1069,6 +1189,7 @@
         let editorPcCurrentPage = 1;
         const editorPcPageSize = 200;
         let editorPcLastFilterSignature = '';
+        let editorPcRevisionSeleccion = new Set();
         let editorUbiRows = [];
         let editorUbiRowsFiltered = [];
         let editorUbiModified = new Map();
@@ -1156,6 +1277,7 @@
             document.getElementById('pantallaDashboardLogistico')?.classList.add('hidden');
             document.getElementById('pantallaEditorUbicacionesPC')?.classList.add('hidden');
             document.getElementById('pantallaEtiquetadoQR')?.classList.add('hidden');
+            document.getElementById('pantallaRevisionLogistica')?.classList.add('hidden');
             document.getElementById('pantallaMenuPrincipal').classList.remove('hidden'); 
             limpiarTodo(); 
         }
@@ -1170,6 +1292,7 @@
             document.getElementById('pantallaCorrelacion').classList.add('hidden');
             document.getElementById('pantallaEditorUbicacionesPC')?.classList.add('hidden');
             document.getElementById('pantallaEtiquetadoQR')?.classList.add('hidden');
+            document.getElementById('pantallaRevisionLogistica')?.classList.add('hidden');
             document.getElementById('pantallaDashboardBarcode').classList.remove('hidden');
             cargarDashboardBarcode();
         }
@@ -1183,6 +1306,7 @@
             document.getElementById('pantallaDashboardBarcode').classList.add('hidden');
             document.getElementById('pantallaEditorUbicacionesPC')?.classList.add('hidden');
             document.getElementById('pantallaEtiquetadoQR')?.classList.add('hidden');
+            document.getElementById('pantallaRevisionLogistica')?.classList.add('hidden');
             document.getElementById('pantallaDashboardLogistico').classList.remove('hidden');
             cargarDashboardLogistico();
         }
@@ -2626,6 +2750,13 @@ Fallidos: ${fallidos}`);
 
                 document.getElementById('corrMensaje').innerText = '✅ ¡GUARDADO!';
                 document.getElementById('corrMensaje').className = 'mt-4 p-3 rounded-xl text-xs font-bold text-center bg-green-100 text-green-700';
+
+                if (window.revisionLogisticaActivaId) {
+                    const revisionIdGuardada = window.revisionLogisticaActivaId;
+                    setTimeout(() => finalizarGuardadoDesdeRevisionLogistica(revisionIdGuardada), 450);
+                    return;
+                }
+
                 setTimeout(() => {
                     procesarCorrelacion(l);
                     setTimeout(() => {
@@ -2638,6 +2769,277 @@ Fallidos: ${fallidos}`);
             }
         }
         async function eliminarRelacionTotal() { if(!confirm("¿Quitar solo el código de barras de este artículo?")) return; try { await fetchJsonOrThrow(`${SB_URL}almacen_datos?codigo=eq.${correlacionActiva.limsa.toLowerCase()}`, { method: 'PATCH', headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}`, "Content-Type": "application/json" }, body: JSON.stringify({ codigo_barra: null }) }); document.getElementById('inputVinculo').value = ""; alert("Vínculo eliminado."); procesarCorrelacion(correlacionActiva.limsa); } catch(e) { alert(`Error al eliminar: ${e.message || e}`); } }
+
+
+        let revisionRows = [];
+        let revisionSortField = 'created_at';
+        let revisionSortDir = 'desc';
+
+        function irARevisionLogistica() {
+            limpiarTodo();
+            document.getElementById('pantallaMenuPrincipal').classList.add('hidden');
+            document.getElementById('pantallaSelectorAlmacen')?.classList.add('hidden');
+            document.getElementById('pantallaApp')?.classList.add('hidden');
+            document.getElementById('pantallaAuditoria')?.classList.add('hidden');
+            document.getElementById('pantallaCorrelacion')?.classList.add('hidden');
+            document.getElementById('pantallaDashboardBarcode')?.classList.add('hidden');
+            document.getElementById('pantallaDashboardLogistico')?.classList.add('hidden');
+            document.getElementById('pantallaEditorPC')?.classList.add('hidden');
+            document.getElementById('pantallaEditorUbicacionesPC')?.classList.add('hidden');
+            document.getElementById('pantallaEtiquetadoQR')?.classList.add('hidden');
+            document.getElementById('pantallaRevisionLogistica')?.classList.remove('hidden');
+            cargarRevisionLogistica();
+        }
+
+        function regresarAlMenuPrincipalDesdeRevision() {
+            document.getElementById('pantallaRevisionLogistica')?.classList.add('hidden');
+            document.getElementById('pantallaMenuPrincipal').classList.remove('hidden');
+        }
+
+        async function cargarRevisionLogistica() {
+            const body = document.getElementById('revisionBody');
+            const cards = document.getElementById('revisionCards');
+            if (body) body.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-sm font-bold text-slate-400">Cargando...</td></tr>';
+            if (cards) cards.innerHTML = '<div class="bg-white border border-slate-200 rounded-3xl p-6 text-center text-sm font-black text-slate-400">Cargando...</div>';
+            try {
+                const data = await fetchJsonOrThrow(`${SB_URL}logistica_revision?select=id,codigo_limsa,almacen,descripcion,estado,campos_faltantes,created_at,updated_at,fecha_revision&order=created_at.desc&limit=5000`, {
+                    headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${getAccessToken()}` }
+                });
+                revisionRows = Array.isArray(data) ? data : [];
+                poblarFiltrosRevisionLogistica();
+                renderRevisionLogistica();
+            } catch (e) {
+                revisionRows = [];
+                if (body) body.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-sm font-bold text-red-500">No se pudo cargar Revisión Logística. Verifica que exista la tabla logistica_revision.</td></tr>`;
+                if (cards) cards.innerHTML = `<div class="bg-white border border-red-100 rounded-3xl p-6 text-center text-sm font-black text-red-500">No se pudo cargar Revisión Logística. Verifica que exista la tabla logistica_revision.</div>`;
+                const resumen = document.getElementById('revisionResumen');
+                if (resumen) resumen.innerText = 'Tabla no disponible o sin permisos.';
+            }
+        }
+
+        function poblarFiltrosRevisionLogistica() {
+            const sel = document.getElementById('revisionFiltroAlmacen');
+            if (!sel) return;
+            const actual = sel.value;
+            const bodegas = [...new Set(revisionRows.map(r => String(r.almacen || '').trim().toLowerCase()).filter(Boolean))].sort();
+            sel.innerHTML = '<option value="">Todas</option>' + bodegas.map(b => `<option value="${escapeHtmlEditor(b)}">${escapeHtmlEditor(b.toUpperCase())}</option>`).join('');
+            sel.value = bodegas.includes(actual) ? actual : '';
+        }
+
+        function revisionFilteredRows() {
+            const estado = String(document.getElementById('revisionFiltroEstado')?.value || 'PENDIENTE');
+            const almacen = String(document.getElementById('revisionFiltroAlmacen')?.value || '').trim().toLowerCase();
+            const q = String(document.getElementById('revisionBusqueda')?.value || '').trim().toLowerCase();
+            return revisionRows.filter(row => {
+                if (estado !== 'TODOS' && String(row.estado || 'PENDIENTE') !== estado) return false;
+                if (almacen && String(row.almacen || '').trim().toLowerCase() !== almacen) return false;
+                if (q) {
+                    const hay = [row.codigo_limsa,row.descripcion,row.campos_faltantes,row.almacen,row.estado].map(x => String(x || '').toLowerCase()).join(' | ');
+                    if (!hay.includes(q)) return false;
+                }
+                return true;
+            }).sort((a,b) => {
+                const av = String(a?.[revisionSortField] ?? '').toLowerCase();
+                const bv = String(b?.[revisionSortField] ?? '').toLowerCase();
+                const cmp = av.localeCompare(bv, 'es', { numeric:true, sensitivity:'base' });
+                return revisionSortDir === 'asc' ? cmp : -cmp;
+            });
+        }
+
+        function renderRevisionLogistica() {
+            const rows = revisionFilteredRows();
+            const body = document.getElementById('revisionBody');
+            const cards = document.getElementById('revisionCards');
+            const resumen = document.getElementById('revisionResumen');
+            const pendientes = revisionRows.filter(r => String(r.estado || 'PENDIENTE') === 'PENDIENTE').length;
+            const revisados = revisionRows.filter(r => String(r.estado || '') === 'REVISADO').length;
+            if (resumen) resumen.innerText = `Mostrando ${rows.length} · Pendientes: ${pendientes} · Revisados: ${revisados}`;
+            ['almacen','codigo_limsa','descripcion','estado','created_at'].forEach(f => {
+                const el = document.getElementById('revSort_' + f);
+                if (el) el.innerText = revisionSortField === f ? (revisionSortDir === 'asc' ? '▲' : '▼') : '';
+            });
+            if (!rows.length) {
+                if (body) body.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-sm font-bold text-slate-400">Sin SKUs para mostrar.</td></tr>';
+                if (cards) cards.innerHTML = '<div class="bg-white border border-slate-200 rounded-3xl p-6 text-center text-sm font-black text-slate-400">Sin SKUs para mostrar.</div>';
+                return;
+            }
+            if (cards) {
+                cards.innerHTML = rows.map(row => revisionCardHtml(row)).join('');
+            }
+            if (!body) return;
+            body.innerHTML = rows.map(row => {
+                const id = row.id;
+                const estado = String(row.estado || 'PENDIENTE');
+                const isPend = estado === 'PENDIENTE';
+                return `<tr class="hover:bg-slate-50">
+                    <td class="px-3 py-3 font-black uppercase text-slate-700">${escapeHtmlEditor(row.almacen || 'GENERAL')}</td>
+                    <td class="px-3 py-3 font-black uppercase text-slate-800">${escapeHtmlEditor(row.codigo_limsa || '')}</td>
+                    <td class="px-3 py-3 min-w-[280px]"><div class="font-bold text-slate-700">${escapeHtmlEditor(row.descripcion || 'SIN DESCRIPCIÓN')}</div><div class="text-[10px] text-amber-700 font-bold mt-1">${escapeHtmlEditor(row.campos_faltantes || '')}</div></td>
+                    <td class="px-3 py-3"><span class="px-2 py-1 rounded-full text-[10px] font-black ${isPend ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}">${escapeHtmlEditor(estado)}</span></td>
+                    <td class="px-3 py-3 text-slate-500 font-bold">${escapeHtmlEditor(formatearFechaCortaRevision(row.created_at))}</td>
+                    <td class="px-3 py-3"><div class="flex flex-wrap gap-2"><button type="button" data-codigo="${escapeHtmlEditor(String(row.codigo_limsa || ''))}" data-almacen="${escapeHtmlEditor(String(row.almacen || ''))}" data-revision-id="${escapeHtmlEditor(String(id || ''))}" onclick="abrirRevisionEnCorrelacionDesdeBoton(this)" class="bg-indigo-600 text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase">Abrir</button>${isPend ? `<button type="button" data-revision-id="${escapeHtmlEditor(String(id || ''))}" onclick="marcarRevisionRevisadoDesdeBoton(this)" class="bg-emerald-600 text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase">Marcar revisado</button>` : `<button type="button" data-revision-id="${escapeHtmlEditor(String(id || ''))}" onclick="marcarRevisionPendienteDesdeBoton(this)" class="bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-[10px] font-black uppercase">Reabrir</button>`}</div></td>
+                </tr>`;
+            }).join('');
+        }
+
+        function revisionCardHtml(row) {
+            const id = row.id;
+            const estado = String(row.estado || 'PENDIENTE');
+            const isPend = estado === 'PENDIENTE';
+            const campos = String(row.campos_faltantes || '').trim();
+            const codigo = String(row.codigo_limsa || '');
+            const almacen = String(row.almacen || 'GENERAL');
+            const descripcion = String(row.descripcion || 'SIN DESCRIPCIÓN');
+            const enviado = formatearFechaCortaRevision(row.created_at);
+            return `<article class="bg-white border border-slate-200 rounded-3xl shadow-sm p-4 space-y-3">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <div class="inline-flex items-center gap-2">
+                            <span class="bg-slate-100 text-slate-700 px-2 py-1 rounded-lg text-[10px] font-black uppercase">${escapeHtmlEditor(almacen.toUpperCase())}</span>
+                            <span class="px-2 py-1 rounded-lg text-[10px] font-black ${isPend ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}">${escapeHtmlEditor(estado)}</span>
+                        </div>
+                        <div class="mt-2 text-base font-black text-slate-900 break-all uppercase">${escapeHtmlEditor(codigo)}</div>
+                    </div>
+                    <div class="text-right text-[10px] font-bold text-slate-400 uppercase">
+                        Enviado<br><span class="text-slate-600 normal-case">${escapeHtmlEditor(enviado)}</span>
+                    </div>
+                </div>
+                <div class="text-sm font-black text-slate-800 leading-snug uppercase">${escapeHtmlEditor(descripcion)}</div>
+                ${campos ? `<div class="bg-amber-50 border border-amber-100 text-amber-800 rounded-2xl p-3 text-xs font-bold"><span class="block text-[10px] uppercase tracking-widest text-amber-600 mb-1">Revisar</span>${escapeHtmlEditor(campos)}</div>` : ''}
+                <div class="grid grid-cols-1 gap-2 pt-1">
+                    <button type="button" data-codigo="${escapeHtmlEditor(codigo)}" data-almacen="${escapeHtmlEditor(almacen)}" data-revision-id="${escapeHtmlEditor(String(id || ''))}" onclick="abrirRevisionEnCorrelacionDesdeBoton(this)" class="w-full bg-indigo-600 text-white px-4 py-4 rounded-2xl text-xs font-black uppercase shadow-md active:scale-[0.99]">Abrir revisión</button>
+                    ${isPend ? `<button type="button" data-revision-id="${escapeHtmlEditor(String(id || ''))}" onclick="marcarRevisionRevisadoDesdeBoton(this)" class="w-full bg-white border border-emerald-200 text-emerald-700 px-4 py-3 rounded-2xl text-xs font-black uppercase">Marcar revisado</button>` : `<button type="button" data-revision-id="${escapeHtmlEditor(String(id || ''))}" onclick="marcarRevisionPendienteDesdeBoton(this)" class="w-full bg-slate-100 text-slate-700 px-4 py-3 rounded-2xl text-xs font-black uppercase">Reabrir pendiente</button>`}
+                </div>
+            </article>`;
+        }
+
+        function revisionSortBy(field) {
+            if (revisionSortField === field) revisionSortDir = revisionSortDir === 'asc' ? 'desc' : 'asc';
+            else { revisionSortField = field; revisionSortDir = field === 'created_at' ? 'desc' : 'asc'; }
+            renderRevisionLogistica();
+        }
+
+        function formatearFechaCortaRevision(value) {
+            if (!value) return '';
+            const d = new Date(value);
+            if (isNaN(d.getTime())) return String(value).slice(0,16);
+            return d.toLocaleString('es-MX', { dateStyle:'short', timeStyle:'short' });
+        }
+
+        function abrirRevisionEnCorrelacionDesdeBoton(btn) {
+            if (!btn) return;
+            const codigo = btn.dataset.codigo || '';
+            const almacen = btn.dataset.almacen || '';
+            const id = btn.dataset.revisionId || '';
+            abrirRevisionEnCorrelacion(codigo, almacen, id);
+        }
+
+        async function abrirRevisionEnCorrelacion(codigo, almacen, id) {
+            try {
+                const codigoLimpio = String(codigo || '').trim();
+                if (!codigoLimpio) {
+                    alert('No se pudo abrir: el registro no trae código LIMSA.');
+                    return;
+                }
+                almacenActual = String(almacen || almacenActual || '').trim().toLowerCase();
+                if (!almacenActual) {
+                    const a = prompt('Bodega para guardar la revisión:', '');
+                    if (a === null) return;
+                    almacenActual = String(a || '').trim().toLowerCase();
+                }
+                window.revisionLogisticaActivaId = id || null;
+                window.revisionLogisticaActivaCodigo = codigoLimpio;
+                window.revisionLogisticaActivaAlmacen = almacenActual;
+
+                // Navegación robusta: ocultar pantallas principales y abrir Correlación de SKUs.
+                ['pantallaMenuPrincipal','pantallaSelectorAlmacen','pantallaApp','pantallaAuditoria','pantallaEditorPC','pantallaEditorUbicacionesPC','pantallaDashboardBarcode','pantallaDashboardLogistico','pantallaEtiquetadoQR','pantallaRevisionLogistica'].forEach(pid => {
+                    const el = document.getElementById(pid);
+                    if (el) el.classList.add('hidden');
+                });
+                const pantallaCorr = document.getElementById('pantallaCorrelacion');
+                if (pantallaCorr) pantallaCorr.classList.remove('hidden');
+
+                const txt = document.getElementById('corrTxtAlmacen');
+                if (txt) txt.innerText = almacenActual || 'GENERAL';
+                const input = document.getElementById('inputCorr');
+                if (input) input.value = codigoLimpio;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                await procesarCorrelacion(codigoLimpio);
+            } catch(e) {
+                console.error('Error al abrir revisión logística:', e);
+                alert('No se pudo abrir el SKU en Correlación de SKUs: ' + (e.message || e));
+            }
+        }
+
+
+        async function finalizarGuardadoDesdeRevisionLogistica(revisionId) {
+            const id = revisionId || window.revisionLogisticaActivaId || '';
+            // Este flujo solo aplica cuando el SKU fue abierto desde Revisión Logística.
+            window.revisionLogisticaActivaId = null;
+            window.revisionLogisticaActivaCodigo = null;
+            window.revisionLogisticaActivaAlmacen = null;
+
+            document.getElementById('pantallaCorrelacion')?.classList.add('hidden');
+            document.getElementById('pantallaRevisionLogistica')?.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            await cargarRevisionLogistica();
+
+            if (!id) return;
+            const confirmar = confirm('Datos guardados. ¿Quieres marcar este SKU como REVISADO?');
+            if (confirmar) {
+                await marcarRevisionRevisado(id);
+            }
+        }
+
+
+        function marcarRevisionRevisadoDesdeBoton(btn) {
+            const id = btn?.dataset?.revisionId || '';
+            marcarRevisionRevisado(id, btn);
+        }
+
+        function marcarRevisionPendienteDesdeBoton(btn) {
+            const id = btn?.dataset?.revisionId || '';
+            marcarRevisionPendiente(id, btn);
+        }
+
+        async function marcarRevisionRevisado(id, btn = null) {
+            if (!id) {
+                alert('No se encontró el ID del registro de revisión. Actualiza la lista e intenta de nuevo.');
+                return;
+            }
+            try {
+                if (btn) { btn.disabled = true; btn.innerText = 'Guardando...'; }
+                await fetchJsonOrThrow(`${SB_URL}logistica_revision?id=eq.${encodeURIComponent(id)}`, {
+                    method: 'PATCH',
+                    headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${getAccessToken()}`, 'Content-Type': 'application/json', 'Prefer':'return=minimal' },
+                    body: JSON.stringify({ estado: 'REVISADO', fecha_revision: new Date().toISOString(), updated_at: new Date().toISOString() })
+                });
+                await cargarRevisionLogistica();
+            } catch(e) {
+                if (btn) { btn.disabled = false; btn.innerText = 'Marcar revisado'; }
+                alert('No se pudo marcar como revisado: ' + (e.message || e));
+            }
+        }
+
+        async function marcarRevisionPendiente(id, btn = null) {
+            if (!id) {
+                alert('No se encontró el ID del registro de revisión. Actualiza la lista e intenta de nuevo.');
+                return;
+            }
+            try {
+                if (btn) { btn.disabled = true; btn.innerText = 'Guardando...'; }
+                await fetchJsonOrThrow(`${SB_URL}logistica_revision?id=eq.${encodeURIComponent(id)}`, {
+                    method: 'PATCH',
+                    headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${getAccessToken()}`, 'Content-Type': 'application/json', 'Prefer':'return=minimal' },
+                    body: JSON.stringify({ estado: 'PENDIENTE', fecha_revision: null, updated_at: new Date().toISOString() })
+                });
+                await cargarRevisionLogistica();
+            } catch(e) {
+                if (btn) { btn.disabled = false; btn.innerText = 'Reabrir'; }
+                alert('No se pudo reabrir: ' + (e.message || e));
+            }
+        }
+
 
         // --- UTILS ---
         function aplicarResultadoEscaneo(t, txt) {
@@ -2994,6 +3396,11 @@ Fallidos: ${fallidos}`);
         let etiquetadoUltimaBodegaListado = null;
         let etiquetadoSortField = 'codigo';
         let etiquetadoSortDir = 'asc';
+        let etiquetadoAvanceSortField = 'bodega';
+        let etiquetadoAvanceSortDir = 'asc';
+        let etiquetadoActualizandoGrupos = false;
+        let etiquetadoAvanceMap = new Map();
+        let etiquetadoAvanceTablaDisponible = true;
         const ETIQ_HEADERS_BASE = ['codigo','status','descripcion','dem','__EXISTENCIA__','MODELOS','GRUPO','CODIGO30','ROTACION','CODIGO_BARRAS'];
 
         function regresarAAlmacenesDesdeEtiquetado() {
@@ -3001,14 +3408,17 @@ Fallidos: ${fallidos}`);
             document.getElementById('pantallaSelectorAlmacen')?.classList.remove('hidden');
         }
 
-        function etiquetadoInit(alm) {
+        async function etiquetadoInit(alm) {
             etiquetadoAlmacenInicial = String(alm || '').trim().toLowerCase();
+            const txt = document.getElementById('etiqTxtAlmacen');
+            if (txt) txt.innerText = etiquetadoAlmacenInicial ? `ALMACÉN ${etiquetadoAlmacenInicial.toUpperCase()}` : 'ETIQUETADO';
             const sel = document.getElementById('etiqFiltroBodega');
             if (sel) {
                 const opciones = ['<option value="__todas__">Todas las bodegas</option>'].concat(ALMACENES_FALLBACK.map(a => `<option value="${a}">${a.toUpperCase()}</option>`));
                 sel.innerHTML = opciones.join('');
                 sel.value = etiquetadoAlmacenInicial || '__todas__';
             }
+            await etiquetadoCargarAvanceSupabase();
             etiquetadoActualizarListadoProveedores();
             etiquetadoAplicarFiltros();
             setTimeout(() => document.getElementById('etiqArchivoDemanda')?.focus(), 80);
@@ -3020,13 +3430,16 @@ Fallidos: ${fallidos}`);
             const actual = String(selProv.value || '').trim().toLowerCase();
             const bodega = String(document.getElementById('etiqFiltroBodega')?.value || etiquetadoAlmacenInicial || '').toLowerCase();
             const proveedores = new Set();
+            const activos = etiquetadoProveedorBodegaActivosSet();
             for (const r of etiquetadoDemandaRaw) {
                 const cod = String(r['Articulo'] || '').trim().toLowerCase();
                 const bod = String(r['Bodega'] || '').trim().toLowerCase();
-                if (!cod) continue;
+                if (!cod || etiquetadoCodigoOmitido(cod)) continue;
                 if (bodega && bodega !== '__todas__' && bod !== bodega) continue;
                 const prov = etiquetadoModeloDesdeCodigo(cod);
-                if (prov && prov.length === 3) proveedores.add(prov);
+                if (!prov || prov.length !== 3) continue;
+                if (!activos.has(etiquetadoAvanceKey(bod, prov))) continue;
+                proveedores.add(prov);
             }
             const lista = [...proveedores].sort((a,b) => a.localeCompare(b, 'es', { numeric:true, sensitivity:'base' }));
             selProv.innerHTML = '<option value="">Todos los proveedores</option>' + lista.map(p => `<option value="${p}">${p.toUpperCase()}</option>`).join('');
@@ -3040,6 +3453,55 @@ Fallidos: ${fallidos}`);
             const cls = tipo === 'error' ? 'text-red-700 bg-red-50 border-red-100' : tipo === 'ok' ? 'text-emerald-700 bg-emerald-50 border-emerald-100' : 'text-slate-500 bg-slate-50 border-slate-100';
             el.className = `text-xs font-bold rounded-2xl border p-3 ${cls}`;
             el.innerText = msg;
+        }
+
+        function etiquetadoGruposSeleccionados() {
+            const sel = document.getElementById('etiqFiltroGrupo');
+            if (!sel) return [];
+            return Array.from(sel.selectedOptions || []).map(o => String(o.value || '').trim().toLowerCase()).filter(Boolean);
+        }
+
+        function etiquetadoLimpiarGrupos() {
+            const sel = document.getElementById('etiqFiltroGrupo');
+            if (sel) Array.from(sel.options || []).forEach(o => o.selected = false);
+            etiquetadoAplicarFiltros();
+        }
+
+        function etiquetadoCumpleFiltrosBaseGrupo(row, filtros) {
+            if (!row) return false;
+            if (filtros.estado && row.status !== filtros.estado) return false;
+            const tieneExistencia = Number(row.existencia || 0) > 0;
+            const tieneRotacion = row.rotacion === '+';
+            const rot = filtros.rot;
+            if (rot === 'imprimibles' && !(tieneExistencia || tieneRotacion)) return false;
+            if (rot === 'existencia' && !tieneExistencia) return false;
+            if (rot === 'rotacion' && !tieneRotacion) return false;
+            if (rot === 'existencia_rotacion' && !(tieneExistencia || tieneRotacion)) return false;
+            if (rot === 'cero_rotacion' && (tieneExistencia || !tieneRotacion)) return false;
+            if (filtros.exi === 'cero' && row.existencia !== 0) return false;
+            if (filtros.exi === 'con' && row.existencia <= 0) return false;
+            if (filtros.q && !row.search.includes(filtros.q)) return false;
+            return true;
+        }
+
+        function etiquetadoActualizarListadoGrupos(rowsBase, filtros) {
+            const sel = document.getElementById('etiqFiltroGrupo');
+            if (!sel) return;
+            const seleccionPrev = new Set(etiquetadoGruposSeleccionados());
+            const conteos = new Map();
+            const rows = Array.isArray(rowsBase) ? rowsBase : etiquetadoRows;
+            for (const row of rows) {
+                if (filtros && !etiquetadoCumpleFiltrosBaseGrupo(row, filtros)) continue;
+                const g = String(row.grupoFinal || row.grupo || '').trim().toLowerCase() || 'sin grupo';
+                conteos.set(g, (conteos.get(g) || 0) + 1);
+            }
+            const grupos = [...conteos.entries()].sort((a, b) => a[0].localeCompare(b[0], 'es', { numeric:true, sensitivity:'base' }));
+            etiquetadoActualizandoGrupos = true;
+            sel.innerHTML = grupos.map(([g, count]) => {
+                const selected = seleccionPrev.has(g) ? ' selected' : '';
+                return `<option value="${escapeHtmlEditor(g)}"${selected}>${escapeHtmlEditor(g.toUpperCase())} (${count.toLocaleString('es-MX')})</option>`;
+            }).join('');
+            etiquetadoActualizandoGrupos = false;
         }
 
         function etiquetadoParseCsv(text) {
@@ -3092,6 +3554,45 @@ Fallidos: ${fallidos}`);
             return String(codigo || '').trim().toLowerCase().substring(0, 3);
         }
 
+        function etiquetadoCodigoOmitido(codigo) {
+            // En etiquetado QR, los códigos que empiezan con X/x son descontinuados
+            // operativos y no deben aparecer en filtros, vista previa, avance ni exportación.
+            return /^x/i.test(String(codigo || '').trim());
+        }
+
+        function etiquetadoProveedorBodegaKeyDesdeRaw(r) {
+            const codigo = String(r?.['Articulo'] || '').trim().toLowerCase();
+            const bodega = String(r?.['Bodega'] || '').trim().toLowerCase();
+            const proveedor = etiquetadoModeloDesdeCodigo(codigo);
+            if (!codigo || !bodega || !proveedor || etiquetadoCodigoOmitido(codigo)) return '';
+            return `${bodega}|${proveedor}`;
+        }
+
+        function etiquetadoProveedorBodegaActivosSet(rows = etiquetadoDemandaRaw) {
+            // Regla operativa: si un proveedor en una bodega suma demanda 0 y existencia 0,
+            // no se muestra porque no hay etiquetas útiles que imprimir.
+            const map = new Map();
+            for (const r of (Array.isArray(rows) ? rows : [])) {
+                const key = etiquetadoProveedorBodegaKeyDesdeRaw(r);
+                if (!key) continue;
+                if (!map.has(key)) map.set(key, { demanda: 0, existencia: 0 });
+                const acc = map.get(key);
+                acc.demanda += etiquetadoToNumber(r['Demanda calculada']);
+                acc.existencia += etiquetadoToNumber(r['Inventario']);
+            }
+            const activos = new Set();
+            for (const [key, tot] of map.entries()) {
+                if (Number(tot.demanda || 0) !== 0 || Number(tot.existencia || 0) !== 0) activos.add(key);
+            }
+            return activos;
+        }
+
+        function etiquetadoProveedorBodegaActivo(bodega, proveedor, activosSet = null) {
+            const key = etiquetadoAvanceKey(bodega, proveedor);
+            const set = activosSet || etiquetadoProveedorBodegaActivosSet();
+            return set.has(key);
+        }
+
         async function etiquetadoLeerArchivoDemanda(file) {
             if (!file) return;
             try {
@@ -3104,7 +3605,12 @@ Fallidos: ${fallidos}`);
                 if (faltantes.length) throw new Error('El CSV no trae columnas requeridas: ' + faltantes.join(', '));
                 etiquetadoDemandaRaw = rows;
                 etiquetadoActualizarListadoProveedores();
-                etiquetadoSetStatus(`CSV cargado: ${rows.length.toLocaleString('es-MX')} registros. Selecciona proveedor de la lista o deja todos para generar la vista previa.`, 'ok');
+                etiquetadoLimpiarGrupos();
+                const omitidosX = rows.filter(r => etiquetadoCodigoOmitido(r['Articulo'])).length;
+                const combosTotales = new Set(rows.map(etiquetadoProveedorBodegaKeyDesdeRaw).filter(Boolean)).size;
+                const combosActivos = etiquetadoProveedorBodegaActivosSet(rows).size;
+                const combosCero = Math.max(0, combosTotales - combosActivos);
+                etiquetadoSetStatus(`CSV cargado: ${rows.length.toLocaleString('es-MX')} registros. Se omiten automáticamente ${omitidosX.toLocaleString('es-MX')} códigos que empiezan con X y ${combosCero.toLocaleString('es-MX')} proveedor(es)/bodega con demanda 0 y existencia 0. Selecciona proveedor de la lista o deja todos para generar la vista previa.`, 'ok');
                 etiquetadoAplicarFiltros();
             } catch(e) {
                 etiquetadoSetStatus(`No se pudo leer el CSV: ${e.message || e}`, 'error');
@@ -3117,7 +3623,7 @@ Fallidos: ${fallidos}`);
                 const codigo = String(r['Articulo'] || '').trim().toLowerCase();
                 const bodega = String(r['Bodega'] || '').trim().toLowerCase();
                 const cia = String(r['Cia'] || '').trim();
-                if (!codigo || !bodega) continue;
+                if (!codigo || !bodega || etiquetadoCodigoOmitido(codigo)) continue;
                 const key = `${bodega}|${codigo}`;
                 const dem = etiquetadoToNumber(r['Demanda calculada']);
                 const inv = etiquetadoToNumber(r['Inventario']);
@@ -3257,6 +3763,282 @@ Fallidos: ${fallidos}`);
             return '';
         }
 
+        function etiquetadoTipoDesdeBodega(bodega) {
+            const b = String(bodega || '').trim().toLowerCase();
+            if (b.startsWith('a')) return 'Accesorios';
+            if (b.startsWith('c')) return 'Cerámica';
+            return 'Sin clasificar';
+        }
+
+        function etiquetadoAvanceKey(bodega, proveedor) {
+            return `${String(bodega || '').trim().toLowerCase()}|${String(proveedor || '').trim().toLowerCase()}`;
+        }
+
+        function etiquetadoAvanceHeaders(extra = {}) {
+            return { 'apikey': SB_KEY, 'Authorization': `Bearer ${getAccessToken()}`, 'Content-Type': 'application/json', ...extra };
+        }
+
+        async function etiquetadoCargarAvanceSupabase() {
+            etiquetadoAvanceMap = new Map();
+            etiquetadoAvanceTablaDisponible = true;
+            try {
+                const data = await fetchJsonOrThrow(`${SB_URL}etiquetado_qr_avance?select=bodega,proveedor,tipo_sku,estado,total_etiquetas,total_con_existencia,total_con_rotacion,fecha_visto_bueno,usuario_visto_bueno,updated_at&limit=10000`, {
+                    headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${getAccessToken()}` }
+                });
+                for (const row of (Array.isArray(data) ? data : [])) {
+                    const key = etiquetadoAvanceKey(row.bodega, row.proveedor);
+                    if (key !== '|') etiquetadoAvanceMap.set(key, row);
+                }
+            } catch(e) {
+                etiquetadoAvanceTablaDisponible = false;
+                console.warn('No se pudo cargar etiquetado_qr_avance', e);
+            }
+        }
+
+        function etiquetadoBaseAvanceRows() {
+            if (!etiquetadoDemandaRaw.length) return [];
+            const consolidadas = etiquetadoConsolidar(etiquetadoDemandaRaw);
+            const map = new Map();
+            for (const row of consolidadas) {
+                const bodega = String(row.bodega || '').trim().toLowerCase();
+                const proveedor = String(row.proveedor3 || etiquetadoModeloDesdeCodigo(row.codigo) || '').trim().toLowerCase();
+                if (!bodega || !proveedor) continue;
+                const key = etiquetadoAvanceKey(bodega, proveedor);
+                if (!map.has(key)) map.set(key, { bodega, proveedor, tipo_sku: etiquetadoTipoDesdeBodega(bodega), total: 0, conDemanda: 0, conExistencia: 0, sumaDemanda: 0, sumaExistencia: 0 });
+                const item = map.get(key);
+                item.total += 1;
+                item.sumaDemanda += Number(row.dem || 0);
+                item.sumaExistencia += Number(row.existencia || 0);
+                if (Number(row.dem || 0) > 0) item.conDemanda += 1;
+                if (Number(row.existencia || 0) > 0) item.conExistencia += 1;
+            }
+            return [...map.values()]
+                .filter(x => Number(x.sumaDemanda || 0) !== 0 || Number(x.sumaExistencia || 0) !== 0)
+                .sort((a,b) => a.bodega.localeCompare(b.bodega, 'es', {numeric:true}) || a.proveedor.localeCompare(b.proveedor, 'es', {numeric:true}));
+        }
+
+        function etiquetadoAvanceActualInfo() {
+            const bodega = String(document.getElementById('etiqFiltroBodega')?.value || '').trim().toLowerCase();
+            const proveedor = String(document.getElementById('etiqFiltroProveedor')?.value || '').trim().toLowerCase();
+            if (!bodega || bodega === '__todas__' || !proveedor) return null;
+            const rows = etiquetadoRows.filter(r => r.bodega === bodega && r.proveedor3 === proveedor);
+            return {
+                bodega,
+                proveedor,
+                tipo_sku: etiquetadoTipoDesdeBodega(bodega),
+                total_etiquetas: rows.length,
+                total_con_existencia: rows.filter(r => Number(r.existencia || 0) > 0).length,
+                total_con_rotacion: rows.filter(r => r.rotacion === '+').length
+            };
+        }
+
+        async function etiquetadoMarcarCompletoActual() {
+            const info = etiquetadoAvanceActualInfo();
+            if (!info) return alert('Selecciona una bodega específica y un proveedor específico para dar visto bueno. No aplica para “todas” ni “todos los proveedores”.');
+            if (!info.total_etiquetas) return alert('No hay registros para marcar como completo.');
+            if (!etiquetadoAvanceTablaDisponible) return alert('No se encontró la tabla etiquetado_qr_avance en Supabase. Corre primero el SQL incluido en el clon actualizado.');
+            const now = new Date().toISOString();
+            const payload = {
+                bodega: info.bodega,
+                proveedor: info.proveedor,
+                tipo_sku: info.tipo_sku,
+                estado: 'COMPLETO',
+                total_etiquetas: info.total_etiquetas,
+                total_con_existencia: info.total_con_existencia,
+                total_con_rotacion: info.total_con_rotacion,
+                porcentaje_avance: 100,
+                fecha_visto_bueno: now,
+                usuario_visto_bueno: getUsuarioActual() || null,
+                updated_at: now
+            };
+            try {
+                await fetchJsonOrThrow(`${SB_URL}etiquetado_qr_avance?on_conflict=bodega,proveedor`, {
+                    method: 'POST',
+                    headers: etiquetadoAvanceHeaders({ 'Prefer': 'resolution=merge-duplicates,return=representation' }),
+                    body: JSON.stringify(payload)
+                });
+                await etiquetadoCargarAvanceSupabase();
+                etiquetadoRenderAvance();
+                alert(`✅ Visto bueno registrado: ${info.bodega.toUpperCase()} / ${info.proveedor.toUpperCase()}.`);
+            } catch(e) {
+                alert(`No se pudo guardar el visto bueno: ${e.message || e}`);
+            }
+        }
+
+        async function etiquetadoQuitarCompletoActual() {
+            const info = etiquetadoAvanceActualInfo();
+            if (!info) return alert('Selecciona una bodega específica y un proveedor específico para quitar el visto bueno.');
+            if (!confirm(`¿Quitar visto bueno de ${info.bodega.toUpperCase()} / ${info.proveedor.toUpperCase()}?`)) return;
+            if (!etiquetadoAvanceTablaDisponible) return alert('No se encontró la tabla etiquetado_qr_avance en Supabase.');
+            const now = new Date().toISOString();
+            const payload = { estado: 'PENDIENTE', porcentaje_avance: 0, fecha_visto_bueno: null, usuario_visto_bueno: null, updated_at: now };
+            try {
+                await fetchJsonOrThrow(`${SB_URL}etiquetado_qr_avance?bodega=eq.${encodeURIComponent(info.bodega)}&proveedor=eq.${encodeURIComponent(info.proveedor)}`, {
+                    method: 'PATCH',
+                    headers: etiquetadoAvanceHeaders({ 'Prefer': 'return=minimal' }),
+                    body: JSON.stringify(payload)
+                });
+                await etiquetadoCargarAvanceSupabase();
+                etiquetadoRenderAvance();
+                alert(`Visto bueno quitado: ${info.bodega.toUpperCase()} / ${info.proveedor.toUpperCase()}.`);
+            } catch(e) {
+                alert(`No se pudo quitar el visto bueno: ${e.message || e}`);
+            }
+        }
+
+        function etiquetadoAvanceSelectValue(id) {
+            return String(document.getElementById(id)?.value || '').trim().toLowerCase();
+        }
+
+        function etiquetadoSetSelectOptions(id, values, labelTodas, keepValue = true) {
+            const sel = document.getElementById(id);
+            if (!sel) return;
+            const previo = keepValue ? String(sel.value || '').trim().toLowerCase() : '';
+            const opciones = [...new Set((values || []).map(v => String(v || '').trim()).filter(Boolean))]
+                .sort((a,b) => a.localeCompare(b, 'es', { numeric:true, sensitivity:'base' }));
+            sel.innerHTML = `<option value="">${escapeHtmlEditor(labelTodas || 'Todos')}</option>` + opciones.map(v => {
+                const val = String(v).toLowerCase();
+                const selected = previo && previo === val ? ' selected' : '';
+                return `<option value="${escapeHtmlEditor(val)}"${selected}>${escapeHtmlEditor(String(v).toUpperCase())}</option>`;
+            }).join('');
+            if (previo && !opciones.some(v => String(v).toLowerCase() === previo)) sel.value = '';
+        }
+
+        function etiquetadoLimpiarFiltrosAvance() {
+            ['etiqAvanceFiltroBodega','etiqAvanceFiltroTipo','etiqAvanceFiltroProveedor'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            etiquetadoRenderAvance();
+        }
+
+        function etiquetadoAvanceValorOrden(row, field) {
+            if (field === 'tipo') return String(row.tipo_sku || '');
+            if (field === 'proveedor') return String(row.proveedor || '');
+            if (field === 'registros') return Number(row.total || 0);
+            if (field === 'demanda') return Number(row.conDemanda || 0);
+            if (field === 'existencia') return Number(row.conExistencia || 0);
+            if (field === 'estado') return String(row.estado || '');
+            return String(row.bodega || '');
+        }
+
+        function etiquetadoOrdenarAvance(detalle) {
+            const field = etiquetadoAvanceSortField || 'bodega';
+            const dir = etiquetadoAvanceSortDir === 'desc' ? -1 : 1;
+            detalle.sort((a,b) => {
+                const av = etiquetadoAvanceValorOrden(a, field);
+                const bv = etiquetadoAvanceValorOrden(b, field);
+                let cmp = 0;
+                if (typeof av === 'number' || typeof bv === 'number') cmp = Number(av || 0) - Number(bv || 0);
+                else cmp = String(av || '').localeCompare(String(bv || ''), 'es', { numeric:true, sensitivity:'base' });
+                if (cmp !== 0) return cmp * dir;
+                return String(a.bodega || '').localeCompare(String(b.bodega || ''), 'es', { numeric:true, sensitivity:'base' }) ||
+                    String(a.proveedor || '').localeCompare(String(b.proveedor || ''), 'es', { numeric:true, sensitivity:'base' });
+            });
+            return detalle;
+        }
+
+        function etiquetadoSortAvance(field) {
+            const allowed = new Set(['bodega','tipo','proveedor','registros','demanda','existencia','estado']);
+            const f = allowed.has(field) ? field : 'bodega';
+            if (etiquetadoAvanceSortField === f) {
+                etiquetadoAvanceSortDir = etiquetadoAvanceSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                etiquetadoAvanceSortField = f;
+                etiquetadoAvanceSortDir = 'asc';
+            }
+            etiquetadoRenderAvance();
+        }
+
+        function etiquetadoAvanceHeaderHtml(label, field, align = 'left') {
+            const active = etiquetadoAvanceSortField === field;
+            const icon = active ? (etiquetadoAvanceSortDir === 'asc' ? '▲' : '▼') : '↕';
+            const alignClass = align === 'right' ? 'text-right justify-end' : 'text-left justify-start';
+            return `<th class="px-3 py-2 ${align === 'right' ? 'text-right' : 'text-left'}"><button type="button" onclick="etiquetadoSortAvance('${field}')" class="inline-flex items-center gap-1 ${alignClass} w-full font-black text-slate-600 hover:text-amber-700 uppercase text-[10px]">${escapeHtmlEditor(label)}<span class="text-[9px]">${icon}</span></button></th>`;
+        }
+
+        function etiquetadoRenderAvance() {
+            const combos = etiquetadoBaseAvanceRows();
+            let baseDetalle = combos.map(x => {
+                const av = etiquetadoAvanceMap.get(etiquetadoAvanceKey(x.bodega, x.proveedor));
+                const completo = av?.estado === 'COMPLETO';
+                return { ...x, estado: completo ? 'COMPLETO' : 'PENDIENTE', av };
+            });
+
+            etiquetadoSetSelectOptions('etiqAvanceFiltroBodega', baseDetalle.map(x => x.bodega), 'Todas');
+            etiquetadoSetSelectOptions('etiqAvanceFiltroTipo', baseDetalle.map(x => x.tipo_sku), 'Todos');
+            etiquetadoSetSelectOptions('etiqAvanceFiltroProveedor', baseDetalle.map(x => x.proveedor), 'Todos');
+
+            const filtroBodega = etiquetadoAvanceSelectValue('etiqAvanceFiltroBodega');
+            const filtroTipo = etiquetadoAvanceSelectValue('etiqAvanceFiltroTipo');
+            const filtroProveedor = etiquetadoAvanceSelectValue('etiqAvanceFiltroProveedor');
+
+            let detalle = baseDetalle.filter(d => {
+                if (filtroBodega && String(d.bodega || '').toLowerCase() !== filtroBodega) return false;
+                if (filtroTipo && String(d.tipo_sku || '').toLowerCase() !== filtroTipo) return false;
+                if (filtroProveedor && String(d.proveedor || '').toLowerCase() !== filtroProveedor) return false;
+                return true;
+            });
+            etiquetadoOrdenarAvance(detalle);
+
+            const listas = detalle.filter(d => d.estado === 'COMPLETO').length;
+            const pendientes = Math.max(0, detalle.length - listas);
+            const pct = detalle.length ? (listas * 100 / detalle.length) : 0;
+            const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+            setTxt('etiqAvanceTotal', detalle.length.toLocaleString('es-MX'));
+            setTxt('etiqAvanceListas', listas.toLocaleString('es-MX'));
+            setTxt('etiqAvancePendientes', pendientes.toLocaleString('es-MX'));
+            setTxt('etiqAvancePct', `${pct.toFixed(1).replace('.0','')}%`);
+
+            const resumenMap = new Map();
+            for (const d of detalle) {
+                const key = d.tipo_sku;
+                if (!resumenMap.has(key)) resumenMap.set(key, { tipo:key, total:0, listas:0, pendientes:0 });
+                const r = resumenMap.get(key);
+                r.total += 1;
+                if (d.estado === 'COMPLETO') r.listas += 1; else r.pendientes += 1;
+            }
+            const resumen = document.getElementById('etiqAvanceResumen');
+            if (resumen) resumen.innerHTML = [...resumenMap.values()].map(r => {
+                const rpct = r.total ? (r.listas * 100 / r.total) : 0;
+                return `<div class="bg-slate-50 border border-slate-100 rounded-2xl p-3"><div class="flex justify-between gap-2"><div><p class="text-[10px] font-black text-slate-400 uppercase">${escapeHtmlEditor(r.tipo)}</p><p class="text-xs font-bold text-slate-500">Listos ${r.listas} de ${r.total} · Pendientes ${r.pendientes}</p></div><p class="text-lg font-black text-slate-800">${rpct.toFixed(1).replace('.0','')}%</p></div><div class="mt-2 h-2 bg-white rounded-full overflow-hidden"><div class="h-full bg-emerald-500" style="width:${rpct}%"></div></div></div>`;
+            }).join('') || '<p class="text-xs font-bold text-slate-400">Sin combinaciones con estos filtros.</p>';
+
+            const head = document.getElementById('etiqAvanceTablaHead');
+            if (head) {
+                head.innerHTML = [
+                    etiquetadoAvanceHeaderHtml('Bodega', 'bodega'),
+                    etiquetadoAvanceHeaderHtml('Tipo', 'tipo'),
+                    etiquetadoAvanceHeaderHtml('Proveedor', 'proveedor'),
+                    etiquetadoAvanceHeaderHtml('Registros', 'registros', 'right'),
+                    etiquetadoAvanceHeaderHtml('Demanda', 'demanda', 'right'),
+                    etiquetadoAvanceHeaderHtml('Existencia', 'existencia', 'right'),
+                    etiquetadoAvanceHeaderHtml('Estado', 'estado')
+                ].join('');
+            }
+
+            const tbody = document.getElementById('etiqAvanceDetalle');
+            if (tbody) {
+                tbody.innerHTML = detalle.length ? detalle.map(d => {
+                    const estadoClass = d.estado === 'COMPLETO' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700';
+                    return `<tr class="border-b border-slate-100"><td class="px-3 py-2 font-black uppercase">${escapeHtmlEditor(d.bodega)}</td><td class="px-3 py-2 font-semibold">${escapeHtmlEditor(d.tipo_sku)}</td><td class="px-3 py-2 font-black uppercase">${escapeHtmlEditor(d.proveedor)}</td><td class="px-3 py-2 text-right font-semibold">${d.total}</td><td class="px-3 py-2 text-right font-semibold">${d.conDemanda}</td><td class="px-3 py-2 text-right font-semibold">${d.conExistencia}</td><td class="px-3 py-2"><span class="px-2 py-1 rounded-full text-[10px] font-black ${estadoClass}">${d.estado}</span></td></tr>`;
+                }).join('') : '<tr><td colspan="7" class="px-4 py-8 text-center text-slate-400 font-bold">Sin combinaciones con estos filtros.</td></tr>';
+            }
+            const actual = document.getElementById('etiqAvanceActual');
+            if (actual) {
+                const info = etiquetadoAvanceActualInfo();
+                if (!etiquetadoAvanceTablaDisponible) {
+                    actual.innerHTML = '<span class="text-rose-600">Falta crear tabla Supabase etiquetado_qr_avance.</span>';
+                } else if (!info) {
+                    actual.innerText = 'Selecciona una bodega y proveedor para registrar visto bueno.';
+                } else {
+                    const av = etiquetadoAvanceMap.get(etiquetadoAvanceKey(info.bodega, info.proveedor));
+                    const estado = av?.estado === 'COMPLETO' ? 'COMPLETO' : 'PENDIENTE';
+                    actual.innerHTML = `<b>${info.bodega.toUpperCase()} / ${info.proveedor.toUpperCase()}</b><br>${escapeHtmlEditor(info.tipo_sku)} · ${info.total_etiquetas} etiquetas · Estado: <b class="${estado === 'COMPLETO' ? 'text-emerald-700' : 'text-amber-700'}">${estado}</b>`;
+                }
+            }
+        }
+
         function etiquetadoConstruirFilas(baseRows) {
             return baseRows.map(row => {
                 const cat = etiquetadoBuscarCatalogo(row);
@@ -3297,18 +4079,24 @@ Fallidos: ${fallidos}`);
             const rot = String(document.getElementById('etiqFiltroRotacion')?.value || '').trim();
             const exi = String(document.getElementById('etiqFiltroExistencia')?.value || '').trim();
             const q = String(document.getElementById('etiqFiltroTexto')?.value || '').trim().toLowerCase();
+            const gruposSeleccionados = new Set(etiquetadoGruposSeleccionados());
+            const filtrosBaseGrupo = { estado, rot, exi, q };
+            const combosActivos = etiquetadoProveedorBodegaActivosSet();
             if (!etiquetadoDemandaRaw.length) {
                 etiquetadoRows = [];
                 etiquetadoRowsFiltradas = [];
                 etiquetadoRender();
+                etiquetadoRenderAvance();
                 return;
             }
             let base = etiquetadoDemandaRaw.filter(r => {
                 const cod = String(r['Articulo'] || '').trim().toLowerCase();
                 const bod = String(r['Bodega'] || '').trim().toLowerCase();
-                if (!cod) return false;
+                if (!cod || etiquetadoCodigoOmitido(cod)) return false;
+                const proveedorCod = etiquetadoModeloDesdeCodigo(cod);
+                if (!combosActivos.has(etiquetadoAvanceKey(bod, proveedorCod))) return false;
                 if (bodega && bodega !== '__todas__' && bod !== bodega) return false;
-                if (prov && etiquetadoModeloDesdeCodigo(cod) !== prov) return false;
+                if (prov && proveedorCod !== prov) return false;
                 return true;
             });
             const consolidadas = etiquetadoConsolidar(base);
@@ -3317,23 +4105,22 @@ Fallidos: ${fallidos}`);
             try { await etiquetadoCargarCodigosBarraPara(consolidadas); }
             catch(e) { etiquetadoSetStatus(`No se pudieron completar códigos de barras: ${e.message || e}. Se mostrará lo disponible.`, 'error'); }
             etiquetadoRows = etiquetadoConstruirFilas(consolidadas);
+            etiquetadoActualizarListadoGrupos(etiquetadoRows, filtrosBaseGrupo);
+            const gruposDisponibles = new Set(Array.from(document.getElementById('etiqFiltroGrupo')?.options || []).map(o => String(o.value || '').trim().toLowerCase()).filter(Boolean));
+            const gruposValidos = new Set([...gruposSeleccionados].filter(g => gruposDisponibles.has(g)));
             etiquetadoRowsFiltradas = etiquetadoRows.filter(row => {
-                if (estado && row.status !== estado) return false;
-                const tieneExistencia = Number(row.existencia || 0) > 0;
-                const tieneRotacion = row.rotacion === '+';
-                if (rot === 'imprimibles' && !(tieneExistencia || tieneRotacion)) return false;
-                if (rot === 'existencia' && !tieneExistencia) return false;
-                if (rot === 'rotacion' && !tieneRotacion) return false;
-                if (rot === 'existencia_rotacion' && !(tieneExistencia || tieneRotacion)) return false;
-                if (rot === 'cero_rotacion' && (tieneExistencia || !tieneRotacion)) return false;
-                if (exi === 'cero' && row.existencia !== 0) return false;
-                if (exi === 'con' && row.existencia <= 0) return false;
-                if (q && !row.search.includes(q)) return false;
+                if (!etiquetadoCumpleFiltrosBaseGrupo(row, filtrosBaseGrupo)) return false;
+                const grupoRow = String(row.grupoFinal || row.grupo || '').trim().toLowerCase() || 'sin grupo';
+                if (gruposValidos.size && !gruposValidos.has(grupoRow)) return false;
                 return true;
             });
             etiquetadoOrdenarFiltradas();
             etiquetadoRender();
-            if (etiquetadoRows.length) etiquetadoSetStatus(`Vista lista: ${etiquetadoRowsFiltradas.length.toLocaleString('es-MX')} de ${etiquetadoRows.length.toLocaleString('es-MX')} registros consolidados. Orden: ${etiquetadoSortField === 'grupo' ? 'GRUPO' : 'codigo'} ${etiquetadoSortDir === 'asc' ? 'ascendente' : 'descendente'}.`, 'ok');
+            etiquetadoRenderAvance();
+            if (etiquetadoRows.length) {
+                const gruposTxt = gruposValidos.size ? ` · Grupos: ${[...gruposValidos].map(g => g.toUpperCase()).join(', ')}` : '';
+                etiquetadoSetStatus(`Vista lista: ${etiquetadoRowsFiltradas.length.toLocaleString('es-MX')} de ${etiquetadoRows.length.toLocaleString('es-MX')} registros consolidados${gruposTxt}. Orden: ${etiquetadoSortField === 'grupo' ? 'GRUPO' : 'codigo'} ${etiquetadoSortDir === 'asc' ? 'ascendente' : 'descendente'}.`, 'ok');
+            }
         }
 
         function etiquetadoHeadersParaBodega(bodega) {
@@ -3416,6 +4203,7 @@ Fallidos: ${fallidos}`);
             }
             etiquetadoOrdenarFiltradas();
             etiquetadoRender();
+            etiquetadoRenderAvance();
         }
 
         function etiquetadoHeaderHtml(h) {
@@ -3513,6 +4301,7 @@ Fallidos: ${fallidos}`);
             limpiarTodo();
             document.getElementById('pantallaMenuPrincipal').classList.add('hidden');
             document.getElementById('pantallaEtiquetadoQR')?.classList.add('hidden');
+            document.getElementById('pantallaRevisionLogistica')?.classList.add('hidden');
             document.getElementById('pantallaEditorPC').classList.remove('hidden');
             document.getElementById('editorPcStatus').innerText = 'Carga la vista maestra por código para revisar y editar.';
             await cargarAlmacenesEditorPC();
@@ -3733,6 +4522,7 @@ Fallidos: ${fallidos}`);
             document.getElementById('editorPcPrevBtn').disabled = editorPcCurrentPage <= 1;
             document.getElementById('editorPcNextBtn').disabled = editorPcCurrentPage >= totalPages;
             document.getElementById('btnGuardarEditorPC').disabled = modificadas === 0;
+            editorPcRefreshRevisionSelectionUi();
         }
 
         function editorPcSortValue(v) {
@@ -3806,7 +4596,7 @@ Fallidos: ${fallidos}`);
         function renderEditorPcTable() {
             const body = document.getElementById('editorPcBody');
             if (!editorPcRowsFiltered.length) {
-                body.innerHTML = '<tr><td colspan="31" class="px-4 py-8 text-center text-sm font-bold text-slate-400">Sin registros para mostrar.</td></tr>';
+                body.innerHTML = '<tr><td colspan="32" class="px-4 py-8 text-center text-sm font-bold text-slate-400">Sin registros para mostrar.</td></tr>';
                 editorPcResumen();
                 return;
             }
@@ -3815,6 +4605,7 @@ Fallidos: ${fallidos}`);
             const rowsToRender = editorPcRowsFiltered.slice(start, end);
             body.innerHTML = rowsToRender.map(row => `
                 <tr class="hover:bg-slate-50 align-top">
+                    <td class="px-3 py-2 text-center border-b border-slate-100"><input type="checkbox" class="editorPcRevisionChk" data-key="${escapeHtmlEditor(editorPcKey(row))}" onchange="editorPcToggleRevisionSeleccion(this.dataset.key, this.checked)" ${editorPcRevisionSeleccion.has(editorPcKey(row)) ? 'checked' : ''}></td>
                     ${editorPcReadonlyCell(row.codigo, 'editor-sticky-col-1 bg-slate-50')}
                     ${editorPcReadonlyCell(row.nombre, 'editor-sticky-col-2 bg-slate-50')}
                     ${editorPcReadonlyCell(row.clave_proveedor, 'editor-sticky-col-3 bg-slate-50')}
@@ -3850,6 +4641,111 @@ Fallidos: ${fallidos}`);
             `).join('');
             editorPcResumen();
             editorPcRefreshSortIndicators();
+            editorPcRefreshRevisionSelectionUi();
+        }
+
+
+        function editorPcRevisionCurrentPageRows() {
+            const start = (editorPcCurrentPage - 1) * editorPcPageSize;
+            const end = start + editorPcPageSize;
+            return editorPcRowsFiltered.slice(start, end);
+        }
+
+        function editorPcRefreshRevisionSelectionUi() {
+            const btn = document.getElementById('btnEnviarRevisionEditor');
+            const chkAll = document.getElementById('editorPcChkAllRevision');
+            const selectedCount = editorPcRevisionSeleccion.size;
+            if (btn) {
+                btn.disabled = selectedCount === 0;
+                btn.innerText = selectedCount ? `Enviar a revisión (${selectedCount})` : 'Enviar a revisión';
+            }
+            if (chkAll) {
+                const pageRows = editorPcRevisionCurrentPageRows();
+                const pageKeys = pageRows.map(row => editorPcKey(row));
+                const checked = pageKeys.length > 0 && pageKeys.every(key => editorPcRevisionSeleccion.has(key));
+                const some = pageKeys.some(key => editorPcRevisionSeleccion.has(key));
+                chkAll.checked = checked;
+                chkAll.indeterminate = some && !checked;
+            }
+        }
+
+        function editorPcToggleRevisionSeleccion(key, checked) {
+            const cleanKey = String(key || '').trim();
+            if (!cleanKey) return;
+            if (checked) editorPcRevisionSeleccion.add(cleanKey);
+            else editorPcRevisionSeleccion.delete(cleanKey);
+            editorPcRefreshRevisionSelectionUi();
+        }
+
+        function editorPcToggleAllRevision(checked) {
+            editorPcRevisionCurrentPageRows().forEach(row => {
+                const key = editorPcKey(row);
+                if (!key) return;
+                if (checked) editorPcRevisionSeleccion.add(key);
+                else editorPcRevisionSeleccion.delete(key);
+            });
+            renderEditorPcTable();
+        }
+
+        function editorPcCamposFaltantesRevision(row) {
+            const faltan = [];
+            if (!String(row.codigo_barra || '').trim()) faltan.push('Código de barras');
+            if (!String(row.largo_unidad || '').trim() || !String(row.ancho_unidad || '').trim() || !String(row.alto_unidad || '').trim()) faltan.push('Medidas unidad');
+            if (!String(row.unidades_caja_bolsa || '').trim() || !String(row.largo_caja_bolsa || '').trim() || !String(row.ancho_caja_bolsa || '').trim() || !String(row.alto_caja_bolsa || '').trim()) faltan.push('Caja/bolsa');
+            const soloBodegasA = String(row.bodegas_text || '').split(',').map(x => x.trim().toLowerCase()).filter(Boolean).every(x => x.startsWith('a'));
+            if (!soloBodegasA && (!String(row.unidades_tarima || '').trim() || !String(row.largo_tarima || '').trim() || !String(row.ancho_tarima || '').trim() || !String(row.alto_tarima || '').trim())) faltan.push('Tarima');
+            return faltan.length ? `Revisar: ${faltan.join(', ')}` : 'Revisión general';
+        }
+
+        async function enviarSeleccionEditorARevision() {
+            const selectedKeys = [...editorPcRevisionSeleccion];
+            if (!selectedKeys.length) {
+                alert('Selecciona uno o varios SKUs para enviar a revisión.');
+                return;
+            }
+            const rows = selectedKeys
+                .map(key => editorPcRows.find(row => editorPcKey(row) === key))
+                .filter(Boolean);
+            if (!rows.length) {
+                alert('No se encontraron los SKUs seleccionados.');
+                editorPcRevisionSeleccion = new Set();
+                editorPcRefreshRevisionSelectionUi();
+                return;
+            }
+            const almacen = editorPcSelectedInventoryBodega() || 'general';
+            if (!confirm(`¿Enviar ${rows.length} SKU(s) a Revisión Logística?\n\nEl operador los verá en su dispositivo como pendientes.`)) return;
+            const btn = document.getElementById('btnEnviarRevisionEditor');
+            const oldText = btn ? btn.innerText : '';
+            if (btn) { btn.disabled = true; btn.innerText = 'Enviando...'; }
+            const payload = rows.map(row => ({
+                codigo_limsa: String(row.codigo || '').trim().toLowerCase(),
+                almacen,
+                descripcion: String(row.nombre || '').trim(),
+                estado: 'PENDIENTE',
+                campos_faltantes: editorPcCamposFaltantesRevision(row),
+                updated_at: new Date().toISOString(),
+                fecha_revision: null
+            })).filter(x => x.codigo_limsa);
+            try {
+                await fetchJsonOrThrow(`${SB_URL}logistica_revision?on_conflict=codigo_limsa,almacen`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SB_KEY,
+                        'Authorization': `Bearer ${getAccessToken()}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'resolution=merge-duplicates,return=minimal'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                editorPcRevisionSeleccion = new Set();
+                renderEditorPcTable();
+                alert(`Se enviaron ${payload.length} SKU(s) a Revisión Logística.`);
+            } catch (e) {
+                alert(`No se pudo enviar a revisión: ${e.message || e}`);
+                if (btn) { btn.disabled = false; btn.innerText = oldText || 'Enviar a revisión'; }
+            } finally {
+                editorPcRefreshRevisionSelectionUi();
+            }
         }
 
         function editorPcOnInput(input) {
@@ -4069,8 +4965,9 @@ Fallidos: ${fallidos}`);
         async function cargarEditorLogisticoPC() {
             document.getElementById('editorPcStatus').innerText = 'Cargando información...';
             const body = document.getElementById('editorPcBody');
-            body.innerHTML = '<tr><td colspan="31" class="px-4 py-8 text-center text-sm font-bold text-slate-400">Cargando...</td></tr>';
+            body.innerHTML = '<tr><td colspan="32" class="px-4 py-8 text-center text-sm font-bold text-slate-400">Cargando...</td></tr>';
             editorPcModified = new Map();
+            editorPcRevisionSeleccion = new Set();
             try {
                 const allRows = await fetchAllSupabaseRows(
                     'almacen_datos',
@@ -4155,7 +5052,7 @@ Fallidos: ${fallidos}`);
                 document.getElementById('editorPcStatus').innerText = `Vista maestra cargada. Códigos: ${editorPcRows.length}.`;
                 aplicarFiltrosEditorPC();
             } catch (e) {
-                body.innerHTML = `<tr><td colspan="31" class="px-4 py-8 text-center text-sm font-bold text-red-500">${escapeHtmlEditor(e.message || 'Error al cargar.')}</td></tr>`;
+                body.innerHTML = `<tr><td colspan="32" class="px-4 py-8 text-center text-sm font-bold text-red-500">${escapeHtmlEditor(e.message || 'Error al cargar.')}</td></tr>`;
                 document.getElementById('editorPcStatus').innerText = 'Error al cargar.';
             }
         }
