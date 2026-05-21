@@ -997,7 +997,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2026.05.20.4-etiquetado-codigo30-fijo";
+        const APP_VERSION = "2026.05.20.6-etiquetado-exportacion-invertida";
         const SB_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/rest/v1/";
         const SB_AUTH_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/auth/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBodWRmbG10YmZrZHpxanFhb3ViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTUyMjIsImV4cCI6MjA5MjYzMTIyMn0.KbQenxZHHNlsLBdamQtI6CvJQisTzLLcVgN11TY2_XQ";
@@ -2992,6 +2992,8 @@ Fallidos: ${fallidos}`);
         let etiquetadoBarcodeMap = new Map();
         let etiquetadoAlmacenInicial = '';
         let etiquetadoUltimaBodegaListado = null;
+        let etiquetadoSortField = 'codigo';
+        let etiquetadoSortDir = 'asc';
         const ETIQ_HEADERS_BASE = ['codigo','status','descripcion','dem','__EXISTENCIA__','MODELOS','GRUPO','CODIGO30','ROTACION','CODIGO_BARRAS'];
 
         function regresarAAlmacenesDesdeEtiquetado() {
@@ -3329,8 +3331,9 @@ Fallidos: ${fallidos}`);
                 if (q && !row.search.includes(q)) return false;
                 return true;
             });
+            etiquetadoOrdenarFiltradas();
             etiquetadoRender();
-            if (etiquetadoRows.length) etiquetadoSetStatus(`Vista lista: ${etiquetadoRowsFiltradas.length.toLocaleString('es-MX')} de ${etiquetadoRows.length.toLocaleString('es-MX')} registros consolidados.`, 'ok');
+            if (etiquetadoRows.length) etiquetadoSetStatus(`Vista lista: ${etiquetadoRowsFiltradas.length.toLocaleString('es-MX')} de ${etiquetadoRows.length.toLocaleString('es-MX')} registros consolidados. Orden: ${etiquetadoSortField === 'grupo' ? 'GRUPO' : 'codigo'} ${etiquetadoSortDir === 'asc' ? 'ascendente' : 'descendente'}.`, 'ok');
         }
 
         function etiquetadoHeadersParaBodega(bodega) {
@@ -3353,9 +3356,13 @@ Fallidos: ${fallidos}`);
             ];
         }
 
-        function etiquetadoBuildCsv(rows, bodega) {
+        function etiquetadoBuildCsv(rows, bodega, invertirParaImpresion = true) {
             const lines = [etiquetadoHeadersParaBodega(bodega).map(etiquetadoCsvEscape).join(',')];
-            rows.forEach(row => lines.push(etiquetadoFilaCsv(row, bodega).map(etiquetadoCsvEscape).join(',')));
+            // BarTender/imprenta procesa el CSV en secuencia.
+            // Para que las etiquetas salgan físicamente en el orden esperado,
+            // exportamos de atrás hacia adelante tomando como base el orden visible.
+            const salida = invertirParaImpresion ? [...rows].reverse() : [...rows];
+            salida.forEach(row => lines.push(etiquetadoFilaCsv(row, bodega).map(etiquetadoCsvEscape).join(',')));
             return lines.join('\r\n');
         }
 
@@ -3374,6 +3381,52 @@ Fallidos: ${fallidos}`);
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
         }
 
+        function etiquetadoValorOrden(row, field) {
+            if (field === 'grupo') return String(row.grupoFinal || row.grupo || '').trim().toLowerCase();
+            return String(row.codigo || '').trim().toLowerCase();
+        }
+
+        function etiquetadoOrdenarRows(rows) {
+            const field = etiquetadoSortField === 'grupo' ? 'grupo' : 'codigo';
+            const dir = etiquetadoSortDir === 'desc' ? -1 : 1;
+            rows.sort((a, b) => {
+                const av = etiquetadoValorOrden(a, field);
+                const bv = etiquetadoValorOrden(b, field);
+                const cmp = av.localeCompare(bv, 'es', { numeric:true, sensitivity:'base' });
+                if (cmp !== 0) return cmp * dir;
+                // Desempate estable para que el orden sea útil en BarTender.
+                const codCmp = String(a.codigo || '').localeCompare(String(b.codigo || ''), 'es', { numeric:true, sensitivity:'base' });
+                if (codCmp !== 0) return codCmp;
+                return String(a.bodega || '').localeCompare(String(b.bodega || ''), 'es', { numeric:true, sensitivity:'base' });
+            });
+            return rows;
+        }
+
+        function etiquetadoOrdenarFiltradas() {
+            etiquetadoOrdenarRows(etiquetadoRowsFiltradas || []);
+        }
+
+        function etiquetadoSortBy(field) {
+            const normalized = field === 'grupo' ? 'grupo' : 'codigo';
+            if (etiquetadoSortField === normalized) {
+                etiquetadoSortDir = etiquetadoSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                etiquetadoSortField = normalized;
+                etiquetadoSortDir = 'asc';
+            }
+            etiquetadoOrdenarFiltradas();
+            etiquetadoRender();
+        }
+
+        function etiquetadoHeaderHtml(h) {
+            const label = escapeHtmlEditor(h);
+            const key = String(h || '').toLowerCase() === 'codigo' ? 'codigo' : (String(h || '').toUpperCase() === 'GRUPO' ? 'grupo' : '');
+            if (!key) return `<th class="px-3 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">${label}</th>`;
+            const active = etiquetadoSortField === key;
+            const icon = active ? (etiquetadoSortDir === 'asc' ? '▲' : '▼') : '↕';
+            return `<th class="px-3 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap"><button type="button" onclick="etiquetadoSortBy('${key}')" class="inline-flex items-center gap-1 hover:text-amber-700 transition-colors">${label}<span class="text-[9px]">${icon}</span></button></th>`;
+        }
+
         function etiquetadoRender() {
             const rows = etiquetadoRowsFiltradas || [];
             const bodega = String(document.getElementById('etiqFiltroBodega')?.value || etiquetadoAlmacenInicial || '').toLowerCase();
@@ -3381,7 +3434,7 @@ Fallidos: ${fallidos}`);
             const body = document.getElementById('etiqTablaBody');
             const bodegaHeader = bodega === '__todas__' ? 'TOTAL' : bodega;
             const headers = bodega === '__todas__' ? ['bodega', ...etiquetadoHeadersParaBodega('TOTAL')] : etiquetadoHeadersParaBodega(bodegaHeader);
-            if (head) head.innerHTML = headers.map(h => `<th class="px-3 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">${escapeHtmlEditor(h)}</th>`).join('');
+            if (head) head.innerHTML = headers.map(etiquetadoHeaderHtml).join('');
             if (body) {
                 const visibles = rows.slice(0, 300);
                 body.innerHTML = visibles.length ? visibles.map(row => {
