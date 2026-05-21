@@ -25,6 +25,15 @@
         .editor-sticky-col-1 { position: sticky; left: 0; z-index: 13; box-shadow: 1px 0 0 #e2e8f0; }
         .editor-sticky-col-2 { position: sticky; left: 160px; z-index: 12; box-shadow: 1px 0 0 #e2e8f0; }
         .editor-sticky-col-3 { position: sticky; left: 480px; z-index: 11; min-width: 190px; width: 190px; box-shadow: 1px 0 0 #cbd5e1; }
+        /* Editor Logistico: columnas fijas alineadas con la columna de seleccion. */
+        #pantallaEditorPC .editor-select-col { position: sticky; left: 0; z-index: 16; width: 44px; min-width: 44px; max-width: 44px; box-shadow: 1px 0 0 #e2e8f0; }
+        #pantallaEditorPC .editor-sticky-col-1 { left: 44px !important; width: 150px; min-width: 150px; max-width: 150px; z-index: 15; }
+        #pantallaEditorPC .editor-sticky-col-2 { left: 194px !important; width: 300px; min-width: 300px; max-width: 300px; z-index: 14; }
+        #pantallaEditorPC .editor-sticky-col-3 { left: 494px !important; width: 190px; min-width: 190px; max-width: 190px; z-index: 13; }
+        #pantallaEditorPC .editor-grid thead .editor-select-col,
+        #pantallaEditorPC .editor-grid thead .editor-sticky-col-1,
+        #pantallaEditorPC .editor-grid thead .editor-sticky-col-2,
+        #pantallaEditorPC .editor-grid thead .editor-sticky-col-3 { z-index: 25; }
         .editor-header-btn { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; }
         .editor-header-btn:hover { color: #334155; }
         .editor-sort-indicator { font-size: 11px; color: #7c3aed; font-weight: 900; }
@@ -875,7 +884,7 @@
                     <table class="min-w-full text-xs editor-grid">
                         <thead class="bg-slate-100 text-slate-600 uppercase tracking-wider text-[10px]">
                             <tr>
-                                <th class="px-3 py-3 text-center border-b border-slate-200 bg-slate-100"><input type="checkbox" id="editorPcChkAllRevision" onchange="editorPcToggleAllRevision(this.checked)" title="Seleccionar visibles"></th>
+                                <th class="px-3 py-3 text-center border-b border-slate-200 bg-slate-100 editor-select-col"><input type="checkbox" id="editorPcChkAllRevision" onchange="editorPcToggleAllRevision(this.checked)" title="Seleccionar visibles"></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200 bg-slate-100 editor-sticky-col-1"><button onclick="editorPcSortBy('codigo')" class="editor-header-btn">Código <span id="editorSort_codigo" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200 bg-slate-100 editor-sticky-col-2"><button onclick="editorPcSortBy('nombre')" class="editor-header-btn">Nombre <span id="editorSort_nombre" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200 bg-slate-100 editor-sticky-col-3"><button onclick="editorPcSortBy('clave_proveedor')" class="editor-header-btn">Clave proveedor <span id="editorSort_clave_proveedor" class="editor-sort-indicator"></span></button></th>
@@ -4605,7 +4614,7 @@ Fallidos: ${fallidos}`);
             const rowsToRender = editorPcRowsFiltered.slice(start, end);
             body.innerHTML = rowsToRender.map(row => `
                 <tr class="hover:bg-slate-50 align-top">
-                    <td class="px-3 py-2 text-center border-b border-slate-100"><input type="checkbox" class="editorPcRevisionChk" data-key="${escapeHtmlEditor(editorPcKey(row))}" onchange="editorPcToggleRevisionSeleccion(this.dataset.key, this.checked)" ${editorPcRevisionSeleccion.has(editorPcKey(row)) ? 'checked' : ''}></td>
+                    <td class="px-3 py-2 text-center border-b border-slate-100 bg-slate-50 editor-select-col"><input type="checkbox" class="editorPcRevisionChk" data-key="${escapeHtmlEditor(editorPcKey(row))}" onchange="editorPcToggleRevisionSeleccion(this.dataset.key, this.checked)" ${editorPcRevisionSeleccion.has(editorPcKey(row)) ? 'checked' : ''}></td>
                     ${editorPcReadonlyCell(row.codigo, 'editor-sticky-col-1 bg-slate-50')}
                     ${editorPcReadonlyCell(row.nombre, 'editor-sticky-col-2 bg-slate-50')}
                     ${editorPcReadonlyCell(row.clave_proveedor, 'editor-sticky-col-3 bg-slate-50')}
