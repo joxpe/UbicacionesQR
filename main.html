@@ -25,15 +25,6 @@
         .editor-sticky-col-1 { position: sticky; left: 0; z-index: 13; box-shadow: 1px 0 0 #e2e8f0; }
         .editor-sticky-col-2 { position: sticky; left: 160px; z-index: 12; box-shadow: 1px 0 0 #e2e8f0; }
         .editor-sticky-col-3 { position: sticky; left: 480px; z-index: 11; min-width: 190px; width: 190px; box-shadow: 1px 0 0 #cbd5e1; }
-        /* Editor Logistico: columnas fijas alineadas con la columna de seleccion. */
-        #pantallaEditorPC .editor-select-col { position: sticky; left: 0; z-index: 16; width: 44px; min-width: 44px; max-width: 44px; box-shadow: 1px 0 0 #e2e8f0; }
-        #pantallaEditorPC .editor-sticky-col-1 { left: 44px !important; width: 150px; min-width: 150px; max-width: 150px; z-index: 15; }
-        #pantallaEditorPC .editor-sticky-col-2 { left: 194px !important; width: 300px; min-width: 300px; max-width: 300px; z-index: 14; }
-        #pantallaEditorPC .editor-sticky-col-3 { left: 494px !important; width: 190px; min-width: 190px; max-width: 190px; z-index: 13; }
-        #pantallaEditorPC .editor-grid thead .editor-select-col,
-        #pantallaEditorPC .editor-grid thead .editor-sticky-col-1,
-        #pantallaEditorPC .editor-grid thead .editor-sticky-col-2,
-        #pantallaEditorPC .editor-grid thead .editor-sticky-col-3 { z-index: 25; }
         .editor-header-btn { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; }
         .editor-header-btn:hover { color: #334155; }
         .editor-sort-indicator { font-size: 11px; color: #7c3aed; font-weight: 900; }
@@ -411,22 +402,10 @@
                             </button>
                             <div id="bodyUnidad" class="px-4 pb-4 space-y-3">
                                 <div class="grid grid-cols-2 gap-3">
-                                    <label class="block">
-                                    <span class="block text-[10px] font-black text-indigo-600 uppercase tracking-wider mb-1">Largo (cm)</span>
-                                    <input type="text" inputmode="decimal" id="corrLargoUnidad" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700 w-full" placeholder="Largo (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrLargoUnidad')" onfocus="abrirTecladoNumerico('corrLargoUnidad')">
-                                    </label>
-                                    <label class="block">
-                                    <span class="block text-[10px] font-black text-indigo-600 uppercase tracking-wider mb-1">Alto (cm)</span>
-                                    <input type="text" inputmode="decimal" id="corrAnchoUnidad" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700 w-full" placeholder="Alto (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrAnchoUnidad')" onfocus="abrirTecladoNumerico('corrAnchoUnidad')">
-                                    </label>
-                                    <label class="block">
-                                    <span class="block text-[10px] font-black text-indigo-600 uppercase tracking-wider mb-1">Ancho (cm)</span>
-                                    <input type="text" inputmode="decimal" id="corrAltoUnidad" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700 w-full" placeholder="Ancho (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrAltoUnidad')" onfocus="abrirTecladoNumerico('corrAltoUnidad')">
-                                    </label>
-                                    <label class="block">
-                                    <span class="block text-[10px] font-black text-indigo-600 uppercase tracking-wider mb-1">Peso (kg)</span>
-                                    <input type="text" inputmode="decimal" id="corrPesoUnidad" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700 w-full" placeholder="Peso (kg)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrPesoUnidad')" onfocus="abrirTecladoNumerico('corrPesoUnidad')">
-                                    </label>
+                                    <input type="text" inputmode="decimal" id="corrLargoUnidad" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Largo (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrLargoUnidad')" onfocus="abrirTecladoNumerico('corrLargoUnidad')">
+                                    <input type="text" inputmode="decimal" id="corrAnchoUnidad" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Ancho (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrAnchoUnidad')" onfocus="abrirTecladoNumerico('corrAnchoUnidad')">
+                                    <input type="text" inputmode="decimal" id="corrAltoUnidad" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Alto (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrAltoUnidad')" onfocus="abrirTecladoNumerico('corrAltoUnidad')">
+                                    <input type="text" inputmode="decimal" id="corrPesoUnidad" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Peso (kg)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrPesoUnidad')" onfocus="abrirTecladoNumerico('corrPesoUnidad')">
                                 </div>
                             </div>
                         </div>
@@ -440,27 +419,12 @@
                                 <span id="iconCaja" class="text-indigo-600 font-black text-lg">+</span>
                             </button>
                             <div id="bodyCaja" class="hidden px-4 pb-4 space-y-3">
-                                <label class="block">
-                                    <span class="block text-[10px] font-black text-indigo-600 uppercase tracking-wider mb-1">Unidades por caja / bolsa</span>
-                                    <input type="text" inputmode="decimal" id="corrUndCajaBolsa" class="w-full border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700 w-full" placeholder="Unidades por caja / bolsa" readonly inputmode="none" onclick="abrirTecladoNumerico('corrUndCajaBolsa')" onfocus="abrirTecladoNumerico('corrUndCajaBolsa')">
-                                    </label>
+                                <input type="text" inputmode="decimal" id="corrUndCajaBolsa" class="w-full border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Unidades por caja / bolsa" readonly inputmode="none" onclick="abrirTecladoNumerico('corrUndCajaBolsa')" onfocus="abrirTecladoNumerico('corrUndCajaBolsa')">
                                 <div class="grid grid-cols-2 gap-3">
-                                    <label class="block">
-                                    <span class="block text-[10px] font-black text-indigo-600 uppercase tracking-wider mb-1">Largo (cm)</span>
-                                    <input type="text" inputmode="decimal" id="corrLargoCajaBolsa" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700 w-full" placeholder="Largo (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrLargoCajaBolsa')" onfocus="abrirTecladoNumerico('corrLargoCajaBolsa')">
-                                    </label>
-                                    <label class="block">
-                                    <span class="block text-[10px] font-black text-indigo-600 uppercase tracking-wider mb-1">Alto (cm)</span>
-                                    <input type="text" inputmode="decimal" id="corrAnchoCajaBolsa" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700 w-full" placeholder="Alto (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrAnchoCajaBolsa')" onfocus="abrirTecladoNumerico('corrAnchoCajaBolsa')">
-                                    </label>
-                                    <label class="block">
-                                    <span class="block text-[10px] font-black text-indigo-600 uppercase tracking-wider mb-1">Ancho (cm)</span>
-                                    <input type="text" inputmode="decimal" id="corrAltoCajaBolsa" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700 w-full" placeholder="Ancho (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrAltoCajaBolsa')" onfocus="abrirTecladoNumerico('corrAltoCajaBolsa')">
-                                    </label>
-                                    <label class="block">
-                                    <span class="block text-[10px] font-black text-indigo-600 uppercase tracking-wider mb-1">Peso (kg)</span>
-                                    <input type="text" inputmode="decimal" id="corrPesoCajaBolsa" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700 w-full" placeholder="Peso (kg)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrPesoCajaBolsa')" onfocus="abrirTecladoNumerico('corrPesoCajaBolsa')">
-                                    </label>
+                                    <input type="text" inputmode="decimal" id="corrLargoCajaBolsa" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Largo (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrLargoCajaBolsa')" onfocus="abrirTecladoNumerico('corrLargoCajaBolsa')">
+                                    <input type="text" inputmode="decimal" id="corrAnchoCajaBolsa" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Ancho (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrAnchoCajaBolsa')" onfocus="abrirTecladoNumerico('corrAnchoCajaBolsa')">
+                                    <input type="text" inputmode="decimal" id="corrAltoCajaBolsa" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Alto (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrAltoCajaBolsa')" onfocus="abrirTecladoNumerico('corrAltoCajaBolsa')">
+                                    <input type="text" inputmode="decimal" id="corrPesoCajaBolsa" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Peso (kg)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrPesoCajaBolsa')" onfocus="abrirTecladoNumerico('corrPesoCajaBolsa')">
                                 </div>
                             </div>
                         </div>
@@ -474,27 +438,12 @@
                                 <span id="iconTarima" class="text-indigo-600 font-black text-lg">+</span>
                             </button>
                             <div id="bodyTarima" class="hidden px-4 pb-4 space-y-3">
-                                <label class="block">
-                                    <span class="block text-[10px] font-black text-indigo-600 uppercase tracking-wider mb-1">Unidades por tarima</span>
-                                    <input type="text" inputmode="decimal" id="corrUndTarima" class="w-full border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700 w-full" placeholder="Unidades por tarima" readonly inputmode="none" onclick="abrirTecladoNumerico('corrUndTarima')" onfocus="abrirTecladoNumerico('corrUndTarima')">
-                                    </label>
+                                <input type="text" inputmode="decimal" id="corrUndTarima" class="w-full border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Unidades por tarima" readonly inputmode="none" onclick="abrirTecladoNumerico('corrUndTarima')" onfocus="abrirTecladoNumerico('corrUndTarima')">
                                 <div class="grid grid-cols-2 gap-3">
-                                    <label class="block">
-                                    <span class="block text-[10px] font-black text-indigo-600 uppercase tracking-wider mb-1">Largo (cm)</span>
-                                    <input type="text" inputmode="decimal" id="corrLargoTarima" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700 w-full" placeholder="Largo (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrLargoTarima')" onfocus="abrirTecladoNumerico('corrLargoTarima')">
-                                    </label>
-                                    <label class="block">
-                                    <span class="block text-[10px] font-black text-indigo-600 uppercase tracking-wider mb-1">Alto (cm)</span>
-                                    <input type="text" inputmode="decimal" id="corrAnchoTarima" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700 w-full" placeholder="Alto (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrAnchoTarima')" onfocus="abrirTecladoNumerico('corrAnchoTarima')">
-                                    </label>
-                                    <label class="block">
-                                    <span class="block text-[10px] font-black text-indigo-600 uppercase tracking-wider mb-1">Ancho (cm)</span>
-                                    <input type="text" inputmode="decimal" id="corrAltoTarima" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700 w-full" placeholder="Ancho (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrAltoTarima')" onfocus="abrirTecladoNumerico('corrAltoTarima')">
-                                    </label>
-                                    <label class="block">
-                                    <span class="block text-[10px] font-black text-indigo-600 uppercase tracking-wider mb-1">Peso (kg)</span>
-                                    <input type="text" inputmode="decimal" id="corrPesoTarima" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700 w-full" placeholder="Peso (kg)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrPesoTarima')" onfocus="abrirTecladoNumerico('corrPesoTarima')">
-                                    </label>
+                                    <input type="text" inputmode="decimal" id="corrLargoTarima" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Largo (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrLargoTarima')" onfocus="abrirTecladoNumerico('corrLargoTarima')">
+                                    <input type="text" inputmode="decimal" id="corrAnchoTarima" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Ancho (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrAnchoTarima')" onfocus="abrirTecladoNumerico('corrAnchoTarima')">
+                                    <input type="text" inputmode="decimal" id="corrAltoTarima" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Alto (cm)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrAltoTarima')" onfocus="abrirTecladoNumerico('corrAltoTarima')">
+                                    <input type="text" inputmode="decimal" id="corrPesoTarima" class="border border-indigo-200 rounded-2xl px-4 py-4 text-base font-bold text-slate-700" placeholder="Peso (kg)" readonly inputmode="none" onclick="abrirTecladoNumerico('corrPesoTarima')" onfocus="abrirTecladoNumerico('corrPesoTarima')">
                                 </div>
                             </div>
                         </div>
@@ -926,7 +875,7 @@
                     <table class="min-w-full text-xs editor-grid">
                         <thead class="bg-slate-100 text-slate-600 uppercase tracking-wider text-[10px]">
                             <tr>
-                                <th class="px-3 py-3 text-center border-b border-slate-200 bg-slate-100 editor-select-col"><input type="checkbox" id="editorPcChkAllRevision" onchange="editorPcToggleAllRevision(this.checked)" title="Seleccionar visibles"></th>
+                                <th class="px-3 py-3 text-center border-b border-slate-200 bg-slate-100"><input type="checkbox" id="editorPcChkAllRevision" onchange="editorPcToggleAllRevision(this.checked)" title="Seleccionar visibles"></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200 bg-slate-100 editor-sticky-col-1"><button onclick="editorPcSortBy('codigo')" class="editor-header-btn">Código <span id="editorSort_codigo" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200 bg-slate-100 editor-sticky-col-2"><button onclick="editorPcSortBy('nombre')" class="editor-header-btn">Nombre <span id="editorSort_nombre" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200 bg-slate-100 editor-sticky-col-3"><button onclick="editorPcSortBy('clave_proveedor')" class="editor-header-btn">Clave proveedor <span id="editorSort_clave_proveedor" class="editor-sort-indicator"></span></button></th>
@@ -935,23 +884,23 @@
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('factor')" class="editor-header-btn">Factor <span id="editorSort_factor" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('proveedor')" class="editor-header-btn">Proveedor <span id="editorSort_proveedor" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('largo')" class="editor-header-btn">Largo cat. <span id="editorSort_largo" class="editor-sort-indicator"></span></button></th>
-                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('ancho')" class="editor-header-btn">Alto cat. <span id="editorSort_ancho" class="editor-sort-indicator"></span></button></th>
-                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('alto')" class="editor-header-btn">Ancho cat. <span id="editorSort_alto" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('ancho')" class="editor-header-btn">Ancho cat. <span id="editorSort_ancho" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('alto')" class="editor-header-btn">Alto cat. <span id="editorSort_alto" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('bodegas_count')" class="editor-header-btn">Bodegas <span id="editorSort_bodegas_count" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('codigo_barra')" class="editor-header-btn">Código barra <span id="editorSort_codigo_barra" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('largo_unidad')" class="editor-header-btn">Largo unidad <span id="editorSort_largo_unidad" class="editor-sort-indicator"></span></button></th>
-                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('ancho_unidad')" class="editor-header-btn">Alto unidad <span id="editorSort_ancho_unidad" class="editor-sort-indicator"></span></button></th>
-                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('alto_unidad')" class="editor-header-btn">Ancho unidad <span id="editorSort_alto_unidad" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('ancho_unidad')" class="editor-header-btn">Ancho unidad <span id="editorSort_ancho_unidad" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('alto_unidad')" class="editor-header-btn">Alto unidad <span id="editorSort_alto_unidad" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('peso_unidad')" class="editor-header-btn">Peso unidad <span id="editorSort_peso_unidad" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('unidades_caja_bolsa')" class="editor-header-btn">Unid. caja/bolsa <span id="editorSort_unidades_caja_bolsa" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('largo_caja_bolsa')" class="editor-header-btn">Largo caja/bolsa <span id="editorSort_largo_caja_bolsa" class="editor-sort-indicator"></span></button></th>
-                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('ancho_caja_bolsa')" class="editor-header-btn">Alto caja/bolsa <span id="editorSort_ancho_caja_bolsa" class="editor-sort-indicator"></span></button></th>
-                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('alto_caja_bolsa')" class="editor-header-btn">Ancho caja/bolsa <span id="editorSort_alto_caja_bolsa" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('ancho_caja_bolsa')" class="editor-header-btn">Ancho caja/bolsa <span id="editorSort_ancho_caja_bolsa" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('alto_caja_bolsa')" class="editor-header-btn">Alto caja/bolsa <span id="editorSort_alto_caja_bolsa" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('peso_caja_bolsa')" class="editor-header-btn">Peso caja/bolsa <span id="editorSort_peso_caja_bolsa" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('unidades_tarima')" class="editor-header-btn">Unid. tarima <span id="editorSort_unidades_tarima" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('largo_tarima')" class="editor-header-btn">Largo tarima <span id="editorSort_largo_tarima" class="editor-sort-indicator"></span></button></th>
-                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('ancho_tarima')" class="editor-header-btn">Alto tarima <span id="editorSort_ancho_tarima" class="editor-sort-indicator"></span></button></th>
-                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('alto_tarima')" class="editor-header-btn">Ancho tarima <span id="editorSort_alto_tarima" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('ancho_tarima')" class="editor-header-btn">Ancho tarima <span id="editorSort_ancho_tarima" class="editor-sort-indicator"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('alto_tarima')" class="editor-header-btn">Alto tarima <span id="editorSort_alto_tarima" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('peso_tarima')" class="editor-header-btn">Peso tarima <span id="editorSort_peso_tarima" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('inventario_bodega_temp')" class="editor-header-btn">Bodega temp <span id="editorSort_inventario_bodega_temp" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('inventario_existencia_temp')" class="editor-header-btn">Exist. temp <span id="editorSort_inventario_existencia_temp" class="editor-sort-indicator"></span></button></th>
@@ -1168,7 +1117,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2026.05.21.11";
+        const APP_VERSION = "2026.05.22.12";
         const SB_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/rest/v1/";
         const SB_AUTH_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/auth/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBodWRmbG10YmZrZHpxanFhb3ViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTUyMjIsImV4cCI6MjA5MjYzMTIyMn0.KbQenxZHHNlsLBdamQtI6CvJQisTzLLcVgN11TY2_XQ";
@@ -1500,14 +1449,15 @@
 
         function recalcularAutomaticosCorrelacion() {
             const undCaja = parseNumeroCorr(corrVal('corrUndCajaBolsa'));
-            const anchoCaja = parseNumeroCorr(corrVal('corrAnchoCajaBolsa'));
             const pesoCaja = parseNumeroCorr(corrVal('corrPesoCajaBolsa'));
             const undTarima = parseNumeroCorr(corrVal('corrUndTarima'));
 
-            if (undCaja && undCaja > 0 && pesoCaja != null) {
+            // Importante: no sobrescribir capturas manuales.
+            // Si el operador ya puso un valor, se respeta. Para recalcular, primero debe limpiar el campo destino.
+            if (undCaja && undCaja > 0 && pesoCaja != null && !corrVal('corrPesoUnidad')) {
                 setCorrVal('corrPesoUnidad', formatearNumeroCorr(pesoCaja / undCaja));
             }
-            if (undTarima && undTarima > 0 && pesoCaja != null) {
+            if (undTarima && undTarima > 0 && pesoCaja != null && !corrVal('corrPesoTarima')) {
                 setCorrVal('corrPesoTarima', formatearNumeroCorr((pesoCaja * undTarima) + 22));
             }
             actualizarResumenCorrelacion();
@@ -2757,7 +2707,8 @@ Fallidos: ${fallidos}`);
 
             const payloadLogistica = obtenerPayloadLogisticaCorrelacion();
             Object.entries(payloadLogistica).forEach(([k, v]) => {
-                if(v !== null && String(v).trim() !== '') payload[k] = v;
+                // Mandar todos los campos logísticos, incluso null, para que editar o limpiar un número sí se refleje en Supabase.
+                payload[k] = v;
             });
 
             try {
@@ -3221,18 +3172,18 @@ Fallidos: ${fallidos}`);
             const mapa = {
                 audCantidad: 'Cantidad',
                 corrLargoUnidad: 'Largo unidad',
-                corrAnchoUnidad: 'Alto unidad',
-                corrAltoUnidad: 'Ancho unidad',
+                corrAnchoUnidad: 'Ancho unidad',
+                corrAltoUnidad: 'Alto unidad',
                 corrPesoUnidad: 'Peso unidad',
                 corrUndCajaBolsa: 'Unidades caja / bolsa',
                 corrLargoCajaBolsa: 'Largo caja / bolsa',
-                corrAnchoCajaBolsa: 'Alto caja / bolsa',
-                corrAltoCajaBolsa: 'Ancho caja / bolsa',
+                corrAnchoCajaBolsa: 'Ancho caja / bolsa',
+                corrAltoCajaBolsa: 'Alto caja / bolsa',
                 corrPesoCajaBolsa: 'Peso caja / bolsa',
                 corrUndTarima: 'Unidades tarima',
                 corrLargoTarima: 'Largo tarima',
-                corrAnchoTarima: 'Alto tarima',
-                corrAltoTarima: 'Ancho tarima',
+                corrAnchoTarima: 'Ancho tarima',
+                corrAltoTarima: 'Alto tarima',
                 corrPesoTarima: 'Peso tarima'
             };
             return mapa[id] || 'Captura numérica';
@@ -4653,7 +4604,7 @@ Fallidos: ${fallidos}`);
             const rowsToRender = editorPcRowsFiltered.slice(start, end);
             body.innerHTML = rowsToRender.map(row => `
                 <tr class="hover:bg-slate-50 align-top">
-                    <td class="px-3 py-2 text-center border-b border-slate-100 bg-slate-50 editor-select-col"><input type="checkbox" class="editorPcRevisionChk" data-key="${escapeHtmlEditor(editorPcKey(row))}" onchange="editorPcToggleRevisionSeleccion(this.dataset.key, this.checked)" ${editorPcRevisionSeleccion.has(editorPcKey(row)) ? 'checked' : ''}></td>
+                    <td class="px-3 py-2 text-center border-b border-slate-100"><input type="checkbox" class="editorPcRevisionChk" data-key="${escapeHtmlEditor(editorPcKey(row))}" onchange="editorPcToggleRevisionSeleccion(this.dataset.key, this.checked)" ${editorPcRevisionSeleccion.has(editorPcKey(row)) ? 'checked' : ''}></td>
                     ${editorPcReadonlyCell(row.codigo, 'editor-sticky-col-1 bg-slate-50')}
                     ${editorPcReadonlyCell(row.nombre, 'editor-sticky-col-2 bg-slate-50')}
                     ${editorPcReadonlyCell(row.clave_proveedor, 'editor-sticky-col-3 bg-slate-50')}
