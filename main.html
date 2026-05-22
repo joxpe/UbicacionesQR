@@ -1462,9 +1462,6 @@
             const pesoCaja = parseNumeroCorr(corrVal('corrPesoCajaBolsa'));
             const undTarima = parseNumeroCorr(corrVal('corrUndTarima'));
 
-            if (undCaja && undCaja > 0 && anchoCaja != null) {
-                setCorrVal('corrAnchoUnidad', formatearNumeroCorr(anchoCaja / undCaja));
-            }
             if (undCaja && undCaja > 0 && pesoCaja != null) {
                 setCorrVal('corrPesoUnidad', formatearNumeroCorr(pesoCaja / undCaja));
             }
