@@ -1168,7 +1168,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2026.05.27.1";
+        const APP_VERSION = "2026.05.27.2";
         const SB_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/rest/v1/";
         const SB_AUTH_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/auth/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBodWRmbG10YmZrZHpxanFhb3ViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTUyMjIsImV4cCI6MjA5MjYzMTIyMn0.KbQenxZHHNlsLBdamQtI6CvJQisTzLLcVgN11TY2_XQ";
@@ -2475,15 +2475,15 @@ Fallidos: ${fallidos}`);
                 const words = txt.split(/\s+/).filter(p => p.length > 0);
                 const p1 = words[0].replace(/'/g, "''");
                 const filter = `or=(articulo.ilike.*${p1}*,nombre.ilike.*${p1}*,clave_proveedor.ilike.*${p1}*,proveedor.ilike.*${p1}*)`;
-                const res = await fetch(`${SB_URL}catalogo_articulos?select=articulo,nombre,proveedor,grupo&${filter}&limit=100`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` } });
+                const res = await fetch(`${SB_URL}catalogo_articulos?select=articulo,nombre,proveedor,grupo,clave_proveedor&${filter}&limit=100`, { headers: { "apikey": SB_KEY, "Authorization": `Bearer ${getAccessToken()}` } });
                 const data = await res.json();
                 const filtered = data.filter(item => {
-                    if(!incl30x && item.articulo.toLowerCase().startsWith('30x')) return false;
-                    const haystack = `${item.articulo} ${item.nombre} ${item.proveedor||''} ${item.grupo||''}`.toLowerCase();
+                    if(!incl30x && String(item.articulo || '').toLowerCase().startsWith('30x')) return false;
+                    const haystack = `${item.articulo || ''} ${item.nombre || ''} ${item.proveedor || ''} ${item.grupo || ''} ${item.clave_proveedor || ''}`.toLowerCase();
                     return words.every(w => haystack.includes(w.toLowerCase()));
                 });
                 if(!filtered.length) { cont.innerHTML = `<p class="text-center text-slate-500 mt-10 italic">Sin resultados.</p>`; return; }
-                cont.innerHTML = filtered.map(a => `<div onclick="seleccionarArticuloCat('${a.articulo}')" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm active:bg-blue-50 cursor-pointer animate-in"><div class="flex justify-between"><span class="font-black text-blue-700 text-sm tracking-tighter">${a.articulo.toUpperCase()}</span><span class="text-[9px] bg-slate-100 px-2 py-0.5 rounded font-bold uppercase">ART</span></div><p class="text-xs font-bold mt-1 uppercase text-slate-800">${a.nombre}</p></div>`).join('');
+                cont.innerHTML = filtered.map(a => `<div onclick="seleccionarArticuloCat('${a.articulo}')" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm active:bg-blue-50 cursor-pointer animate-in"><div class="flex justify-between"><span class="font-black text-blue-700 text-sm tracking-tighter">${String(a.articulo || '').toUpperCase()}</span><span class="text-[9px] bg-slate-100 px-2 py-0.5 rounded font-bold uppercase">ART</span></div><p class="text-xs font-bold mt-1 uppercase text-slate-800">${a.nombre || ''}</p><p class="text-[10px] text-slate-400 font-black uppercase mt-1">CLAVE_PROVEEDOR: ${a.clave_proveedor || '--'}</p></div>`).join('');
             } catch(e) { cont.innerHTML = "Error."; }
         }
         function seleccionarArticuloCat(sku) { if(catalogoModo === "registro") procesarSku(sku); else if(catalogoModo === "correlacion") procesarCorrelacion(sku); else buscarArticuloAuditoria(sku); cerrarCatalogo(); }
