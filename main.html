@@ -26,20 +26,25 @@
         .editor-sticky-col-2 { position: sticky; left: 160px; z-index: 12; box-shadow: 1px 0 0 #e2e8f0; }
         .editor-sticky-col-3 { position: sticky; left: 480px; z-index: 11; min-width: 190px; width: 190px; box-shadow: 1px 0 0 #cbd5e1; }
         /* Editor Logistico: columnas fijas alineadas con la columna de seleccion. */
-        #pantallaEditorPC .editor-select-col { position: sticky; left: 0; z-index: 16; width: 44px; min-width: 44px; max-width: 44px; box-shadow: 1px 0 0 #e2e8f0; }
-        #pantallaEditorPC .editor-sticky-col-1 { left: 44px !important; width: 150px; min-width: 150px; max-width: 150px; z-index: 15; }
-        #pantallaEditorPC .editor-sticky-col-2 { left: 194px !important; width: 300px; min-width: 300px; max-width: 300px; z-index: 14; }
-        #pantallaEditorPC .editor-sticky-col-3 { left: 494px !important; width: 190px; min-width: 190px; max-width: 190px; z-index: 13; }
-        #pantallaEditorPC .editor-grid thead .editor-select-col,
-        #pantallaEditorPC .editor-grid thead .editor-sticky-col-1,
-        #pantallaEditorPC .editor-grid thead .editor-sticky-col-2,
-        #pantallaEditorPC .editor-grid thead .editor-sticky-col-3 { z-index: 25; }
+        #pantallaEditorPC { --editor-pc-select-w: 44px; --editor-pc-codigo-w: 150px; --editor-pc-nombre-w: 300px; --editor-pc-clave-w: 190px; }
+        #pantallaEditorPC .editor-grid th, #pantallaEditorPC .editor-grid td { box-sizing: border-box; }
+        #pantallaEditorPC #editorPcTable { border-collapse: separate !important; border-spacing: 0; }
+        #pantallaEditorPC .editor-select-col { position: sticky !important; left: 0 !important; z-index: 40; width: var(--editor-pc-select-w) !important; min-width: var(--editor-pc-select-w) !important; max-width: var(--editor-pc-select-w) !important; background: #f8fafc; box-shadow: 1px 0 0 #e2e8f0; }
+        #pantallaEditorPC .editor-sticky-col-1 { position: sticky !important; left: var(--editor-pc-select-w) !important; width: var(--editor-pc-codigo-w) !important; min-width: var(--editor-pc-codigo-w) !important; max-width: var(--editor-pc-codigo-w) !important; z-index: 39; background: #f8fafc; box-shadow: 1px 0 0 #e2e8f0; }
+        #pantallaEditorPC .editor-sticky-col-2 { position: sticky !important; left: calc(var(--editor-pc-select-w) + var(--editor-pc-codigo-w)) !important; width: var(--editor-pc-nombre-w) !important; min-width: var(--editor-pc-nombre-w) !important; max-width: var(--editor-pc-nombre-w) !important; z-index: 38; background: #f8fafc; box-shadow: 1px 0 0 #cbd5e1; }
+        #pantallaEditorPC .editor-sticky-col-3 { position: static !important; left: auto !important; z-index: auto !important; width: var(--editor-pc-clave-w) !important; min-width: var(--editor-pc-clave-w) !important; max-width: var(--editor-pc-clave-w) !important; box-shadow: none !important; }
+        #pantallaEditorPC .editor-resizable-table th { position: relative; }
+        #pantallaEditorPC .editor-resizable-table th[data-col], #pantallaEditorPC .editor-resizable-table td { overflow: hidden; }
+        #pantallaEditorPC .editor-grid thead .editor-select-col { top: 0; z-index: 55; background: #f1f5f9 !important; }
+        #pantallaEditorPC .editor-grid thead .editor-sticky-col-1 { top: 0; z-index: 54; background: #f1f5f9 !important; }
+        #pantallaEditorPC .editor-grid thead .editor-sticky-col-2 { top: 0; z-index: 53; background: #f1f5f9 !important; }
+        #pantallaEditorPC .editor-grid thead .editor-sticky-col-3 { top: 0; z-index: 25; background: #f1f5f9 !important; }
         .editor-header-btn { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; }
         .editor-header-btn:hover { color: #334155; }
         .editor-sort-indicator { font-size: 11px; color: #7c3aed; font-weight: 900; }
         .editor-col-hidden { display: none !important; }
         .editor-columns-panel { max-height: 260px; overflow: auto; }
-        .editor-resizable-table { table-layout: fixed; width: max-content; min-width: 100%; }
+        .editor-resizable-table { table-layout: fixed; width: max-content; min-width: 100%; border-spacing: 0; }
         .editor-resizable-table col.editor-col-hidden { display: none; }
         .editor-resizable-table th[data-col], .editor-resizable-table td[data-col] { position: relative; overflow: hidden; }
         #pantallaEditorUbicacionesPC .editor-resizable-table th.editor-sticky-col-1,
@@ -855,6 +860,7 @@
                             <option value="">Todos</option>
                             <option value="con_barcode">Con código</option>
                             <option value="sin_barcode">Sin código</option>
+                            <option value="repetidos">Repetidos</option>
                         </select>
                     </div>
                     <div>
@@ -888,6 +894,12 @@
                     <div class="xl:col-span-1 flex items-end">
                         <button onclick="exportarEditorLogisticoCSV()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold uppercase shadow-md">Exportar CSV</button>
                     </div>
+                    <div class="xl:col-span-1 flex items-end">
+                        <button onclick="editorPcMostrarBarcodesRepetidos()" class="w-full bg-red-600 text-white py-3 rounded-xl font-bold uppercase shadow-md">Ver repetidos</button>
+                    </div>
+                    <div class="xl:col-span-1 flex items-end">
+                        <button onclick="exportarEditorLogisticoBarcodesRepetidosCSV()" class="w-full bg-red-50 text-red-700 py-3 rounded-xl font-bold uppercase border border-red-200 shadow-sm">CSV repetidos</button>
+                    </div>
                     <div class="xl:col-span-2 flex items-end">
                         <button onclick="enviarSeleccionEditorARevision()" id="btnEnviarRevisionEditor" class="w-full bg-amber-600 text-white py-3 rounded-xl font-bold uppercase shadow-md disabled:bg-slate-300" disabled>Enviar a revisión</button>
                     </div>
@@ -914,7 +926,9 @@
                 </div>
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
                     <div id="editorPcPagerInfo" class="text-xs font-bold text-slate-500">Página 1 de 1</div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="editorPcToggleMostrarTodos()" id="editorPcToggleTodosBtn" class="px-3 py-2 rounded-xl border border-violet-200 bg-violet-50 text-violet-700 font-bold">Ver todos</button>
+                        <button onclick="editorPcResetColumnWidths()" class="px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold">Restablecer columnas</button>
                         <button onclick="editorPcGoPage(-1)" id="editorPcPrevBtn" class="px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold disabled:opacity-40">Anterior</button>
                         <button onclick="editorPcGoPage(1)" id="editorPcNextBtn" class="px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold disabled:opacity-40">Siguiente</button>
                     </div>
@@ -923,7 +937,8 @@
 
             <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
                 <div class="overflow-auto max-h-[75vh]">
-                    <table class="min-w-full text-xs editor-grid">
+                    <table id="editorPcTable" class="editor-resizable-table min-w-full text-xs editor-grid border-collapse">
+                        <colgroup id="editorPcColgroup"></colgroup>
                         <thead class="bg-slate-100 text-slate-600 uppercase tracking-wider text-[10px]">
                             <tr>
                                 <th class="px-3 py-3 text-center border-b border-slate-200 bg-slate-100 editor-select-col"><input type="checkbox" id="editorPcChkAllRevision" onchange="editorPcToggleAllRevision(this.checked)" title="Seleccionar visibles"></th>
@@ -937,7 +952,6 @@
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('largo')" class="editor-header-btn">Largo cat. <span id="editorSort_largo" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('ancho')" class="editor-header-btn">Alto cat. <span id="editorSort_ancho" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('alto')" class="editor-header-btn">Ancho cat. <span id="editorSort_alto" class="editor-sort-indicator"></span></button></th>
-                                <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('bodegas_count')" class="editor-header-btn">Bodegas <span id="editorSort_bodegas_count" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('codigo_barra')" class="editor-header-btn">Código barra <span id="editorSort_codigo_barra" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('largo_unidad')" class="editor-header-btn">Largo unidad <span id="editorSort_largo_unidad" class="editor-sort-indicator"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b border-slate-200"><button onclick="editorPcSortBy('ancho_unidad')" class="editor-header-btn">Alto unidad <span id="editorSort_ancho_unidad" class="editor-sort-indicator"></span></button></th>
@@ -1155,6 +1169,8 @@
                                 <th class="px-3 py-3 text-left border-b"><button onclick="revisionSortBy('almacen')" class="font-black">Bodega <span id="revSort_almacen"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b"><button onclick="revisionSortBy('codigo_limsa')" class="font-black">Código <span id="revSort_codigo_limsa"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b"><button onclick="revisionSortBy('descripcion')" class="font-black">Descripción <span id="revSort_descripcion"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b"><button onclick="revisionSortBy('codigo_barra')" class="font-black">Código barra <span id="revSort_codigo_barra"></span></button></th>
+                                <th class="px-3 py-3 text-left border-b"><button onclick="revisionSortBy('barcode_repetido')" class="font-black">Duplicado <span id="revSort_barcode_repetido"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b"><button onclick="revisionSortBy('estado')" class="font-black">Estado <span id="revSort_estado"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b"><button onclick="revisionSortBy('created_at')" class="font-black">Enviado <span id="revSort_created_at"></span></button></th>
                                 <th class="px-3 py-3 text-left border-b">Acciones</th>
@@ -1168,7 +1184,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2026.05.27.2";
+        const APP_VERSION = "2026.05.27.10";
         const SB_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/rest/v1/";
         const SB_AUTH_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/auth/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBodWRmbG10YmZrZHpxanFhb3ViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTUyMjIsImV4cCI6MjA5MjYzMTIyMn0.KbQenxZHHNlsLBdamQtI6CvJQisTzLLcVgN11TY2_XQ";
@@ -1239,6 +1255,7 @@
         let editorPcSortDir = 'asc';
         let editorPcCurrentPage = 1;
         const editorPcPageSize = 200;
+        let editorPcMostrarTodos = false;
         let editorPcLastFilterSignature = '';
         let editorPcRevisionSeleccion = new Set();
         let editorUbiRows = [];
@@ -1288,14 +1305,16 @@
         const EDITOR_PC_CSV_EXPORT_FIELDS = [
             'codigo','nombre','clave_proveedor','grupo','um_venta','factor','proveedor','largo','ancho','alto','bodegas_text',
             ...EDITOR_PC_CAMPOS_EDITABLES,
-            'inventario_bodega_temp','inventario_existencia_temp','inventario_pendiente_temp','inventario_ordenado_temp','inventario_total_temp'
+            'inventario_bodega_temp','inventario_existencia_temp','inventario_pendiente_temp','inventario_ordenado_temp','inventario_total_temp',
+            'barcode_repetido','barcode_repetido_en_skus'
         ];
         const EDITOR_PC_CSV_LABELS = {
             codigo: 'codigo', nombre: 'nombre', clave_proveedor: 'clave_proveedor', grupo: 'grupo', um_venta: 'um_venta', factor: 'factor', proveedor: 'proveedor', largo: 'largo_catalogo', ancho: 'ancho_catalogo', alto: 'alto_catalogo', bodegas_text: 'bodegas',
             codigo_barra: 'codigo_barra', largo_unidad: 'largo_unidad', ancho_unidad: 'ancho_unidad', alto_unidad: 'alto_unidad', peso_unidad: 'peso_unidad',
             unidades_caja_bolsa: 'unidades_caja_bolsa', largo_caja_bolsa: 'largo_caja_bolsa', ancho_caja_bolsa: 'ancho_caja_bolsa', alto_caja_bolsa: 'alto_caja_bolsa', peso_caja_bolsa: 'peso_caja_bolsa',
             unidades_tarima: 'unidades_tarima', largo_tarima: 'largo_tarima', ancho_tarima: 'ancho_tarima', alto_tarima: 'alto_tarima', peso_tarima: 'peso_tarima',
-            inventario_bodega_temp: 'bodega_temp', inventario_existencia_temp: 'existencia_temp', inventario_pendiente_temp: 'pendiente_temp', inventario_ordenado_temp: 'ordenado_temp', inventario_total_temp: 'total_temp'
+            inventario_bodega_temp: 'bodega_temp', inventario_existencia_temp: 'existencia_temp', inventario_pendiente_temp: 'pendiente_temp', inventario_ordenado_temp: 'ordenado_temp', inventario_total_temp: 'total_temp',
+            barcode_repetido: 'barcode_repetido', barcode_repetido_en_skus: 'barcode_repetido_en_skus'
         };
         let html5QrCode = null;
         let scannerTargetActual = null;
@@ -2834,6 +2853,54 @@ Fallidos: ${fallidos}`);
         let revisionSortField = 'created_at';
         let revisionSortDir = 'desc';
 
+        function revisionNormalizarBarcode(value) {
+            return String(value ?? '').trim().toLowerCase();
+        }
+
+        function revisionCodigoKey(value) {
+            return String(value ?? '').trim().toUpperCase();
+        }
+
+        function enriquecerRevisionLogisticaConBarcodes(rows, almacenDatos) {
+            const datos = Array.isArray(almacenDatos) ? almacenDatos : [];
+            const porCodigoAlmacen = new Map();
+            const porCodigo = new Map();
+            const barcodeMap = new Map();
+
+            datos.forEach(r => {
+                const codigo = revisionCodigoKey(r.codigo);
+                const almacen = String(r.almacen || '').trim().toLowerCase();
+                const barcodeOriginal = String(r.codigo_barra || '').trim();
+                const barcodeNorm = revisionNormalizarBarcode(barcodeOriginal);
+                if (!codigo) return;
+                if (!porCodigo.has(codigo)) porCodigo.set(codigo, r);
+                if (almacen) porCodigoAlmacen.set(`${codigo}|${almacen}`, r);
+                if (barcodeNorm) {
+                    if (!barcodeMap.has(barcodeNorm)) barcodeMap.set(barcodeNorm, new Map());
+                    if (!barcodeMap.get(barcodeNorm).has(codigo)) barcodeMap.get(barcodeNorm).set(codigo, barcodeOriginal);
+                }
+            });
+
+            return (Array.isArray(rows) ? rows : []).map(row => {
+                const codigo = revisionCodigoKey(row.codigo_limsa);
+                const almacen = String(row.almacen || '').trim().toLowerCase();
+                const ad = porCodigoAlmacen.get(`${codigo}|${almacen}`) || porCodigo.get(codigo) || null;
+                const barcode = String(ad?.codigo_barra || '').trim();
+                const barcodeNorm = revisionNormalizarBarcode(barcode);
+                const codigos = barcodeNorm && barcodeMap.has(barcodeNorm)
+                    ? Array.from(barcodeMap.get(barcodeNorm).keys()).filter(c => c && c !== codigo)
+                    : [];
+                return {
+                    ...row,
+                    codigo_barra: barcode,
+                    barcode_repetido: codigos.length ? 'SI' : 'NO',
+                    barcode_repetido_en_skus: codigos.join(' | '),
+                    _barcode_repetido: codigos.length > 0,
+                    _barcode_repetido_count: codigos.length + (barcode ? 1 : 0)
+                };
+            });
+        }
+
         function irARevisionLogistica() {
             limpiarTodo();
             document.getElementById('pantallaMenuPrincipal').classList.add('hidden');
@@ -2858,18 +2925,24 @@ Fallidos: ${fallidos}`);
         async function cargarRevisionLogistica() {
             const body = document.getElementById('revisionBody');
             const cards = document.getElementById('revisionCards');
-            if (body) body.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-sm font-bold text-slate-400">Cargando...</td></tr>';
+            if (body) body.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-sm font-bold text-slate-400">Cargando...</td></tr>';
             if (cards) cards.innerHTML = '<div class="bg-white border border-slate-200 rounded-3xl p-6 text-center text-sm font-black text-slate-400">Cargando...</div>';
             try {
                 const data = await fetchJsonOrThrow(`${SB_URL}logistica_revision?select=id,codigo_limsa,almacen,descripcion,estado,campos_faltantes,created_at,updated_at,fecha_revision&order=created_at.desc&limit=5000`, {
                     headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${getAccessToken()}` }
                 });
-                revisionRows = Array.isArray(data) ? data : [];
+                let almacenDatos = [];
+                try {
+                    almacenDatos = await fetchAllSupabaseRows('almacen_datos', 'codigo,almacen,codigo_barra');
+                } catch(eBarcodes) {
+                    console.warn('No se pudieron cargar barcodes para Revisión Logística:', eBarcodes);
+                }
+                revisionRows = enriquecerRevisionLogisticaConBarcodes(Array.isArray(data) ? data : [], almacenDatos);
                 poblarFiltrosRevisionLogistica();
                 renderRevisionLogistica();
             } catch (e) {
                 revisionRows = [];
-                if (body) body.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-sm font-bold text-red-500">No se pudo cargar Revisión Logística. Verifica que exista la tabla logistica_revision.</td></tr>`;
+                if (body) body.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-sm font-bold text-red-500">No se pudo cargar Revisión Logística. Verifica que exista la tabla logistica_revision.</td></tr>`;
                 if (cards) cards.innerHTML = `<div class="bg-white border border-red-100 rounded-3xl p-6 text-center text-sm font-black text-red-500">No se pudo cargar Revisión Logística. Verifica que exista la tabla logistica_revision.</div>`;
                 const resumen = document.getElementById('revisionResumen');
                 if (resumen) resumen.innerText = 'Tabla no disponible o sin permisos.';
@@ -2893,7 +2966,7 @@ Fallidos: ${fallidos}`);
                 if (estado !== 'TODOS' && String(row.estado || 'PENDIENTE') !== estado) return false;
                 if (almacen && String(row.almacen || '').trim().toLowerCase() !== almacen) return false;
                 if (q) {
-                    const hay = [row.codigo_limsa,row.descripcion,row.campos_faltantes,row.almacen,row.estado].map(x => String(x || '').toLowerCase()).join(' | ');
+                    const hay = [row.codigo_limsa,row.descripcion,row.campos_faltantes,row.almacen,row.estado,row.codigo_barra,row.barcode_repetido_en_skus].map(x => String(x || '').toLowerCase()).join(' | ');
                     if (!hay.includes(q)) return false;
                 }
                 return true;
@@ -2912,13 +2985,14 @@ Fallidos: ${fallidos}`);
             const resumen = document.getElementById('revisionResumen');
             const pendientes = revisionRows.filter(r => String(r.estado || 'PENDIENTE') === 'PENDIENTE').length;
             const revisados = revisionRows.filter(r => String(r.estado || '') === 'REVISADO').length;
-            if (resumen) resumen.innerText = `Mostrando ${rows.length} · Pendientes: ${pendientes} · Revisados: ${revisados}`;
-            ['almacen','codigo_limsa','descripcion','estado','created_at'].forEach(f => {
+            const barcodeDuplicados = revisionRows.filter(r => r._barcode_repetido).length;
+            if (resumen) resumen.innerText = `Mostrando ${rows.length} · Pendientes: ${pendientes} · Revisados: ${revisados} · Barcodes duplicados: ${barcodeDuplicados}`;
+            ['almacen','codigo_limsa','descripcion','codigo_barra','barcode_repetido','estado','created_at'].forEach(f => {
                 const el = document.getElementById('revSort_' + f);
                 if (el) el.innerText = revisionSortField === f ? (revisionSortDir === 'asc' ? '▲' : '▼') : '';
             });
             if (!rows.length) {
-                if (body) body.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-sm font-bold text-slate-400">Sin SKUs para mostrar.</td></tr>';
+                if (body) body.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-sm font-bold text-slate-400">Sin SKUs para mostrar.</td></tr>';
                 if (cards) cards.innerHTML = '<div class="bg-white border border-slate-200 rounded-3xl p-6 text-center text-sm font-black text-slate-400">Sin SKUs para mostrar.</div>';
                 return;
             }
@@ -2934,6 +3008,8 @@ Fallidos: ${fallidos}`);
                     <td class="px-3 py-3 font-black uppercase text-slate-700">${escapeHtmlEditor(row.almacen || 'GENERAL')}</td>
                     <td class="px-3 py-3 font-black uppercase text-slate-800">${escapeHtmlEditor(row.codigo_limsa || '')}</td>
                     <td class="px-3 py-3 min-w-[280px]"><div class="font-bold text-slate-700">${escapeHtmlEditor(row.descripcion || 'SIN DESCRIPCIÓN')}</div><div class="text-[10px] text-amber-700 font-bold mt-1">${escapeHtmlEditor(row.campos_faltantes || '')}</div></td>
+                    <td class="px-3 py-3 font-black text-slate-700 break-all">${escapeHtmlEditor(row.codigo_barra || 'SIN BARCODE')}</td>
+                    <td class="px-3 py-3 min-w-[210px]">${row._barcode_repetido ? `<div class="bg-red-50 border border-red-100 rounded-2xl px-3 py-2"><div class="text-[10px] font-black text-red-700 uppercase">Duplicado</div><div class="text-[11px] font-bold text-red-700 break-all">Con: ${escapeHtmlEditor(row.barcode_repetido_en_skus || '')}</div></div>` : `<span class="px-2 py-1 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-700">Sin duplicado</span>`}</td>
                     <td class="px-3 py-3"><span class="px-2 py-1 rounded-full text-[10px] font-black ${isPend ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}">${escapeHtmlEditor(estado)}</span></td>
                     <td class="px-3 py-3 text-slate-500 font-bold">${escapeHtmlEditor(formatearFechaCortaRevision(row.created_at))}</td>
                     <td class="px-3 py-3"><div class="flex flex-wrap gap-2"><button type="button" data-codigo="${escapeHtmlEditor(String(row.codigo_limsa || ''))}" data-almacen="${escapeHtmlEditor(String(row.almacen || ''))}" data-revision-id="${escapeHtmlEditor(String(id || ''))}" onclick="abrirRevisionEnCorrelacionDesdeBoton(this)" class="bg-indigo-600 text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase">Abrir</button>${isPend ? `<button type="button" data-revision-id="${escapeHtmlEditor(String(id || ''))}" onclick="marcarRevisionRevisadoDesdeBoton(this)" class="bg-emerald-600 text-white px-3 py-2 rounded-xl text-[10px] font-black uppercase">Marcar revisado</button>` : `<button type="button" data-revision-id="${escapeHtmlEditor(String(id || ''))}" onclick="marcarRevisionPendienteDesdeBoton(this)" class="bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-[10px] font-black uppercase">Reabrir</button>`}</div></td>
@@ -2950,6 +3026,9 @@ Fallidos: ${fallidos}`);
             const almacen = String(row.almacen || 'GENERAL');
             const descripcion = String(row.descripcion || 'SIN DESCRIPCIÓN');
             const enviado = formatearFechaCortaRevision(row.created_at);
+            const barcode = String(row.codigo_barra || '').trim();
+            const duplicado = !!row._barcode_repetido;
+            const repetidoEn = String(row.barcode_repetido_en_skus || '').trim();
             return `<article class="bg-white border border-slate-200 rounded-3xl shadow-sm p-4 space-y-3">
                 <div class="flex items-start justify-between gap-3">
                     <div>
@@ -2965,6 +3044,7 @@ Fallidos: ${fallidos}`);
                 </div>
                 <div class="text-sm font-black text-slate-800 leading-snug uppercase">${escapeHtmlEditor(descripcion)}</div>
                 ${campos ? `<div class="bg-amber-50 border border-amber-100 text-amber-800 rounded-2xl p-3 text-xs font-bold"><span class="block text-[10px] uppercase tracking-widest text-amber-600 mb-1">Revisar</span>${escapeHtmlEditor(campos)}</div>` : ''}
+                <div class="${duplicado ? 'bg-red-50 border-red-100 text-red-800' : 'bg-slate-50 border-slate-100 text-slate-700'} border rounded-2xl p-3 text-xs font-bold"><span class="block text-[10px] uppercase tracking-widest ${duplicado ? 'text-red-600' : 'text-slate-400'} mb-1">Código de barras</span><div class="break-all font-black">${escapeHtmlEditor(barcode || 'SIN BARCODE')}</div>${duplicado ? `<div class="mt-2 text-[11px] text-red-700"><span class="font-black uppercase">Duplicado con:</span> ${escapeHtmlEditor(repetidoEn)}</div>` : ''}</div>
                 <div class="grid grid-cols-1 gap-2 pt-1">
                     <button type="button" data-codigo="${escapeHtmlEditor(codigo)}" data-almacen="${escapeHtmlEditor(almacen)}" data-revision-id="${escapeHtmlEditor(String(id || ''))}" onclick="abrirRevisionEnCorrelacionDesdeBoton(this)" class="w-full bg-indigo-600 text-white px-4 py-4 rounded-2xl text-xs font-black uppercase shadow-md active:scale-[0.99]">Abrir revisión</button>
                     ${isPend ? `<button type="button" data-revision-id="${escapeHtmlEditor(String(id || ''))}" onclick="marcarRevisionRevisadoDesdeBoton(this)" class="w-full bg-white border border-emerald-200 text-emerald-700 px-4 py-3 rounded-2xl text-xs font-black uppercase">Marcar revisado</button>` : `<button type="button" data-revision-id="${escapeHtmlEditor(String(id || ''))}" onclick="marcarRevisionPendienteDesdeBoton(this)" class="w-full bg-slate-100 text-slate-700 px-4 py-3 rounded-2xl text-xs font-black uppercase">Reabrir pendiente</button>`}
@@ -4356,6 +4436,56 @@ Fallidos: ${fallidos}`);
             return String(row.codigo || '').trim().toUpperCase();
         }
 
+        function editorPcNormalizarBarcodeRepetido(value) {
+            return String(value ?? '').trim().toLowerCase();
+        }
+
+        function editorPcActualizarCamposDerivados(row) {
+            const updated = {
+                ...row,
+                _codigo_barra: String(row.codigo_barra || '').trim(),
+                _tiene_logistica: editorPcTieneLogistica(row),
+                _logistica_completa: editorPcTieneLogisticaCompleta(row)
+            };
+            updated._search = [updated.codigo,updated.nombre,updated.grupo,updated.proveedor,updated.clave_proveedor,updated.codigo_barra,updated.um_venta,updated.estado_comercial,editorPcBuildInventorySearch(updated)]
+                .map(v => String(v || '').toLowerCase()).join(' | ');
+            return updated;
+        }
+
+        function editorPcRecalcularBarcodesRepetidos() {
+            const barcodeMap = new Map();
+            editorPcRows.forEach(row => {
+                row._barcode_repetido = false;
+                row.barcode_repetido = '';
+                row.barcode_repetido_en_skus = '';
+                row._barcode_repetido_count = 0;
+                const bar = editorPcNormalizarBarcodeRepetido(row.codigo_barra);
+                if (!bar) return;
+                if (!barcodeMap.has(bar)) barcodeMap.set(bar, []);
+                barcodeMap.get(bar).push(row);
+            });
+            let grupos = 0;
+            let filas = 0;
+            barcodeMap.forEach(rows => {
+                const codigos = [...new Set(rows.map(r => editorPcKey(r)).filter(Boolean))];
+                if (codigos.length <= 1) return;
+                grupos++;
+                filas += rows.length;
+                rows.forEach(row => {
+                    row._barcode_repetido = true;
+                    row._barcode_repetido_count = codigos.length;
+                    row.barcode_repetido = 'SI';
+                    row.barcode_repetido_en_skus = codigos.join(' | ');
+                });
+            });
+            return { grupos, filas };
+        }
+
+        function editorPcRefrescarDerivadosYDuplicados() {
+            editorPcRows = editorPcRows.map(editorPcActualizarCamposDerivados);
+            return editorPcRecalcularBarcodesRepetidos();
+        }
+
         async function cargarAlmacenesEditorPC() { return; }
 
         async function irAEditorLogisticoPC() {
@@ -4366,12 +4496,149 @@ Fallidos: ${fallidos}`);
             document.getElementById('pantallaEditorPC').classList.remove('hidden');
             document.getElementById('editorPcStatus').innerText = 'Carga la vista maestra por código para revisar y editar.';
             await cargarAlmacenesEditorPC();
+            editorPcSetupResizableColumns();
             setTimeout(() => document.getElementById('editorPcBusqueda')?.focus(), 50);
         }
 
         function regresarAlMenuPrincipalDesdeEditor() {
             document.getElementById('pantallaEditorPC').classList.add('hidden');
             document.getElementById('pantallaMenuPrincipal').classList.remove('hidden');
+        }
+
+        const EDITOR_PC_COLUMNAS_RESIZE = [
+            { key: 'select', width: 44, min: 44, max: 44 },
+            { key: 'codigo', width: 180, min: 110, max: 360 },
+            { key: 'nombre', width: 330, min: 160, max: 650 },
+            { key: 'clave_proveedor', width: 170, min: 110, max: 360 },
+            { key: 'grupo', width: 130, min: 90 },
+            { key: 'um_venta', width: 110, min: 80 },
+            { key: 'factor', width: 90, min: 70 },
+            { key: 'proveedor', width: 180, min: 110 },
+            { key: 'largo', width: 110, min: 80 },
+            { key: 'ancho', width: 110, min: 80 },
+            { key: 'alto', width: 110, min: 80 },
+            { key: 'codigo_barra', width: 170, min: 120 },
+            { key: 'largo_unidad', width: 140, min: 100 },
+            { key: 'ancho_unidad', width: 140, min: 100 },
+            { key: 'alto_unidad', width: 140, min: 100 },
+            { key: 'peso_unidad', width: 140, min: 100 },
+            { key: 'unidades_caja_bolsa', width: 150, min: 110 },
+            { key: 'largo_caja_bolsa', width: 150, min: 110 },
+            { key: 'ancho_caja_bolsa', width: 150, min: 110 },
+            { key: 'alto_caja_bolsa', width: 150, min: 110 },
+            { key: 'peso_caja_bolsa', width: 150, min: 110 },
+            { key: 'unidades_tarima', width: 145, min: 110 },
+            { key: 'largo_tarima', width: 140, min: 100 },
+            { key: 'ancho_tarima', width: 140, min: 100 },
+            { key: 'alto_tarima', width: 140, min: 100 },
+            { key: 'peso_tarima', width: 140, min: 100 },
+            { key: 'inventario_bodega_temp', width: 130, min: 100 },
+            { key: 'inventario_existencia_temp', width: 125, min: 100 },
+            { key: 'inventario_pendiente_temp', width: 125, min: 100 },
+            { key: 'inventario_ordenado_temp', width: 125, min: 100 },
+            { key: 'inventario_total_temp', width: 125, min: 100 }
+        ];
+        const EDITOR_PC_COL_STORAGE_KEY = 'limsa_editor_pc_col_widths_v5';
+
+        function editorPcGetColumnWidths() {
+            try { return JSON.parse(localStorage.getItem(EDITOR_PC_COL_STORAGE_KEY) || '{}') || {}; }
+            catch (_) { return {}; }
+        }
+
+        function editorPcClampColumnWidth(col, width) {
+            const min = Number(col?.min) || 70;
+            const max = Number(col?.max) || 900;
+            return Math.min(max, Math.max(min, Math.round(Number(width) || 0)));
+        }
+
+        function editorPcSaveColumnWidth(key, width) {
+            const col = EDITOR_PC_COLUMNAS_RESIZE.find(c => c.key === key) || { min: 70, max: 900 };
+            const widths = editorPcGetColumnWidths();
+            widths[key] = editorPcClampColumnWidth(col, width);
+            localStorage.setItem(EDITOR_PC_COL_STORAGE_KEY, JSON.stringify(widths));
+        }
+
+        function editorPcColumnWidth(col) {
+            const saved = editorPcGetColumnWidths()[col.key];
+            return editorPcClampColumnWidth(col, Number(saved) || col.width || 120);
+        }
+
+        function editorPcApplyStickyColumnWidths() {
+            const root = document.getElementById('pantallaEditorPC');
+            if (!root) return;
+            const widths = {};
+            EDITOR_PC_COLUMNAS_RESIZE.forEach(col => { widths[col.key] = editorPcColumnWidth(col); });
+            root.style.setProperty('--editor-pc-select-w', `${widths.select}px`);
+            root.style.setProperty('--editor-pc-codigo-w', `${widths.codigo}px`);
+            root.style.setProperty('--editor-pc-nombre-w', `${widths.nombre}px`);
+            root.style.setProperty('--editor-pc-clave-w', `${widths.clave_proveedor}px`);
+        }
+
+        function editorPcSetupResizableColumns() {
+            const table = document.getElementById('editorPcTable');
+            const colgroup = document.getElementById('editorPcColgroup');
+            if (!table || !colgroup) return;
+            colgroup.innerHTML = EDITOR_PC_COLUMNAS_RESIZE.map(col => `<col data-col="${escapeHtmlEditor(col.key)}" style="width:${editorPcColumnWidth(col)}px">`).join('');
+            const headers = Array.from(table.querySelectorAll('thead th'));
+            headers.forEach((th, idx) => {
+                const col = EDITOR_PC_COLUMNAS_RESIZE[idx];
+                if (!col) return;
+                th.dataset.col = col.key;
+                th.style.width = `${editorPcColumnWidth(col)}px`;
+                th.style.minWidth = `${col.min || 70}px`;
+                if (!th.querySelector('.editor-col-resizer')) {
+                    const resizer = document.createElement('span');
+                    resizer.className = 'editor-col-resizer';
+                    resizer.title = 'Arrastra para cambiar el ancho de esta columna';
+                    resizer.addEventListener('mousedown', editorPcStartColumnResize);
+                    resizer.addEventListener('touchstart', editorPcStartColumnResize, { passive: false });
+                    th.appendChild(resizer);
+                }
+            });
+            editorPcApplyStickyColumnWidths();
+        }
+
+        function editorPcStartColumnResize(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const th = event.target.closest('th[data-col]');
+            if (!th) return;
+            const table = document.getElementById('editorPcTable');
+            const key = th.dataset.col;
+            const colDef = EDITOR_PC_COLUMNAS_RESIZE.find(col => col.key === key);
+            if (!table || !colDef) return;
+            const colEl = table.querySelector(`col[data-col="${CSS.escape(key)}"]`);
+            const startX = event.touches ? event.touches[0].clientX : event.clientX;
+            const startWidth = th.getBoundingClientRect().width;
+            document.body.classList.add('editor-col-resizing');
+            const onMove = (moveEvent) => {
+                const currentX = moveEvent.touches ? moveEvent.touches[0].clientX : moveEvent.clientX;
+                const width = editorPcClampColumnWidth(colDef, startWidth + currentX - startX);
+                if (colEl) colEl.style.width = `${width}px`;
+                th.style.width = `${width}px`;
+                editorPcSaveColumnWidth(key, width);
+                editorPcApplyStickyColumnWidths();
+            };
+            const onEnd = () => {
+                document.body.classList.remove('editor-col-resizing');
+                window.removeEventListener('mousemove', onMove);
+                window.removeEventListener('mouseup', onEnd);
+                window.removeEventListener('touchmove', onMove);
+                window.removeEventListener('touchend', onEnd);
+            };
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('mouseup', onEnd);
+            window.addEventListener('touchmove', onMove, { passive: false });
+            window.addEventListener('touchend', onEnd);
+        }
+
+        function editorPcResetColumnWidths() {
+            localStorage.removeItem(EDITOR_PC_COL_STORAGE_KEY);
+            localStorage.removeItem('limsa_editor_pc_col_widths_v1');
+            localStorage.removeItem('limsa_editor_pc_col_widths_v2');
+            localStorage.removeItem('limsa_editor_pc_col_widths_v3');
+            localStorage.removeItem('limsa_editor_pc_col_widths_v4');
+            editorPcSetupResizableColumns();
         }
 
         function editorPcTieneLogistica(row) {
@@ -4433,6 +4700,7 @@ Fallidos: ${fallidos}`);
             if (exclude !== 'barcode') {
                 if (state.barcode === 'con_barcode' && !row._codigo_barra) return false;
                 if (state.barcode === 'sin_barcode' && row._codigo_barra) return false;
+                if (state.barcode === 'repetidos' && !row._barcode_repetido) return false;
             }
             if (exclude !== 'logistica') {
                 if (state.logistica === 'sin_logistica' && row._tiene_logistica) return false;
@@ -4541,7 +4809,11 @@ Fallidos: ${fallidos}`);
             const grupos = editorPcValoresFiltro('grupo', state, dinamico ? 'grupo' : '').sort((a,b) => a.localeCompare(b, 'es', { numeric: true, sensitivity: 'base' }));
             const proveedores = editorPcValoresFiltro('proveedor', state, dinamico ? 'proveedor' : '').sort((a,b) => a.localeCompare(b, 'es', { numeric: true, sensitivity: 'base' }));
             const ums = editorPcValoresFiltro('um_venta', state, dinamico ? 'umVenta' : '').sort((a,b) => a.localeCompare(b, 'es', { numeric: true, sensitivity: 'base' }));
-            const barcodeSet = new Set(editorPcRows.filter(row => editorPcRowMatchesFilters(row, state, dinamico ? 'barcode' : '')).map(row => row._codigo_barra ? 'con_barcode' : 'sin_barcode'));
+            const barcodeSet = new Set();
+            editorPcRows.filter(row => editorPcRowMatchesFilters(row, state, dinamico ? 'barcode' : '')).forEach(row => {
+                barcodeSet.add(row._codigo_barra ? 'con_barcode' : 'sin_barcode');
+                if (row._barcode_repetido) barcodeSet.add('repetidos');
+            });
             const logisticaSet = new Set(editorPcRows.filter(row => editorPcRowMatchesFilters(row, state, dinamico ? 'logistica' : '')).map(editorPcRowLogisticaValue));
             const estadoSet = new Set(editorPcRows.filter(row => editorPcRowMatchesFilters(row, state, dinamico ? 'estado' : '')).map(row => String(row.estado_comercial || 'de_linea').trim() || 'de_linea'));
 
@@ -4550,7 +4822,8 @@ Fallidos: ${fallidos}`);
             editorPcPoblarSelect('editorPcFiltroUmVenta', ums);
             editorPcPoblarSelectMap('editorPcFiltroBarcode', [
                 { value:'con_barcode', label:'Con código' },
-                { value:'sin_barcode', label:'Sin código' }
+                { value:'sin_barcode', label:'Sin código' },
+                { value:'repetidos', label:'Repetidos' }
             ].filter(op => barcodeSet.has(op.value)));
             editorPcPoblarSelectMap('editorPcFiltroLogistica', [
                 { value:'completa', label:'Completa' },
@@ -4576,12 +4849,22 @@ Fallidos: ${fallidos}`);
             const total = editorPcRows.length;
             const filtradas = editorPcRowsFiltered.length;
             const modificadas = editorPcModified.size;
-            const totalPages = Math.max(1, Math.ceil(filtradas / editorPcPageSize));
+            const pageSize = editorPcMostrarTodos ? Math.max(1, filtradas || editorPcPageSize) : editorPcPageSize;
+            const totalPages = editorPcMostrarTodos ? 1 : Math.max(1, Math.ceil(filtradas / pageSize));
+            if (editorPcMostrarTodos) editorPcCurrentPage = 1;
             if (editorPcCurrentPage > totalPages) editorPcCurrentPage = totalPages;
-            document.getElementById('editorPcResumen').innerText = `Cargadas: ${total} · Visibles: ${filtradas} · Modificadas: ${modificadas}`;
-            document.getElementById('editorPcPagerInfo').innerText = `Página ${editorPcCurrentPage} de ${totalPages} · ${editorPcPageSize} por página`;
-            document.getElementById('editorPcPrevBtn').disabled = editorPcCurrentPage <= 1;
-            document.getElementById('editorPcNextBtn').disabled = editorPcCurrentPage >= totalPages;
+            const repetidosInfo = editorPcRecalcularBarcodesRepetidos();
+            document.getElementById('editorPcResumen').innerText = `Cargadas: ${total} · Visibles: ${filtradas} · Modificadas: ${modificadas} · Barcodes repetidos: ${repetidosInfo.grupos}`;
+            document.getElementById('editorPcPagerInfo').innerText = editorPcMostrarTodos ? `Vista completa · ${filtradas} registro(s) visibles` : `Página ${editorPcCurrentPage} de ${totalPages} · ${editorPcPageSize} por página`;
+            document.getElementById('editorPcPrevBtn').disabled = editorPcMostrarTodos || editorPcCurrentPage <= 1;
+            document.getElementById('editorPcNextBtn').disabled = editorPcMostrarTodos || editorPcCurrentPage >= totalPages;
+            const toggleTodosBtn = document.getElementById('editorPcToggleTodosBtn');
+            if (toggleTodosBtn) {
+                toggleTodosBtn.innerText = editorPcMostrarTodos ? 'Ver páginas' : 'Ver todos';
+                toggleTodosBtn.className = editorPcMostrarTodos
+                    ? 'px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold'
+                    : 'px-3 py-2 rounded-xl border border-violet-200 bg-violet-50 text-violet-700 font-bold';
+            }
             document.getElementById('btnGuardarEditorPC').disabled = modificadas === 0;
             editorPcRefreshRevisionSelectionUi();
         }
@@ -4614,8 +4897,15 @@ Fallidos: ${fallidos}`);
         }
 
         function editorPcGoPage(delta) {
+            if (editorPcMostrarTodos) return;
             const totalPages = Math.max(1, Math.ceil(editorPcRowsFiltered.length / editorPcPageSize));
             editorPcCurrentPage = Math.min(totalPages, Math.max(1, editorPcCurrentPage + delta));
+            renderEditorPcTable();
+        }
+
+        function editorPcToggleMostrarTodos() {
+            editorPcMostrarTodos = !editorPcMostrarTodos;
+            editorPcCurrentPage = 1;
             renderEditorPcTable();
         }
 
@@ -4632,7 +4922,7 @@ Fallidos: ${fallidos}`);
         function aplicarFiltrosEditorPC() {
             editorPcActualizarOpcionesFiltros(true);
             const state = editorPcGetFilterState();
-            const signature = [state.q,state.grupo,state.proveedor,state.umVenta,state.barcode,state.logistica,state.estado,state.invBodega,editorPcSortField,editorPcSortDir].join('|');
+            const signature = [state.q,state.grupo,state.proveedor,state.umVenta,state.barcode,state.logistica,state.estado,state.invBodega,editorPcSortField,editorPcSortDir,editorPcMostrarTodos ? 'todos' : 'paginas'].join('|');
             if (signature !== editorPcLastFilterSignature) {
                 editorPcCurrentPage = 1;
                 editorPcLastFilterSignature = signature;
@@ -4642,8 +4932,9 @@ Fallidos: ${fallidos}`);
             renderEditorPcTable();
         }
 
-        function editorPcReadonlyCell(value, extra='') {
-            return `<td class="px-2 py-1.5 border-b border-slate-100 editor-cell-readonly ${extra}"><div class="min-h-[38px] flex items-center">${escapeHtmlEditor(value || '')}</div></td>`;
+        function editorPcReadonlyCell(value, extra='', colKey='') {
+            const dataCol = colKey ? ` data-col="${escapeHtmlEditor(colKey)}"` : '';
+            return `<td${dataCol} class="px-2 py-1.5 border-b border-slate-100 editor-cell-readonly ${extra}"><div class="min-h-[38px] flex items-center">${escapeHtmlEditor(value || '')}</div></td>`;
         }
 
         function editorPcEditableCell(row, field) {
@@ -4651,33 +4942,36 @@ Fallidos: ${fallidos}`);
             const key = editorPcKey(row);
             const mod = editorPcModified.get(key) || {};
             const modified = Object.prototype.hasOwnProperty.call(mod, field);
-            return `<td class="px-2 py-1.5 border-b border-slate-100 ${modified ? 'editor-cell-modified' : 'editor-cell-editable'}"><input data-key="${escapeHtmlEditor(key)}" data-field="${field}" value="${escapeHtmlEditor(val)}" oninput="editorPcOnInput(this)" class="w-full min-w-[110px] border ${modified ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-white'} rounded-lg px-2 py-2 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-violet-400"></td>`;
+            const duplicate = field === 'codigo_barra' && row?._barcode_repetido;
+            const tdClass = duplicate ? 'bg-red-50 border-red-100' : (modified ? 'editor-cell-modified' : 'editor-cell-editable');
+            const inputClass = duplicate ? 'border-red-300 bg-red-50 text-red-700' : (modified ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-white');
+            const duplicateInfo = duplicate ? `<div class="mt-1 text-[10px] font-black text-red-600 uppercase tracking-tight">Repetido en: ${escapeHtmlEditor(row.barcode_repetido_en_skus || '')}</div>` : '';
+            return `<td data-col="${escapeHtmlEditor(field)}" class="px-2 py-1.5 border-b border-slate-100 ${tdClass}"><input data-key="${escapeHtmlEditor(key)}" data-field="${field}" value="${escapeHtmlEditor(val)}" oninput="editorPcOnInput(this)" class="w-full min-w-[110px] border ${inputClass} rounded-lg px-2 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-violet-400">${duplicateInfo}</td>`;
         }
 
         function renderEditorPcTable() {
             const body = document.getElementById('editorPcBody');
             if (!editorPcRowsFiltered.length) {
-                body.innerHTML = '<tr><td colspan="32" class="px-4 py-8 text-center text-sm font-bold text-slate-400">Sin registros para mostrar.</td></tr>';
+                body.innerHTML = '<tr><td colspan="31" class="px-4 py-8 text-center text-sm font-bold text-slate-400">Sin registros para mostrar.</td></tr>';
                 editorPcResumen();
                 return;
             }
-            const start = (editorPcCurrentPage - 1) * editorPcPageSize;
-            const end = start + editorPcPageSize;
-            const rowsToRender = editorPcRowsFiltered.slice(start, end);
+            const rowsToRender = editorPcMostrarTodos
+                ? editorPcRowsFiltered
+                : editorPcRowsFiltered.slice((editorPcCurrentPage - 1) * editorPcPageSize, editorPcCurrentPage * editorPcPageSize);
             body.innerHTML = rowsToRender.map(row => `
-                <tr class="hover:bg-slate-50 align-top">
-                    <td class="px-3 py-2 text-center border-b border-slate-100 bg-slate-50 editor-select-col"><input type="checkbox" class="editorPcRevisionChk" data-key="${escapeHtmlEditor(editorPcKey(row))}" onchange="editorPcToggleRevisionSeleccion(this.dataset.key, this.checked)" ${editorPcRevisionSeleccion.has(editorPcKey(row)) ? 'checked' : ''}></td>
-                    ${editorPcReadonlyCell(row.codigo, 'editor-sticky-col-1 bg-slate-50')}
-                    ${editorPcReadonlyCell(row.nombre, 'editor-sticky-col-2 bg-slate-50')}
-                    ${editorPcReadonlyCell(row.clave_proveedor, 'editor-sticky-col-3 bg-slate-50')}
-                    ${editorPcReadonlyCell(row.grupo)}
-                    ${editorPcReadonlyCell(row.um_venta)}
-                    ${editorPcReadonlyCell(row.factor)}
-                    ${editorPcReadonlyCell(row.proveedor)}
-                    ${editorPcReadonlyCell(row.largo)}
-                    ${editorPcReadonlyCell(row.ancho)}
-                    ${editorPcReadonlyCell(row.alto)}
-                    ${editorPcReadonlyCell(row.bodegas_text || '', '')}
+                <tr class="hover:bg-slate-50 align-top ${row._barcode_repetido ? 'bg-red-50/40' : ''}">
+                    <td data-col="select" class="px-3 py-2 text-center border-b border-slate-100 bg-slate-50 editor-select-col"><input type="checkbox" class="editorPcRevisionChk" data-key="${escapeHtmlEditor(editorPcKey(row))}" onchange="editorPcToggleRevisionSeleccion(this.dataset.key, this.checked)" ${editorPcRevisionSeleccion.has(editorPcKey(row)) ? 'checked' : ''}></td>
+                    ${editorPcReadonlyCell(row.codigo, 'editor-sticky-col-1 bg-slate-50', 'codigo')}
+                    ${editorPcReadonlyCell(row.nombre, 'editor-sticky-col-2 bg-slate-50', 'nombre')}
+                    ${editorPcReadonlyCell(row.clave_proveedor, 'editor-sticky-col-3 bg-slate-50', 'clave_proveedor')}
+                    ${editorPcReadonlyCell(row.grupo, '', 'grupo')}
+                    ${editorPcReadonlyCell(row.um_venta, '', 'um_venta')}
+                    ${editorPcReadonlyCell(row.factor, '', 'factor')}
+                    ${editorPcReadonlyCell(row.proveedor, '', 'proveedor')}
+                    ${editorPcReadonlyCell(row.largo, '', 'largo')}
+                    ${editorPcReadonlyCell(row.ancho, '', 'ancho')}
+                    ${editorPcReadonlyCell(row.alto, '', 'alto')}
                     ${editorPcEditableCell(row, 'codigo_barra')}
                     ${editorPcEditableCell(row, 'largo_unidad')}
                     ${editorPcEditableCell(row, 'ancho_unidad')}
@@ -4693,7 +4987,7 @@ Fallidos: ${fallidos}`);
                     ${editorPcEditableCell(row, 'ancho_tarima')}
                     ${editorPcEditableCell(row, 'alto_tarima')}
                     ${editorPcEditableCell(row, 'peso_tarima')}
-                    ${editorPcReadonlyCell(row.inventario_bodega_temp || '')}
+                    ${editorPcReadonlyCell(row.inventario_bodega_temp || '', '', 'inventario_bodega_temp')}
                     ${editorPcReadonlyCell(editorPcFormatNumber(row.inventario_existencia_temp))}
                     ${editorPcReadonlyCell(editorPcFormatNumber(row.inventario_pendiente_temp))}
                     ${editorPcReadonlyCell(editorPcFormatNumber(row.inventario_ordenado_temp))}
@@ -4701,12 +4995,14 @@ Fallidos: ${fallidos}`);
                 </tr>
             `).join('');
             editorPcResumen();
+            editorPcSetupResizableColumns();
             editorPcRefreshSortIndicators();
             editorPcRefreshRevisionSelectionUi();
         }
 
 
         function editorPcRevisionCurrentPageRows() {
+            if (editorPcMostrarTodos) return editorPcRowsFiltered;
             const start = (editorPcCurrentPage - 1) * editorPcPageSize;
             const end = start + editorPcPageSize;
             return editorPcRowsFiltered.slice(start, end);
@@ -4818,6 +5114,8 @@ Fallidos: ${fallidos}`);
             const mod = editorPcModified.get(key) || {};
             mod[field] = input.value;
             editorPcModified.set(key, mod);
+            Object.assign(row, editorPcActualizarCamposDerivados(row));
+            if (field === 'codigo_barra') editorPcRecalcularBarcodesRepetidos();
             input.closest('td')?.classList.add('editor-cell-modified');
             input.classList.remove('border-slate-200', 'bg-white');
             input.classList.add('border-amber-300', 'bg-amber-50');
@@ -4840,6 +5138,42 @@ Fallidos: ${fallidos}`);
             a.click();
             a.remove();
             URL.revokeObjectURL(url);
+        }
+
+        function editorPcMostrarBarcodesRepetidos() {
+            if (!editorPcRows.length) { alert('Primero carga el editor logístico.'); return; }
+            const info = editorPcRefrescarDerivadosYDuplicados();
+            const select = document.getElementById('editorPcFiltroBarcode');
+            if (select) select.value = 'repetidos';
+            aplicarFiltrosEditorPC();
+            if (!info.grupos) alert('No encontré códigos de barra repetidos en la vista cargada.');
+            else document.getElementById('editorPcStatus').innerText = `Detecté ${info.grupos} código(s) de barra repetido(s), afectando ${info.filas} SKU(s).`;
+        }
+
+        function exportarEditorLogisticoBarcodesRepetidosCSV() {
+            if (!editorPcRows.length) { alert('Primero carga el editor logístico.'); return; }
+            const info = editorPcRefrescarDerivadosYDuplicados();
+            const rows = editorPcRows
+                .filter(row => row._barcode_repetido)
+                .sort((a,b) => String(a.codigo_barra || '').localeCompare(String(b.codigo_barra || ''), 'es', { numeric: true, sensitivity: 'base' }) || String(a.codigo || '').localeCompare(String(b.codigo || '')));
+            if (!rows.length) { alert('No encontré códigos de barra repetidos para exportar.'); return; }
+            const headers = ['codigo_barra','codigo','nombre','clave_proveedor','proveedor','grupo','bodegas','repetido_en_skus'];
+            const lines = [headers.map(editorPcCsvEscape).join(',')];
+            rows.forEach(row => {
+                lines.push([
+                    row.codigo_barra,
+                    row.codigo,
+                    row.nombre,
+                    row.clave_proveedor,
+                    row.proveedor,
+                    row.grupo,
+                    row.bodegas_text,
+                    row.barcode_repetido_en_skus
+                ].map(editorPcCsvEscape).join(','));
+            });
+            const fecha = new Date().toISOString().slice(0,10);
+            editorPcDownloadText(`editor_logistico_barcodes_repetidos_${fecha}.csv`, lines.join('\n'));
+            document.getElementById('editorPcStatus').innerText = `CSV de repetidos exportado: ${rows.length} SKU(s), ${info.grupos} barcode(s) repetido(s).`;
         }
 
         function exportarEditorLogisticoCSV() {
@@ -5008,14 +5342,7 @@ Fallidos: ${fallidos}`);
                     }
                     codigosProcesados.add(code);
                 }
-                editorPcRows = editorPcRows.map(row => ({
-                    ...row,
-                    _codigo_barra: String(row.codigo_barra || '').trim(),
-                    _tiene_logistica: editorPcTieneLogistica(row),
-                    _logistica_completa: editorPcTieneLogisticaCompleta(row),
-                    _search: [row.codigo,row.nombre,row.grupo,row.proveedor,row.clave_proveedor,row.codigo_barra,row.um_venta,row.estado_comercial,editorPcBuildInventorySearch(row)]
-                        .map(v => String(v || '').toLowerCase()).join(' | ')
-                }));
+                editorPcRefrescarDerivadosYDuplicados();
                 document.getElementById('editorPcStatus').innerText = `CSV importado. Con cambios reales: ${actualizados}. Sin cambios: ${sinCambios}. Omitidos no encontrados: ${omitidos}. Sin código: ${sinCodigo}. Columnas de referencia ignoradas: clave_proveedor, grupo, um_venta, factor y proveedor.`;
                 aplicarFiltrosEditorPC();
                 alert(`Importación cargada en pantalla.\n\nCon cambios reales: ${actualizados}\nSin cambios: ${sinCambios}\nOmitidos no encontrados: ${omitidos}\n\nSolo los códigos con cambios quedan pendientes para Guardar y replicar.`);
@@ -5026,7 +5353,7 @@ Fallidos: ${fallidos}`);
         async function cargarEditorLogisticoPC() {
             document.getElementById('editorPcStatus').innerText = 'Cargando información...';
             const body = document.getElementById('editorPcBody');
-            body.innerHTML = '<tr><td colspan="32" class="px-4 py-8 text-center text-sm font-bold text-slate-400">Cargando...</td></tr>';
+            body.innerHTML = '<tr><td colspan="31" class="px-4 py-8 text-center text-sm font-bold text-slate-400">Cargando...</td></tr>';
             editorPcModified = new Map();
             editorPcRevisionSeleccion = new Set();
             try {
@@ -5104,6 +5431,7 @@ Fallidos: ${fallidos}`);
                     _search: [row.codigo,row.nombre,row.grupo,row.proveedor,row.clave_proveedor,row.codigo_barra,row.um_venta,row.estado_comercial,editorPcBuildInventorySearch(row)]
                         .map(v => String(v || '').toLowerCase()).join(' | ')
                 }));
+                editorPcRefrescarDerivadosYDuplicados();
                 editorPcActualizarOpcionesFiltros();
                 if (editorPcInventarioTemporalInfo) {
                     editorPcAplicarBodegaInventarioTemporal();
@@ -5113,7 +5441,7 @@ Fallidos: ${fallidos}`);
                 document.getElementById('editorPcStatus').innerText = `Vista maestra cargada. Códigos: ${editorPcRows.length}.`;
                 aplicarFiltrosEditorPC();
             } catch (e) {
-                body.innerHTML = `<tr><td colspan="32" class="px-4 py-8 text-center text-sm font-bold text-red-500">${escapeHtmlEditor(e.message || 'Error al cargar.')}</td></tr>`;
+                body.innerHTML = `<tr><td colspan="31" class="px-4 py-8 text-center text-sm font-bold text-red-500">${escapeHtmlEditor(e.message || 'Error al cargar.')}</td></tr>`;
                 document.getElementById('editorPcStatus').innerText = 'Error al cargar.';
             }
         }
@@ -5145,14 +5473,7 @@ Fallidos: ${fallidos}`);
                 }
             }
             editorPcModified = new Map();
-            editorPcRows = editorPcRows.map(row => ({
-                ...row,
-                _codigo_barra: String(row.codigo_barra || '').trim(),
-                _tiene_logistica: editorPcTieneLogistica(row),
-                _logistica_completa: editorPcTieneLogisticaCompleta(row),
-                _search: [row.codigo,row.nombre,row.grupo,row.proveedor,row.clave_proveedor,row.codigo_barra,row.um_venta,row.estado_comercial,editorPcBuildInventorySearch(row)]
-                    .map(v => String(v || '').toLowerCase()).join(' | ')
-            }));
+            editorPcRefrescarDerivadosYDuplicados();
             document.getElementById('editorPcStatus').innerText = `Guardado terminado sin recargar toda la vista. Códigos replicados OK: ${ok}. Error: ${fail}.`;
             aplicarFiltrosEditorPC();
         }
