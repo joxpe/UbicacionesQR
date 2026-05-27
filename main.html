@@ -1168,7 +1168,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2026.05.22.11";
+        const APP_VERSION = "2026.05.27.1";
         const SB_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/rest/v1/";
         const SB_AUTH_URL = "https://phudflmtbfkdzqjqaoub.supabase.co/auth/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBodWRmbG10YmZrZHpxanFhb3ViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTUyMjIsImV4cCI6MjA5MjYzMTIyMn0.KbQenxZHHNlsLBdamQtI6CvJQisTzLLcVgN11TY2_XQ";
@@ -3258,7 +3258,8 @@ Fallidos: ${fallidos}`);
                 inputUbicacion: 'Ubicación de destino',
                 inputSku: 'SKU o código de barras',
                 inputCorr: 'Correlación LIMSA / EAN',
-                busquedaCat: 'Buscar en catálogo'
+                busquedaCat: 'Buscar en catálogo',
+                inputVinculo: 'Código de barras a vincular'
             };
             return label || mapa[id] || 'Captura manual';
         }
@@ -3331,6 +3332,7 @@ Fallidos: ${fallidos}`);
             if (id === 'inputUbicacion') procesarUbicacion(value);
             else if (id === 'inputSku') procesarSku(value);
             else if (id === 'inputCorr') procesarCorrelacion(value);
+            else if (id === 'inputVinculo') guardarVinculo();
             else if (id === 'busquedaCat') ejecutarBusquedaCatalogo();
         }
 
