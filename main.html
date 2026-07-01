@@ -685,7 +685,13 @@
                     <div class="md:col-span-2">
                         <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Archivo demanda + inventario</label>
                         <input type="file" id="etiqArchivoDemanda" accept=".csv,text/csv" onchange="etiquetadoLeerArchivoDemanda(this.files?.[0])" class="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm bg-white">
-                        <p class="text-[11px] text-slate-400 mt-1">Carga el CSV generado desde “Generar CSV demanda + inventario”.</p>
+                        <p class="text-[11px] text-slate-400 mt-1">Carga el CSV generado desde “Generar CSV demanda + inventario”. También puedes guardar una base mensual en Supabase y reutilizarla.</p>
+                        <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <input type="month" id="etiqPeriodoDemanda" class="border border-slate-200 rounded-2xl px-3 py-2 text-xs font-black text-slate-700 bg-white" title="Periodo de demanda">
+                            <button type="button" onclick="etiquetadoCargarDemandaActivaSupabase({forzar:true})" class="bg-blue-50 text-blue-700 border border-blue-100 px-3 py-2 rounded-2xl text-[11px] font-black uppercase">Usar base Supabase</button>
+                            <button type="button" onclick="etiquetadoGuardarDemandaSupabase()" class="bg-emerald-50 text-emerald-700 border border-emerald-100 px-3 py-2 rounded-2xl text-[11px] font-black uppercase">Guardar en Supabase</button>
+                        </div>
+                        <p id="etiqSupabaseDemandaInfo" class="text-[11px] text-slate-400 mt-2 font-bold">Sin base mensual cargada desde Supabase.</p>
                     </div>
                     <div>
                         <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Bodega</label>
@@ -1212,7 +1218,7 @@
     </div>
 
     <script>
-        const APP_VERSION = "2026.07.01.2";
+        const APP_VERSION = "2026.07.01.3";
         const SB_URL = "https://whoecasgekueqasatjuh.supabase.co/rest/v1/";
         const SB_AUTH_URL = "https://whoecasgekueqasatjuh.supabase.co/auth/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indob2VjYXNnZWt1ZXFhc2F0anVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMjAxNzQsImV4cCI6MjA5NjU5NjE3NH0.lZgXLuQFjfdsAMYWmjkScPhMDXrSQvgFfq0ntGP3K_Q";
@@ -3653,6 +3659,11 @@ Fallidos: ${fallidos}`);
         const ETIQ_BODEGAS_CER = ['cc','cs','ct','cm','cl','cb','cg','cd','ch','cj'];
         const ETIQ_BODEGAS_ORDEN_PREFERIDO = [...ETIQ_BODEGAS_ACC, ...ETIQ_BODEGAS_CER];
         const ETIQ_BODEGAS_EXCLUIDAS_AVANCE = new Set(['az','ay']);
+        const ETIQ_DEMANDA_REQUIRED = ['Articulo','Cia','Bodega','Tipo SKU','Demanda calculada','Inventario'];
+        const ETIQ_DEMANDA_DB_SELECT = 'periodo,articulo,proveedor,proveedor_demanda,grupo,cia,bodega,tipo_sku,demanda_calculada,demanda_esperada,demanda_sugerida,stock_seguridad,inventario_objetivo,inventario,necesidad_recomendada,riesgo_negado,riesgo_sobreinventario,politica_inventario';
+        let etiquetadoDemandaPeriodoActivo = null;
+        let etiquetadoDemandaFuente = 'local';
+        let etiquetadoDemandaNombreArchivo = '';
 
         function regresarAAlmacenesDesdeEtiquetado() {
             document.getElementById('pantallaEtiquetadoQR')?.classList.add('hidden');
@@ -3669,7 +3680,10 @@ Fallidos: ${fallidos}`);
                 sel.innerHTML = opciones.join('');
                 sel.value = etiquetadoAlmacenInicial || '__todas__';
             }
+            const periodoInput = document.getElementById('etiqPeriodoDemanda');
+            if (periodoInput && !periodoInput.value) periodoInput.value = etiquetadoPeriodo();
             await etiquetadoCargarAvanceSupabase();
+            if (!etiquetadoDemandaRaw.length) await etiquetadoCargarDemandaActivaSupabase({ silencioso: true });
             etiquetadoActualizarListadoProveedores();
             etiquetadoAplicarFiltros();
             setTimeout(() => document.getElementById('etiqArchivoDemanda')?.focus(), 80);
@@ -3844,25 +3858,261 @@ Fallidos: ${fallidos}`);
             return set.has(key);
         }
 
+        function etiquetadoDemandaPeriodoDesdeNombre(nombre) {
+            const n = String(nombre || '').trim();
+            const m = n.match(/(20\d{2})[-_ ]?(0[1-9]|1[0-2])/);
+            return m ? `${m[1]}-${m[2]}` : etiquetadoPeriodo();
+        }
+
+        function etiquetadoSetInfoDemandaSupabase(msg, tipo='info') {
+            const el = document.getElementById('etiqSupabaseDemandaInfo');
+            if (!el) return;
+            const cls = tipo === 'error' ? 'text-red-500' : tipo === 'ok' ? 'text-emerald-600' : 'text-slate-400';
+            el.className = `text-[11px] ${cls} mt-2 font-bold`;
+            el.innerText = msg;
+        }
+
+        function etiquetadoValidarRowsDemanda(rows) {
+            const first = rows?.[0] || {};
+            const faltantes = ETIQ_DEMANDA_REQUIRED.filter(h => !(h in first));
+            if (!Array.isArray(rows) || !rows.length) throw new Error('El CSV no trae registros.');
+            if (faltantes.length) throw new Error('El CSV no trae columnas requeridas: ' + faltantes.join(', '));
+            return true;
+        }
+
+        function etiquetadoActualizarPeriodoInput(periodo) {
+            const input = document.getElementById('etiqPeriodoDemanda');
+            if (input && periodo) input.value = periodo;
+        }
+
+        function etiquetadoResumenDemandaRows(rows) {
+            const articulos = new Set();
+            const bodegas = new Set();
+            const cias = new Set();
+            for (const r of (Array.isArray(rows) ? rows : [])) {
+                const art = String(r['Articulo'] || '').trim().toLowerCase();
+                const bod = String(r['Bodega'] || '').trim().toLowerCase();
+                const cia = String(r['Cia'] || '').trim();
+                if (art) articulos.add(art);
+                if (bod) bodegas.add(bod);
+                if (cia) cias.add(cia);
+            }
+            return { total: rows?.length || 0, articulos: articulos.size, bodegas: bodegas.size, cias: cias.size };
+        }
+
+        function etiquetadoAplicarDemandaRows(rows, { fuente='local', periodo=null, nombreArchivo='', mensaje=null } = {}) {
+            etiquetadoValidarRowsDemanda(rows);
+            etiquetadoDemandaRaw = rows;
+            etiquetadoDemandaFuente = fuente;
+            etiquetadoDemandaPeriodoActivo = periodo;
+            etiquetadoDemandaNombreArchivo = nombreArchivo || '';
+            etiquetadoCatalogoMap = new Map();
+            etiquetadoBarcodeMap = new Map();
+            if (periodo) etiquetadoActualizarPeriodoInput(periodo);
+            etiquetadoActualizarListadoProveedores();
+            etiquetadoLimpiarGrupos();
+            const omitidosX = rows.filter(r => etiquetadoCodigoOmitido(r['Articulo'])).length;
+            const combosTotales = new Set(rows.map(etiquetadoProveedorBodegaKeyDesdeRaw).filter(Boolean)).size;
+            const combosActivos = etiquetadoProveedorBodegaActivosSet(rows).size;
+            const combosCero = Math.max(0, combosTotales - combosActivos);
+            const resumen = etiquetadoResumenDemandaRows(rows);
+            const origenTxt = fuente === 'supabase' ? `Base Supabase${periodo ? ` ${periodo}` : ''}` : 'CSV local';
+            etiquetadoSetStatus(mensaje || `${origenTxt} cargado: ${rows.length.toLocaleString('es-MX')} registros. Se omiten automáticamente ${omitidosX.toLocaleString('es-MX')} códigos que empiezan con X y ${combosCero.toLocaleString('es-MX')} proveedor(es)/bodega con demanda 0 y existencia 0. Selecciona proveedor de la lista o deja todos para generar la vista previa.`, 'ok');
+            etiquetadoSetInfoDemandaSupabase(fuente === 'supabase'
+                ? `Usando base Supabase activa ${periodo || ''}: ${resumen.total.toLocaleString('es-MX')} registros · ${resumen.articulos.toLocaleString('es-MX')} artículos · ${resumen.bodegas.toLocaleString('es-MX')} bodegas.`
+                : `Usando CSV local${nombreArchivo ? `: ${nombreArchivo}` : ''}. Guarda en Supabase cuando quieras dejarlo como base mensual activa.`, fuente === 'supabase' ? 'ok' : 'info');
+            etiquetadoAplicarFiltros();
+        }
+
+        function etiquetadoRawToDbRow(r, periodo) {
+            const articulo = String(r['Articulo'] || '').trim().toLowerCase();
+            const bodega = String(r['Bodega'] || '').trim().toLowerCase();
+            const cia = String(r['Cia'] || '').trim();
+            return {
+                periodo,
+                articulo,
+                proveedor: String(r['Proveedor'] || '').trim(),
+                proveedor_demanda: String(r['Proveedor demanda'] || '').trim(),
+                grupo: String(r['Grupo'] || '').trim(),
+                cia,
+                bodega,
+                tipo_sku: String(r['Tipo SKU'] || '').trim(),
+                demanda_calculada: etiquetadoToNumber(r['Demanda calculada']),
+                demanda_esperada: etiquetadoToNumber(r['Demanda esperada']),
+                demanda_sugerida: etiquetadoToNumber(r['Demanda sugerida']),
+                stock_seguridad: etiquetadoToNumber(r['Stock de seguridad']),
+                inventario_objetivo: etiquetadoToNumber(r['Inventario objetivo']),
+                inventario: etiquetadoToNumber(r['Inventario']),
+                necesidad_recomendada: etiquetadoToNumber(r['Necesidad recomendada']),
+                riesgo_negado: String(r['Riesgo de negado'] || '').trim(),
+                riesgo_sobreinventario: String(r['Riesgo de sobreinventario'] || '').trim(),
+                politica_inventario: String(r['Política inventario'] || '').trim(),
+                updated_at: new Date().toISOString()
+            };
+        }
+
+        function etiquetadoDbToRawRow(r) {
+            return {
+                'Articulo': String(r.articulo || '').trim(),
+                'Proveedor': String(r.proveedor || '').trim(),
+                'Proveedor demanda': String(r.proveedor_demanda || '').trim(),
+                'Grupo': String(r.grupo || '').trim(),
+                'Cia': String(r.cia || '').trim(),
+                'Bodega': String(r.bodega || '').trim(),
+                'Tipo SKU': String(r.tipo_sku || '').trim(),
+                'Demanda calculada': r.demanda_calculada ?? '',
+                'Demanda esperada': r.demanda_esperada ?? '',
+                'Demanda sugerida': r.demanda_sugerida ?? '',
+                'Stock de seguridad': r.stock_seguridad ?? '',
+                'Inventario objetivo': r.inventario_objetivo ?? '',
+                'Inventario': r.inventario ?? '',
+                'Necesidad recomendada': r.necesidad_recomendada ?? '',
+                'Riesgo de negado': String(r.riesgo_negado || '').trim(),
+                'Riesgo de sobreinventario': String(r.riesgo_sobreinventario || '').trim(),
+                'Política inventario': String(r.politica_inventario || '').trim()
+            };
+        }
+
+        function etiquetadoPeriodoSeleccionado() {
+            const input = document.getElementById('etiqPeriodoDemanda');
+            return String(input?.value || etiquetadoDemandaPeriodoActivo || etiquetadoPeriodo()).trim();
+        }
+
+        function etiquetadoChunk(items, size) {
+            const out = [];
+            for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
+            return out;
+        }
+
+        function etiquetadoDemandaHeaders(extra = {}) {
+            return { 'apikey': SB_KEY, 'Authorization': `Bearer ${getAccessToken()}`, 'Content-Type': 'application/json', ...extra };
+        }
+
+        function etiquetadoTablaDemandaFaltante(e) {
+            const msg = String(e?.message || e || '').toLowerCase();
+            return msg.includes('demanda_inventario') && (msg.includes('does not exist') || msg.includes('relation') || msg.includes('schema cache'));
+        }
+
+        async function etiquetadoCargarDemandaActivaSupabase({ forzar=false, silencioso=false } = {}) {
+            try {
+                if (!silencioso) etiquetadoSetStatus('Consultando base demanda + inventario activa en Supabase...');
+                const periodos = await fetchJsonOrThrow(`${SB_URL}demanda_inventario_periodos?activo=eq.true&select=periodo,nombre_archivo,total_registros,total_articulos,total_bodegas,total_companias,fecha_subida,usuario_subida&order=fecha_subida.desc&limit=1`, {
+                    headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${getAccessToken()}` }
+                });
+                const activo = Array.isArray(periodos) ? periodos[0] : null;
+                if (!activo?.periodo) {
+                    etiquetadoSetInfoDemandaSupabase('No hay base mensual activa en Supabase. Puedes cargar un CSV local y guardarlo.', 'info');
+                    if (!silencioso) etiquetadoSetStatus('No hay base demanda + inventario activa en Supabase. Carga un CSV local y guárdalo como base mensual.', 'error');
+                    return false;
+                }
+                if (!forzar && etiquetadoDemandaFuente === 'supabase' && etiquetadoDemandaPeriodoActivo === activo.periodo && etiquetadoDemandaRaw.length) return true;
+                const rowsDb = await fetchAllSupabaseRows('demanda_inventario_datos', ETIQ_DEMANDA_DB_SELECT, `periodo=eq.${encodeURIComponent(activo.periodo)}&order=bodega.asc,articulo.asc`, 1000);
+                const rows = rowsDb.map(etiquetadoDbToRawRow);
+                etiquetadoAplicarDemandaRows(rows, {
+                    fuente: 'supabase',
+                    periodo: activo.periodo,
+                    nombreArchivo: activo.nombre_archivo || '',
+                    mensaje: `Base Supabase activa ${activo.periodo} cargada: ${rows.length.toLocaleString('es-MX')} registros.`
+                });
+                return true;
+            } catch(e) {
+                if (etiquetadoTablaDemandaFaltante(e)) {
+                    etiquetadoSetInfoDemandaSupabase('La tabla mensual demanda + inventario aún no existe en Supabase. Usa el clon actualizado para crearla.', 'error');
+                    if (!silencioso) etiquetadoSetStatus('Falta crear la tabla demanda + inventario en Supabase. Debes aplicar el clon actualizado antes de usar esta función.', 'error');
+                    return false;
+                }
+                if (!silencioso) etiquetadoSetStatus(`No se pudo cargar demanda + inventario desde Supabase: ${e.message || e}`, 'error');
+                etiquetadoSetInfoDemandaSupabase('No se pudo consultar la base mensual de Supabase.', 'error');
+                return false;
+            }
+        }
+
+        async function etiquetadoGuardarDemandaSupabase() {
+            try {
+                if (!etiquetadoDemandaRaw.length) return alert('Carga primero el CSV demanda + inventario.');
+                etiquetadoValidarRowsDemanda(etiquetadoDemandaRaw);
+                const periodo = etiquetadoPeriodoSeleccionado();
+                if (!/^20\d{2}-(0[1-9]|1[0-2])$/.test(periodo)) return alert('Captura un periodo válido, por ejemplo 2026-07.');
+                const resumen = etiquetadoResumenDemandaRows(etiquetadoDemandaRaw);
+                if (!confirm(`¿Guardar demanda + inventario ${periodo} en Supabase y dejarlo como periodo activo?\n\nRegistros: ${resumen.total.toLocaleString('es-MX')}\nArtículos: ${resumen.articulos.toLocaleString('es-MX')}\nBodegas: ${resumen.bodegas.toLocaleString('es-MX')}\n\nSi ya existe información de ese periodo, se reemplazará.`)) return;
+                const now = new Date().toISOString();
+                const nombreArchivo = etiquetadoDemandaNombreArchivo || document.getElementById('etiqArchivoDemanda')?.files?.[0]?.name || `demanda_inventario_${periodo}.csv`;
+                etiquetadoSetStatus(`Preparando guardado mensual ${periodo} en Supabase...`);
+
+                await fetchJsonOrThrow(`${SB_URL}demanda_inventario_periodos?on_conflict=periodo`, {
+                    method: 'POST',
+                    headers: etiquetadoDemandaHeaders({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+                    body: JSON.stringify([{ periodo, nombre_archivo: nombreArchivo, activo: false, usuario_subida: getUsuarioActual() || null, updated_at: now }])
+                });
+
+                etiquetadoSetStatus(`Eliminando datos anteriores del periodo ${periodo}...`);
+                await fetchJsonOrThrow(`${SB_URL}demanda_inventario_datos?periodo=eq.${encodeURIComponent(periodo)}`, {
+                    method: 'DELETE',
+                    headers: etiquetadoDemandaHeaders({ 'Prefer': 'return=minimal' })
+                });
+
+                const rowsDb = etiquetadoDemandaRaw
+                    .map(r => etiquetadoRawToDbRow(r, periodo))
+                    .filter(r => r.articulo && r.bodega && r.cia);
+                const chunks = etiquetadoChunk(rowsDb, 500);
+                for (let i = 0; i < chunks.length; i++) {
+                    etiquetadoSetStatus(`Guardando en Supabase ${periodo}: bloque ${i + 1} de ${chunks.length} (${rowsDb.length.toLocaleString('es-MX')} registros)...`);
+                    await fetchJsonOrThrow(`${SB_URL}demanda_inventario_datos`, {
+                        method: 'POST',
+                        headers: etiquetadoDemandaHeaders({ 'Prefer': 'return=minimal' }),
+                        body: JSON.stringify(chunks[i])
+                    });
+                }
+
+                await fetchJsonOrThrow(`${SB_URL}demanda_inventario_periodos?activo=eq.true`, {
+                    method: 'PATCH',
+                    headers: etiquetadoDemandaHeaders({ 'Prefer': 'return=minimal' }),
+                    body: JSON.stringify({ activo: false, updated_at: now })
+                });
+                await fetchJsonOrThrow(`${SB_URL}demanda_inventario_periodos?on_conflict=periodo`, {
+                    method: 'POST',
+                    headers: etiquetadoDemandaHeaders({ 'Prefer': 'resolution=merge-duplicates,return=representation' }),
+                    body: JSON.stringify([{
+                        periodo,
+                        nombre_archivo: nombreArchivo,
+                        total_registros: rowsDb.length,
+                        total_articulos: resumen.articulos,
+                        total_bodegas: resumen.bodegas,
+                        total_companias: resumen.cias,
+                        activo: true,
+                        usuario_subida: getUsuarioActual() || null,
+                        fecha_subida: now,
+                        updated_at: now
+                    }])
+                });
+                etiquetadoDemandaFuente = 'supabase';
+                etiquetadoDemandaPeriodoActivo = periodo;
+                etiquetadoDemandaNombreArchivo = nombreArchivo;
+                etiquetadoSetInfoDemandaSupabase(`Base Supabase activa ${periodo}: ${rowsDb.length.toLocaleString('es-MX')} registros · ${resumen.articulos.toLocaleString('es-MX')} artículos · ${resumen.bodegas.toLocaleString('es-MX')} bodegas.`, 'ok');
+                etiquetadoSetStatus(`Base demanda + inventario ${periodo} guardada en Supabase y marcada como activa.`, 'ok');
+                alert(`✅ Base demanda + inventario ${periodo} guardada en Supabase.`);
+            } catch(e) {
+                const msg = e.message || e;
+                if (etiquetadoTablaDemandaFaltante(e)) {
+                    etiquetadoSetStatus('Falta crear la tabla demanda + inventario en Supabase. Aplica el clon actualizado y vuelve a intentar.', 'error');
+                    alert('Falta crear la tabla demanda + inventario en Supabase. Usa el clon actualizado.');
+                } else {
+                    etiquetadoSetStatus(`No se pudo guardar en Supabase: ${msg}`, 'error');
+                    alert(`No se pudo guardar en Supabase: ${msg}`);
+                }
+            }
+        }
+
         async function etiquetadoLeerArchivoDemanda(file) {
             if (!file) return;
             try {
-                etiquetadoSetStatus('Leyendo CSV...');
+                etiquetadoSetStatus('Leyendo CSV local...');
                 const text = await file.text();
                 const rows = etiquetadoParseCsv(text);
-                const required = ['Articulo','Cia','Bodega','Tipo SKU','Demanda calculada','Inventario'];
-                const first = rows[0] || {};
-                const faltantes = required.filter(h => !(h in first));
-                if (faltantes.length) throw new Error('El CSV no trae columnas requeridas: ' + faltantes.join(', '));
-                etiquetadoDemandaRaw = rows;
-                etiquetadoActualizarListadoProveedores();
-                etiquetadoLimpiarGrupos();
-                const omitidosX = rows.filter(r => etiquetadoCodigoOmitido(r['Articulo'])).length;
-                const combosTotales = new Set(rows.map(etiquetadoProveedorBodegaKeyDesdeRaw).filter(Boolean)).size;
-                const combosActivos = etiquetadoProveedorBodegaActivosSet(rows).size;
-                const combosCero = Math.max(0, combosTotales - combosActivos);
-                etiquetadoSetStatus(`CSV cargado: ${rows.length.toLocaleString('es-MX')} registros. Se omiten automáticamente ${omitidosX.toLocaleString('es-MX')} códigos que empiezan con X y ${combosCero.toLocaleString('es-MX')} proveedor(es)/bodega con demanda 0 y existencia 0. Selecciona proveedor de la lista o deja todos para generar la vista previa.`, 'ok');
-                etiquetadoAplicarFiltros();
+                etiquetadoValidarRowsDemanda(rows);
+                const periodo = etiquetadoDemandaPeriodoDesdeNombre(file.name || '');
+                etiquetadoActualizarPeriodoInput(periodo);
+                etiquetadoAplicarDemandaRows(rows, { fuente: 'local', periodo, nombreArchivo: file.name || '' });
             } catch(e) {
                 etiquetadoSetStatus(`No se pudo leer el CSV: ${e.message || e}`, 'error');
             }
