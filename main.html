@@ -673,7 +673,7 @@
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <button onclick="etiquetadoGenerarCsvSeleccionActual()" class="bg-amber-600 text-white px-4 py-3 rounded-2xl font-black text-xs uppercase shadow-sm active:scale-95">Generar CSV</button>
-                    <button onclick="etiquetadoGenerarPorTodasBodegas()" class="bg-slate-800 text-white px-4 py-3 rounded-2xl font-black text-xs uppercase shadow-sm active:scale-95">Generar por todas las bodegas</button>
+                    <button onclick="etiquetadoAbrirMenuBodegasExportacion()" class="bg-slate-800 text-white px-4 py-3 rounded-2xl font-black text-xs uppercase shadow-sm active:scale-95">Generar por todas las bodegas</button>
                     <button onclick="etiquetadoMarcarCompletoActual()" class="bg-emerald-600 text-white px-4 py-3 rounded-2xl font-black text-xs uppercase shadow-sm active:scale-95">Dar visto bueno</button>
                     <button onclick="etiquetadoQuitarCompletoActual()" class="bg-rose-50 text-rose-700 border border-rose-200 px-4 py-3 rounded-2xl font-black text-xs uppercase shadow-sm active:scale-95">Quitar visto bueno</button>
                 </div>
@@ -1099,6 +1099,34 @@
         </main>
     </div>
 
+
+    <div id="modalEtiqBodegas" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden items-end md:items-center justify-center p-4">
+        <div class="w-full max-w-xl bg-white rounded-t-3xl md:rounded-3xl shadow-2xl overflow-hidden">
+            <header class="p-4 border-b bg-slate-50 flex items-start justify-between gap-3">
+                <div>
+                    <p id="etiqModalBodegasSubtitulo" class="text-[10px] font-black text-amber-700 uppercase tracking-widest">Exportación masiva</p>
+                    <h2 id="etiqModalBodegasTitulo" class="text-lg font-black text-slate-800 uppercase">Seleccionar bodegas</h2>
+                    <p id="etiqModalBodegasResumen" class="text-xs font-bold text-slate-500 mt-1">--</p>
+                </div>
+                <button onclick="etiquetadoCerrarMenuBodegasExportacion()" class="text-2xl text-slate-400 leading-none px-2">&times;</button>
+            </header>
+            <div class="p-4 space-y-4">
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" onclick="etiquetadoModalBodegasSetGrupo('acc')" class="bg-blue-50 text-blue-700 border border-blue-100 px-3 py-2 rounded-xl text-xs font-black uppercase">ACC</button>
+                    <button type="button" onclick="etiquetadoModalBodegasSetGrupo('cer')" class="bg-cyan-50 text-cyan-700 border border-cyan-100 px-3 py-2 rounded-xl text-xs font-black uppercase">CER</button>
+                    <button type="button" onclick="etiquetadoModalBodegasSet(true)" class="bg-slate-100 text-slate-700 px-3 py-2 rounded-xl text-xs font-black uppercase">Seleccionar todas</button>
+                    <button type="button" onclick="etiquetadoModalBodegasSet(false)" class="bg-rose-50 text-rose-700 border border-rose-100 px-3 py-2 rounded-xl text-xs font-black uppercase">Limpiar</button>
+                </div>
+                <div id="etiqModalBodegasLista" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[55vh] overflow-auto pr-1"></div>
+                <p id="etiqModalBodegasNota" class="text-[11px] text-slate-400 font-bold">Se genera un solo CSV con columna bodega y una línea vacía entre el final de una bodega y el inicio de la siguiente.</p>
+            </div>
+            <footer class="p-4 border-t bg-slate-50 grid grid-cols-2 gap-3">
+                <button onclick="etiquetadoCerrarMenuBodegasExportacion()" class="bg-white border border-slate-200 text-slate-700 rounded-2xl py-3 text-sm font-black uppercase active:bg-slate-100">Cancelar</button>
+                <button id="etiqModalBodegasConfirmarBtn" onclick="etiquetadoConfirmarMenuBodegas()" class="bg-amber-600 text-white rounded-2xl py-3 text-sm font-black uppercase active:bg-amber-700">Generar CSV</button>
+            </footer>
+        </div>
+    </div>
+
     <div id="modalScanner" class="fixed inset-0 bg-slate-900/95 z-50 hidden flex flex-col items-center justify-center p-6">
         <div class="w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl"><div id="reader"></div></div>
         <button onclick="cerrarScanner()" class="mt-8 bg-white/10 text-white border border-white/20 px-10 py-3 rounded-full font-bold backdrop-blur-md">Cerrar Cámara</button>
@@ -1184,15 +1212,93 @@
     </div>
 
     <script>
-        const APP_VERSION = "2026.05.27.10";
+        const APP_VERSION = "2026.07.01.2";
         const SB_URL = "https://whoecasgekueqasatjuh.supabase.co/rest/v1/";
         const SB_AUTH_URL = "https://whoecasgekueqasatjuh.supabase.co/auth/v1/";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indob2VjYXNnZWt1ZXFhc2F0anVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMjAxNzQsImV4cCI6MjA5NjU5NjE3NH0.lZgXLuQFjfdsAMYWmjkScPhMDXrSQvgFfq0ntGP3K_Q";
         const ALMACENES_FALLBACK = ["aa","ab","ac","ad","ag","ah","ai","aj","al","am","as","at","cb","cc","cd","cg","ch","ci","cj","cl","cm","cr","cs","ct"];
         const AUTH_STORAGE_KEY = "limsa_qr_auth_session";
+        const AUTH_REFRESH_MARGIN_MS = 2 * 60 * 1000;
+        const nativeFetch = window.fetch.bind(window);
         let authSession = null;
+        let authRefreshPromise = null;
+
         function getAccessToken() { return authSession?.access_token || ""; }
         function getUsuarioActual() { const email = authSession?.user?.email || ""; return email ? email.split("@")[0].toLowerCase() : ""; }
+        function guardarAuthSession(data = {}) {
+            const anterior = authSession || {};
+            const normalizada = { ...anterior, ...data };
+            if (!normalizada.user && anterior.user) normalizada.user = anterior.user;
+            if (!normalizada.refresh_token && anterior.refresh_token) normalizada.refresh_token = anterior.refresh_token;
+            if (!normalizada.expires_at && Number(normalizada.expires_in)) {
+                normalizada.expires_at = Math.floor(Date.now() / 1000) + Number(normalizada.expires_in);
+            }
+            authSession = normalizada;
+            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authSession));
+            return authSession;
+        }
+        function authExpiraPronto(margenMs = AUTH_REFRESH_MARGIN_MS) {
+            const exp = Number(authSession?.expires_at || 0);
+            if (!exp) return false;
+            return (exp * 1000) <= (Date.now() + margenMs);
+        }
+        async function refrescarSesion() {
+            if (authRefreshPromise) return authRefreshPromise;
+            const refreshToken = authSession?.refresh_token;
+            if (!refreshToken) throw new Error("Sesión vencida. Inicia sesión nuevamente.");
+            authRefreshPromise = (async () => {
+                const res = await nativeFetch(`${SB_AUTH_URL}token?grant_type=refresh_token`, {
+                    method: "POST",
+                    headers: { "apikey": SB_KEY, "Authorization": `Bearer ${SB_KEY}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ refresh_token: refreshToken })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || !data.access_token) {
+                    throw new Error("Sesión vencida. Inicia sesión nuevamente.");
+                }
+                return guardarAuthSession(data);
+            })().finally(() => { authRefreshPromise = null; });
+            return authRefreshPromise;
+        }
+        async function asegurarSesionActiva({ forzar = false } = {}) {
+            if (!authSession) {
+                authSession = JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY) || "null");
+            }
+            if (!authSession?.access_token) throw new Error("Sesión vencida. Inicia sesión nuevamente.");
+            if (forzar || authExpiraPronto()) await refrescarSesion();
+            return authSession;
+        }
+        function prepararOpcionesSupabase(options = {}) {
+            const headers = new Headers(options.headers || {});
+            headers.set("apikey", headers.get("apikey") || SB_KEY);
+            const authActual = headers.get("Authorization") || "";
+            if (authActual !== `Bearer ${SB_KEY}`) headers.set("Authorization", `Bearer ${getAccessToken()}`);
+            return { ...options, headers };
+        }
+        async function fetchConSesionSupabase(input, options = {}) {
+            const url = typeof input === "string" ? input : (input?.url || "");
+            const esRestSupabase = String(url).startsWith(SB_URL);
+            if (!esRestSupabase) return nativeFetch(input, options);
+            await asegurarSesionActiva();
+            let res = await nativeFetch(input, prepararOpcionesSupabase(options));
+            if (res.status === 401 || res.status === 403) {
+                await asegurarSesionActiva({ forzar: true });
+                res = await nativeFetch(input, prepararOpcionesSupabase(options));
+            }
+            if (res.status === 401 || res.status === 403) {
+                cerrarSesion("Tu sesión venció. Vuelve a entrar para continuar.");
+            }
+            return res;
+        }
+        window.fetch = fetchConSesionSupabase;
+        function mantenerSesionActivaSilencioso() {
+            if (!authSession?.access_token) return;
+            asegurarSesionActiva().catch(() => {});
+        }
+        setInterval(mantenerSesionActivaSilencioso, 5 * 60 * 1000);
+        window.addEventListener("focus", mantenerSesionActivaSilencioso);
+        window.addEventListener("online", mantenerSesionActivaSilencioso);
+        document.addEventListener("visibilitychange", () => { if (!document.hidden) mantenerSesionActivaSilencioso(); });
         function mostrarLogin(mensaje = "") {
             document.getElementById("pantallaLogin")?.classList.remove("hidden");
             document.getElementById("pantallaMenuPrincipal")?.classList.add("hidden");
@@ -1225,18 +1331,16 @@
                     if (msg.toLowerCase().includes("invalid login")) throw new Error("Correo o contraseña incorrectos, o el usuario fue creado sin contraseña.");
                     throw new Error(msg);
                 }
-                authSession = data;
-                localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(data));
+                guardarAuthSession(data);
                 await mostrarAppAutenticada();
             } catch (e) { mostrarLogin(e.message || "No fue posible iniciar sesión."); }
             finally { if (btn) { btn.disabled = false; btn.innerText = "Entrar"; } }
         }
-        function cerrarSesion() { authSession = null; localStorage.removeItem(AUTH_STORAGE_KEY); mostrarLogin(); }
+        function cerrarSesion(mensaje = "") { authSession = null; localStorage.removeItem(AUTH_STORAGE_KEY); mostrarLogin(mensaje); }
         async function verificarSesionGuardada() {
             try {
                 authSession = JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY) || "null");
-                const exp = Number(authSession?.expires_at || 0);
-                if (!authSession?.access_token || (exp && exp * 1000 < Date.now())) throw new Error("Sesión vencida");
+                await asegurarSesionActiva();
                 await mostrarAppAutenticada();
             } catch (_) { authSession = null; localStorage.removeItem(AUTH_STORAGE_KEY); mostrarLogin(); }
         }
@@ -3542,7 +3646,13 @@ Fallidos: ${fallidos}`);
         let etiquetadoActualizandoGrupos = false;
         let etiquetadoAvanceMap = new Map();
         let etiquetadoAvanceTablaDisponible = true;
+        let etiquetadoExportacionMasivaContext = null;
+        let etiquetadoSyncProveedorAvancePendiente = false;
         const ETIQ_HEADERS_BASE = ['codigo','status','descripcion','dem','__EXISTENCIA__','MODELOS','GRUPO','CODIGO30','ROTACION','CODIGO_BARRAS'];
+        const ETIQ_BODEGAS_ACC = ['ac','as','at','am','al','ab','aa','ad','ah','aj'];
+        const ETIQ_BODEGAS_CER = ['cc','cs','ct','cm','cl','cb','cg','cd','ch','cj'];
+        const ETIQ_BODEGAS_ORDEN_PREFERIDO = [...ETIQ_BODEGAS_ACC, ...ETIQ_BODEGAS_CER];
+        const ETIQ_BODEGAS_EXCLUIDAS_AVANCE = new Set(['az','ay']);
 
         function regresarAAlmacenesDesdeEtiquetado() {
             document.getElementById('pantallaEtiquetadoQR')?.classList.add('hidden');
@@ -3911,6 +4021,14 @@ Fallidos: ${fallidos}`);
             return 'Sin clasificar';
         }
 
+        function etiquetadoBodegaExcluidaAvance(bodega) {
+            return ETIQ_BODEGAS_EXCLUIDAS_AVANCE.has(String(bodega || '').trim().toLowerCase());
+        }
+
+        function etiquetadoBodegasRapidas(tipo) {
+            return String(tipo || '').toLowerCase() === 'cer' ? ETIQ_BODEGAS_CER : ETIQ_BODEGAS_ACC;
+        }
+
         function etiquetadoAvanceKey(bodega, proveedor) {
             return `${String(bodega || '').trim().toLowerCase()}|${String(proveedor || '').trim().toLowerCase()}`;
         }
@@ -3927,6 +4045,7 @@ Fallidos: ${fallidos}`);
                     headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${getAccessToken()}` }
                 });
                 for (const row of (Array.isArray(data) ? data : [])) {
+                    if (etiquetadoBodegaExcluidaAvance(row.bodega)) continue;
                     const key = etiquetadoAvanceKey(row.bodega, row.proveedor);
                     if (key !== '|') etiquetadoAvanceMap.set(key, row);
                 }
@@ -3943,7 +4062,7 @@ Fallidos: ${fallidos}`);
             for (const row of consolidadas) {
                 const bodega = String(row.bodega || '').trim().toLowerCase();
                 const proveedor = String(row.proveedor3 || etiquetadoModeloDesdeCodigo(row.codigo) || '').trim().toLowerCase();
-                if (!bodega || !proveedor) continue;
+                if (!bodega || !proveedor || etiquetadoBodegaExcluidaAvance(bodega)) continue;
                 const key = etiquetadoAvanceKey(bodega, proveedor);
                 if (!map.has(key)) map.set(key, { bodega, proveedor, tipo_sku: etiquetadoTipoDesdeBodega(bodega), total: 0, conDemanda: 0, conExistencia: 0, sumaDemanda: 0, sumaExistencia: 0 });
                 const item = map.get(key);
@@ -3961,7 +4080,7 @@ Fallidos: ${fallidos}`);
         function etiquetadoAvanceActualInfo() {
             const bodega = String(document.getElementById('etiqFiltroBodega')?.value || '').trim().toLowerCase();
             const proveedor = String(document.getElementById('etiqFiltroProveedor')?.value || '').trim().toLowerCase();
-            if (!bodega || bodega === '__todas__' || !proveedor) return null;
+            if (!bodega || bodega === '__todas__' || !proveedor || etiquetadoBodegaExcluidaAvance(bodega)) return null;
             const rows = etiquetadoRows.filter(r => r.bodega === bodega && r.proveedor3 === proveedor);
             return {
                 bodega,
@@ -3974,24 +4093,115 @@ Fallidos: ${fallidos}`);
         }
 
         async function etiquetadoMarcarCompletoActual() {
-            const info = etiquetadoAvanceActualInfo();
-            if (!info) return alert('Selecciona una bodega específica y un proveedor específico para dar visto bueno. No aplica para “todas” ni “todos los proveedores”.');
-            if (!info.total_etiquetas) return alert('No hay registros para marcar como completo.');
-            if (!etiquetadoAvanceTablaDisponible) return alert('No se encontró la tabla etiquetado_qr_avance en Supabase. Corre primero el SQL incluido en el clon actualizado.');
-            const now = new Date().toISOString();
-            const payload = {
-                bodega: info.bodega,
-                proveedor: info.proveedor,
-                tipo_sku: info.tipo_sku,
-                estado: 'COMPLETO',
-                total_etiquetas: info.total_etiquetas,
-                total_con_existencia: info.total_con_existencia,
-                total_con_rotacion: info.total_con_rotacion,
-                porcentaje_avance: 100,
-                fecha_visto_bueno: now,
-                usuario_visto_bueno: getUsuarioActual() || null,
-                updated_at: now
+            return etiquetadoAbrirMenuBodegasVistoBueno();
+        }
+
+        function etiquetadoInfoVistoBuenoDesdeRows(bodega, proveedor, rows) {
+            const b = String(bodega || '').trim().toLowerCase();
+            const p = String(proveedor || '').trim().toLowerCase();
+            const list = (rows || []).filter(r => String(r.bodega || '').trim().toLowerCase() === b && String(r.proveedor3 || '').trim().toLowerCase() === p);
+            return {
+                bodega: b,
+                proveedor: p,
+                tipo_sku: etiquetadoTipoDesdeBodega(b),
+                total_etiquetas: list.length,
+                total_con_existencia: list.filter(r => Number(r.existencia || 0) > 0).length,
+                total_con_rotacion: list.filter(r => r.rotacion === '+').length
             };
+        }
+
+        async function etiquetadoAbrirMenuBodegasVistoBueno() {
+            const prov = etiquetadoProveedorActual();
+            if (!etiquetadoDemandaRaw.length) return alert('Carga primero el CSV de demanda + inventario.');
+            if (!prov || prov === 'todos' || prov.length < 3) return alert('Selecciona un proveedor específico para dar visto bueno por bodegas.');
+            if (!etiquetadoAvanceTablaDisponible) return alert('No se encontró la tabla etiquetado_qr_avance en Supabase. Corre primero el SQL incluido en el clon actualizado.');
+            etiquetadoSetStatus(`Preparando selección de bodegas para visto bueno de ${prov.toUpperCase()}...`);
+            let rows = await etiquetadoConstruirFilasExportacionBodegas([], prov);
+            rows = rows.filter(row => !etiquetadoBodegaExcluidaAvance(row.bodega));
+            if (!rows.length) return alert(`No hay registros para proveedor ${prov.toUpperCase()} con los filtros actuales.`);
+            const conteos = new Map();
+            for (const row of rows) {
+                const b = String(row.bodega || '').trim().toLowerCase();
+                if (!b || etiquetadoBodegaExcluidaAvance(b)) continue;
+                if (!conteos.has(b)) conteos.set(b, { total: 0, existencia: 0, rotacion: 0 });
+                const acc = conteos.get(b);
+                acc.total += 1;
+                if (Number(row.existencia || 0) > 0) acc.existencia += 1;
+                if (row.rotacion === '+') acc.rotacion += 1;
+            }
+            const bodegas = etiquetadoBodegasOrdenadas([...conteos.keys()]);
+            etiquetadoExportacionMasivaContext = { modo: 'visto_bueno', prov, rows, bodegas, conteos };
+            const cont = document.getElementById('etiqModalBodegasLista');
+            const resumen = document.getElementById('etiqModalBodegasResumen');
+            const subtitulo = document.getElementById('etiqModalBodegasSubtitulo');
+            const titulo = document.getElementById('etiqModalBodegasTitulo');
+            const nota = document.getElementById('etiqModalBodegasNota');
+            const btn = document.getElementById('etiqModalBodegasConfirmarBtn');
+            if (subtitulo) subtitulo.innerText = 'Avance de Etiquetado QR';
+            if (titulo) titulo.innerText = 'Dar visto bueno por bodegas';
+            if (resumen) resumen.innerText = `${prov.toUpperCase()} · ${rows.length.toLocaleString('es-MX')} registro(s) · ${bodegas.length} bodega(s) disponibles`;
+            if (nota) nota.innerText = 'Selecciona las bodegas que ya quedaron revisadas. ACC y CER seleccionan rápidamente los grupos operativos por default.';
+            if (btn) {
+                btn.innerText = 'Guardar visto bueno';
+                btn.className = 'bg-emerald-600 text-white rounded-2xl py-3 text-sm font-black uppercase active:bg-emerald-700';
+            }
+            if (cont) {
+                cont.innerHTML = bodegas.map(b => {
+                    const c = conteos.get(b) || { total: 0, existencia: 0, rotacion: 0 };
+                    const av = etiquetadoAvanceMap.get(etiquetadoAvanceKey(b, prov));
+                    const completo = av?.estado === 'COMPLETO';
+                    return `
+                    <label class="flex items-center justify-between gap-3 border border-slate-200 rounded-2xl px-4 py-3 bg-white active:bg-emerald-50">
+                        <span class="flex items-center gap-3 min-w-0">
+                            <input type="checkbox" class="etiq-modal-bodega-check w-5 h-5 rounded text-emerald-600" value="${escapeHtmlEditor(b)}" checked>
+                            <span class="min-w-0">
+                                <span class="font-black text-slate-700 uppercase block">${escapeHtmlEditor(b)}</span>
+                                <span class="text-[10px] font-black ${completo ? 'text-emerald-600' : 'text-amber-600'} uppercase">${completo ? 'Ya tiene visto bueno' : 'Pendiente'}</span>
+                            </span>
+                        </span>
+                        <span class="text-right text-[11px] font-black text-slate-400 leading-tight">${Number(c.total || 0).toLocaleString('es-MX')}<br><span class="font-bold">Dem ${Number(c.rotacion || 0).toLocaleString('es-MX')} · Exi ${Number(c.existencia || 0).toLocaleString('es-MX')}</span></span>
+                    </label>`;
+                }).join('');
+            }
+            const modal = document.getElementById('modalEtiqBodegas');
+            modal?.classList.remove('hidden');
+            modal?.classList.add('flex');
+        }
+
+        async function etiquetadoConfirmarVistoBuenoBodegas() {
+            const ctx = etiquetadoExportacionMasivaContext;
+            if (!ctx || ctx.modo !== 'visto_bueno' || !Array.isArray(ctx.rows)) return alert('No hay datos preparados para guardar visto bueno.');
+            const seleccionadas = etiquetadoModalBodegasSeleccionadas();
+            if (!seleccionadas.length) return alert('Selecciona al menos una bodega.');
+            if (!confirm(`¿Registrar visto bueno para ${seleccionadas.length} bodega(s) del proveedor ${String(ctx.prov || '').toUpperCase()}?`)) return;
+            const now = new Date().toISOString();
+            const payload = [];
+            const rowsPorBodega = new Map();
+            const seleccionSet = new Set(seleccionadas);
+            for (const row of ctx.rows) {
+                const b = String(row.bodega || '').trim().toLowerCase();
+                if (!seleccionSet.has(b) || etiquetadoBodegaExcluidaAvance(b)) continue;
+                if (!rowsPorBodega.has(b)) rowsPorBodega.set(b, []);
+                rowsPorBodega.get(b).push(row);
+            }
+            for (const b of etiquetadoBodegasOrdenadas(seleccionadas)) {
+                const info = etiquetadoInfoVistoBuenoDesdeRows(b, ctx.prov, rowsPorBodega.get(b) || []);
+                if (!info.total_etiquetas) continue;
+                payload.push({
+                    bodega: info.bodega,
+                    proveedor: info.proveedor,
+                    tipo_sku: info.tipo_sku,
+                    estado: 'COMPLETO',
+                    total_etiquetas: info.total_etiquetas,
+                    total_con_existencia: info.total_con_existencia,
+                    total_con_rotacion: info.total_con_rotacion,
+                    porcentaje_avance: 100,
+                    fecha_visto_bueno: now,
+                    usuario_visto_bueno: getUsuarioActual() || null,
+                    updated_at: now
+                });
+            }
+            if (!payload.length) return alert('No hay registros para las bodegas seleccionadas.');
             try {
                 await fetchJsonOrThrow(`${SB_URL}etiquetado_qr_avance?on_conflict=bodega,proveedor`, {
                     method: 'POST',
@@ -4000,35 +4210,138 @@ Fallidos: ${fallidos}`);
                 });
                 await etiquetadoCargarAvanceSupabase();
                 etiquetadoRenderAvance();
-                alert(`✅ Visto bueno registrado: ${info.bodega.toUpperCase()} / ${info.proveedor.toUpperCase()}.`);
+                etiquetadoCerrarMenuBodegasExportacion();
+                etiquetadoSetStatus(`Visto bueno registrado: ${String(ctx.prov || '').toUpperCase()} · ${payload.length} bodega(s).`, 'ok');
+                alert(`✅ Visto bueno registrado para ${payload.length} bodega(s) de ${String(ctx.prov || '').toUpperCase()}.`);
             } catch(e) {
                 alert(`No se pudo guardar el visto bueno: ${e.message || e}`);
             }
         }
 
         async function etiquetadoQuitarCompletoActual() {
-            const info = etiquetadoAvanceActualInfo();
-            if (!info) return alert('Selecciona una bodega específica y un proveedor específico para quitar el visto bueno.');
-            if (!confirm(`¿Quitar visto bueno de ${info.bodega.toUpperCase()} / ${info.proveedor.toUpperCase()}?`)) return;
+            return etiquetadoAbrirMenuBodegasQuitarVistoBueno();
+        }
+
+        function etiquetadoProveedorVistoBuenoActual() {
+            const principal = String(document.getElementById('etiqFiltroProveedor')?.value || '').trim().toLowerCase();
+            if (principal && principal !== 'todos') return principal;
+            const avance = String(document.getElementById('etiqAvanceFiltroProveedor')?.value || '').trim().toLowerCase();
+            if (avance && avance !== 'todos') return avance;
+            return '';
+        }
+
+        async function etiquetadoAbrirMenuBodegasQuitarVistoBueno() {
+            const prov = etiquetadoProveedorVistoBuenoActual();
+            if (!prov || prov === 'todos' || prov.length < 3) return alert('Selecciona un proveedor específico para quitar visto bueno por bodegas.');
             if (!etiquetadoAvanceTablaDisponible) return alert('No se encontró la tabla etiquetado_qr_avance en Supabase.');
+            etiquetadoSetStatus(`Preparando selección de bodegas para quitar visto bueno de ${prov.toUpperCase()}...`);
+
+            const base = etiquetadoBaseAvanceRows().filter(d => String(d.proveedor || '').trim().toLowerCase() === prov && !etiquetadoBodegaExcluidaAvance(d.bodega));
+            const detalleMap = new Map();
+            for (const d of base) {
+                const b = String(d.bodega || '').trim().toLowerCase();
+                if (!b) continue;
+                detalleMap.set(b, { bodega: b, total: Number(d.total || 0), conDemanda: Number(d.conDemanda || 0), conExistencia: Number(d.conExistencia || 0) });
+            }
+            for (const av of etiquetadoAvanceMap.values()) {
+                const b = String(av?.bodega || '').trim().toLowerCase();
+                const p = String(av?.proveedor || '').trim().toLowerCase();
+                if (!b || p !== prov || etiquetadoBodegaExcluidaAvance(b)) continue;
+                if (!detalleMap.has(b)) {
+                    detalleMap.set(b, { bodega: b, total: Number(av.total_etiquetas || 0), conDemanda: Number(av.total_con_rotacion || 0), conExistencia: Number(av.total_con_existencia || 0) });
+                }
+            }
+            const bodegas = etiquetadoBodegasOrdenadas([...detalleMap.keys()]);
+            if (!bodegas.length) return alert(`No hay bodegas disponibles para proveedor ${prov.toUpperCase()} en Avance de Etiquetado QR.`);
+            const completas = bodegas.filter(b => etiquetadoAvanceMap.get(etiquetadoAvanceKey(b, prov))?.estado === 'COMPLETO');
+            etiquetadoExportacionMasivaContext = { modo: 'quitar_visto_bueno', prov, bodegas, detalleMap };
+
+            const cont = document.getElementById('etiqModalBodegasLista');
+            const resumen = document.getElementById('etiqModalBodegasResumen');
+            const subtitulo = document.getElementById('etiqModalBodegasSubtitulo');
+            const titulo = document.getElementById('etiqModalBodegasTitulo');
+            const nota = document.getElementById('etiqModalBodegasNota');
+            const btn = document.getElementById('etiqModalBodegasConfirmarBtn');
+            if (subtitulo) subtitulo.innerText = 'Avance de Etiquetado QR';
+            if (titulo) titulo.innerText = 'Quitar visto bueno por bodegas';
+            if (resumen) resumen.innerText = `${prov.toUpperCase()} · ${bodegas.length} bodega(s) disponibles · ${completas.length} con visto bueno`;
+            if (nota) nota.innerText = 'Selecciona las bodegas donde quieres quitar el visto bueno. ACC y CER seleccionan rápidamente los grupos operativos por default.';
+            if (btn) {
+                btn.innerText = 'Quitar visto bueno';
+                btn.className = 'bg-rose-600 text-white rounded-2xl py-3 text-sm font-black uppercase active:bg-rose-700';
+            }
+            if (cont) {
+                cont.innerHTML = bodegas.map(b => {
+                    const d = detalleMap.get(b) || { total: 0, conDemanda: 0, conExistencia: 0 };
+                    const av = etiquetadoAvanceMap.get(etiquetadoAvanceKey(b, prov));
+                    const completo = av?.estado === 'COMPLETO';
+                    return `
+                    <label class="flex items-center justify-between gap-3 border border-slate-200 rounded-2xl px-4 py-3 bg-white active:bg-rose-50">
+                        <span class="flex items-center gap-3 min-w-0">
+                            <input type="checkbox" class="etiq-modal-bodega-check w-5 h-5 rounded text-rose-600" value="${escapeHtmlEditor(b)}" ${completo ? 'checked' : ''}>
+                            <span class="min-w-0">
+                                <span class="font-black text-slate-700 uppercase block">${escapeHtmlEditor(b)}</span>
+                                <span class="text-[10px] font-black ${completo ? 'text-emerald-600' : 'text-amber-600'} uppercase">${completo ? 'Tiene visto bueno' : 'Pendiente'}</span>
+                            </span>
+                        </span>
+                        <span class="text-right text-[11px] font-black text-slate-400 leading-tight">${Number(d.total || 0).toLocaleString('es-MX')}<br><span class="font-bold">Dem ${Number(d.conDemanda || 0).toLocaleString('es-MX')} · Exi ${Number(d.conExistencia || 0).toLocaleString('es-MX')}</span></span>
+                    </label>`;
+                }).join('');
+            }
+            const modal = document.getElementById('modalEtiqBodegas');
+            modal?.classList.remove('hidden');
+            modal?.classList.add('flex');
+        }
+
+        async function etiquetadoConfirmarQuitarVistoBuenoBodegas() {
+            const ctx = etiquetadoExportacionMasivaContext;
+            if (!ctx || ctx.modo !== 'quitar_visto_bueno') return alert('No hay datos preparados para quitar visto bueno.');
+            const seleccionadas = etiquetadoModalBodegasSeleccionadas();
+            if (!seleccionadas.length) return alert('Selecciona al menos una bodega.');
+            if (!confirm(`¿Quitar visto bueno para ${seleccionadas.length} bodega(s) del proveedor ${String(ctx.prov || '').toUpperCase()}?`)) return;
             const now = new Date().toISOString();
             const payload = { estado: 'PENDIENTE', porcentaje_avance: 0, fecha_visto_bueno: null, usuario_visto_bueno: null, updated_at: now };
-            try {
-                await fetchJsonOrThrow(`${SB_URL}etiquetado_qr_avance?bodega=eq.${encodeURIComponent(info.bodega)}&proveedor=eq.${encodeURIComponent(info.proveedor)}`, {
-                    method: 'PATCH',
-                    headers: etiquetadoAvanceHeaders({ 'Prefer': 'return=minimal' }),
-                    body: JSON.stringify(payload)
-                });
-                await etiquetadoCargarAvanceSupabase();
-                etiquetadoRenderAvance();
-                alert(`Visto bueno quitado: ${info.bodega.toUpperCase()} / ${info.proveedor.toUpperCase()}.`);
-            } catch(e) {
-                alert(`No se pudo quitar el visto bueno: ${e.message || e}`);
+            const errores = [];
+            let ok = 0;
+            for (const b of etiquetadoBodegasOrdenadas(seleccionadas)) {
+                if (!b || etiquetadoBodegaExcluidaAvance(b)) continue;
+                try {
+                    await fetchJsonOrThrow(`${SB_URL}etiquetado_qr_avance?bodega=eq.${encodeURIComponent(b)}&proveedor=eq.${encodeURIComponent(ctx.prov)}`, {
+                        method: 'PATCH',
+                        headers: etiquetadoAvanceHeaders({ 'Prefer': 'return=minimal' }),
+                        body: JSON.stringify(payload)
+                    });
+                    ok += 1;
+                } catch(e) {
+                    errores.push(`${b.toUpperCase()}: ${e.message || e}`);
+                }
+            }
+            await etiquetadoCargarAvanceSupabase();
+            etiquetadoRenderAvance();
+            etiquetadoCerrarMenuBodegasExportacion();
+            if (errores.length) {
+                alert(`Se quitó visto bueno en ${ok} bodega(s), pero hubo errores:\n${errores.slice(0, 8).join('\n')}`);
+                etiquetadoSetStatus(`Visto bueno quitado parcialmente: ${String(ctx.prov || '').toUpperCase()} · ${ok} bodega(s).`, 'error');
+            } else {
+                alert(`Visto bueno quitado para ${ok} bodega(s) de ${String(ctx.prov || '').toUpperCase()}.`);
+                etiquetadoSetStatus(`Visto bueno quitado: ${String(ctx.prov || '').toUpperCase()} · ${ok} bodega(s).`, 'ok');
             }
         }
 
         function etiquetadoAvanceSelectValue(id) {
             return String(document.getElementById(id)?.value || '').trim().toLowerCase();
+        }
+
+        function etiquetadoSincronizarProveedorAvanceDesdePrincipal() {
+            const proveedorPrincipal = String(document.getElementById('etiqFiltroProveedor')?.value || '').trim().toLowerCase();
+            const selAvance = document.getElementById('etiqAvanceFiltroProveedor');
+            if (!selAvance) return;
+            if (!proveedorPrincipal) {
+                selAvance.value = '';
+                return;
+            }
+            const existe = Array.from(selAvance.options || []).some(o => String(o.value || '').trim().toLowerCase() === proveedorPrincipal);
+            selAvance.value = existe ? proveedorPrincipal : '';
         }
 
         function etiquetadoSetSelectOptions(id, values, labelTodas, keepValue = true) {
@@ -4109,6 +4422,10 @@ Fallidos: ${fallidos}`);
             etiquetadoSetSelectOptions('etiqAvanceFiltroBodega', baseDetalle.map(x => x.bodega), 'Todas');
             etiquetadoSetSelectOptions('etiqAvanceFiltroTipo', baseDetalle.map(x => x.tipo_sku), 'Todos');
             etiquetadoSetSelectOptions('etiqAvanceFiltroProveedor', baseDetalle.map(x => x.proveedor), 'Todos');
+            if (etiquetadoSyncProveedorAvancePendiente) {
+                etiquetadoSyncProveedorAvancePendiente = false;
+                etiquetadoSincronizarProveedorAvanceDesdePrincipal();
+            }
 
             const filtroBodega = etiquetadoAvanceSelectValue('etiqAvanceFiltroBodega');
             const filtroTipo = etiquetadoAvanceSelectValue('etiqAvanceFiltroTipo');
@@ -4216,6 +4533,7 @@ Fallidos: ${fallidos}`);
                 etiquetadoActualizarListadoProveedores();
             }
             const prov = String(document.getElementById('etiqFiltroProveedor')?.value || '').trim().toLowerCase();
+            etiquetadoSyncProveedorAvancePendiente = true;
             const estado = String(document.getElementById('etiqFiltroEstado')?.value || '').trim();
             const rot = String(document.getElementById('etiqFiltroRotacion')?.value || '').trim();
             const exi = String(document.getElementById('etiqFiltroExistencia')?.value || '').trim();
@@ -4269,7 +4587,11 @@ Fallidos: ${fallidos}`);
             return ETIQ_HEADERS_BASE.map(h => h === '__EXISTENCIA__' ? existencia : h);
         }
 
-        function etiquetadoFilaCsv(row, bodega) {
+        function etiquetadoHeadersCsvParaBodega(bodega) {
+            return [...etiquetadoHeadersParaBodega(bodega), 'bodega'];
+        }
+
+        function etiquetadoFilaCsvBase(row) {
             return [
                 row.codigo,
                 row.status,
@@ -4284,13 +4606,54 @@ Fallidos: ${fallidos}`);
             ];
         }
 
+        function etiquetadoFilaCsv(row, bodega) {
+            return [...etiquetadoFilaCsvBase(row), String(bodega || row.bodega || '').trim().toLowerCase()];
+        }
+
+        function etiquetadoBodegasOrdenadas(values) {
+            const set = new Set((values || []).map(v => String(v || '').trim().toLowerCase()).filter(Boolean));
+            const orden = [];
+            for (const b of (ETIQ_BODEGAS_ORDEN_PREFERIDO || [])) if (set.has(String(b).toLowerCase()) && !orden.includes(String(b).toLowerCase())) orden.push(String(b).toLowerCase());
+            for (const b of (ALMACENES_FALLBACK || [])) if (set.has(String(b).toLowerCase()) && !orden.includes(String(b).toLowerCase())) orden.push(String(b).toLowerCase());
+            for (const b of [...set].sort((a,b) => a.localeCompare(b, 'es', { numeric:true, sensitivity:'base' }))) if (!orden.includes(b)) orden.push(b);
+            return orden;
+        }
+
         function etiquetadoBuildCsv(rows, bodega, invertirParaImpresion = true) {
-            const lines = [etiquetadoHeadersParaBodega(bodega).map(etiquetadoCsvEscape).join(',')];
+            const bodegaHeader = String(bodega || rows?.[0]?.bodega || 'TOTAL').trim().toLowerCase();
+            const lines = [etiquetadoHeadersCsvParaBodega(bodegaHeader).map(etiquetadoCsvEscape).join(',')];
             // BarTender/imprenta procesa el CSV en secuencia.
             // Para que las etiquetas salgan físicamente en el orden esperado,
             // exportamos de atrás hacia adelante tomando como base el orden visible.
             const salida = invertirParaImpresion ? [...rows].reverse() : [...rows];
-            salida.forEach(row => lines.push(etiquetadoFilaCsv(row, bodega).map(etiquetadoCsvEscape).join(',')));
+            const bodegaParam = String(bodega || '').trim().toLowerCase();
+            salida.forEach(row => {
+                const bodegaFila = (!bodegaParam || bodegaParam === 'total' || bodegaParam === '__todas__') ? row.bodega : bodegaParam;
+                lines.push(etiquetadoFilaCsv(row, bodegaFila).map(etiquetadoCsvEscape).join(','));
+            });
+            return lines.join('\r\n');
+        }
+
+        function etiquetadoBuildCsvBodegas(rows, bodegas, invertirParaImpresion = true) {
+            const bodegasOrden = etiquetadoBodegasOrdenadas(bodegas?.length ? bodegas : rows.map(r => r.bodega));
+            const headerBodega = bodegasOrden[0] || 'TOTAL';
+            const lines = [etiquetadoHeadersCsvParaBodega(headerBodega).map(etiquetadoCsvEscape).join(',')];
+            const rowsPorBodega = new Map();
+            for (const row of (rows || [])) {
+                const b = String(row.bodega || '').trim().toLowerCase();
+                if (!b) continue;
+                if (!rowsPorBodega.has(b)) rowsPorBodega.set(b, []);
+                rowsPorBodega.get(b).push(row);
+            }
+            let gruposAgregados = 0;
+            for (const bodega of bodegasOrden) {
+                const list = rowsPorBodega.get(bodega) || [];
+                if (!list.length) continue;
+                if (gruposAgregados > 0) lines.push('');
+                const salida = invertirParaImpresion ? [...list].reverse() : [...list];
+                salida.forEach(row => lines.push(etiquetadoFilaCsv(row, bodega).map(etiquetadoCsvEscape).join(',')));
+                gruposAgregados++;
+            }
             return lines.join('\r\n');
         }
 
@@ -4362,12 +4725,12 @@ Fallidos: ${fallidos}`);
             const head = document.getElementById('etiqTablaHead');
             const body = document.getElementById('etiqTablaBody');
             const bodegaHeader = bodega === '__todas__' ? 'TOTAL' : bodega;
-            const headers = bodega === '__todas__' ? ['bodega', ...etiquetadoHeadersParaBodega('TOTAL')] : etiquetadoHeadersParaBodega(bodegaHeader);
+            const headers = etiquetadoHeadersCsvParaBodega(bodegaHeader);
             if (head) head.innerHTML = headers.map(etiquetadoHeaderHtml).join('');
             if (body) {
                 const visibles = rows.slice(0, 300);
                 body.innerHTML = visibles.length ? visibles.map(row => {
-                    const vals = bodega === '__todas__' ? [row.bodega.toUpperCase(), ...etiquetadoFilaCsv(row, row.bodega)] : etiquetadoFilaCsv(row, bodegaHeader);
+                    const vals = etiquetadoFilaCsv(row, row.bodega || bodegaHeader);
                     return `<tr class="border-b border-slate-100 hover:bg-amber-50/50">${vals.map(v => `<td class="px-3 py-2 whitespace-nowrap text-slate-700 font-semibold">${escapeHtmlEditor(v)}</td>`).join('')}</tr>`;
                 }).join('') : `<tr><td colspan="11" class="px-4 py-10 text-center text-slate-400 font-bold">Sin registros.</td></tr>`;
             }
@@ -4385,41 +4748,153 @@ Fallidos: ${fallidos}`);
             return String(document.getElementById('etiqFiltroProveedor')?.value || 'todos').trim().toLowerCase() || 'todos';
         }
 
+        async function etiquetadoConstruirFilasExportacionBodegas(bodegas, prov) {
+            const bodegasSet = new Set((bodegas || []).map(b => String(b || '').trim().toLowerCase()).filter(Boolean));
+            const proveedor = String(prov || '').trim().toLowerCase();
+            const estado = String(document.getElementById('etiqFiltroEstado')?.value || '').trim();
+            const rot = String(document.getElementById('etiqFiltroRotacion')?.value || '').trim();
+            const exi = String(document.getElementById('etiqFiltroExistencia')?.value || '').trim();
+            const q = String(document.getElementById('etiqFiltroTexto')?.value || '').trim().toLowerCase();
+            const gruposSeleccionados = new Set(etiquetadoGruposSeleccionados());
+            const filtrosBaseGrupo = { estado, rot, exi, q };
+            const combosActivos = etiquetadoProveedorBodegaActivosSet();
+            let base = etiquetadoDemandaRaw.filter(r => {
+                const cod = String(r['Articulo'] || '').trim().toLowerCase();
+                const bod = String(r['Bodega'] || '').trim().toLowerCase();
+                if (!cod || !bod || etiquetadoCodigoOmitido(cod)) return false;
+                const proveedorCod = etiquetadoModeloDesdeCodigo(cod);
+                if (!combosActivos.has(etiquetadoAvanceKey(bod, proveedorCod))) return false;
+                if (bodegasSet.size && !bodegasSet.has(bod)) return false;
+                if (proveedor && proveedor !== 'todos' && proveedorCod !== proveedor) return false;
+                return true;
+            });
+            const consolidadas = etiquetadoConsolidar(base);
+            try { await etiquetadoCargarCatalogoPara(consolidadas); }
+            catch(e) { etiquetadoSetStatus(`No se pudo completar catálogo: ${e.message || e}. Se exportará lo disponible.`, 'error'); }
+            try { await etiquetadoCargarCodigosBarraPara(consolidadas); }
+            catch(e) { etiquetadoSetStatus(`No se pudieron completar códigos de barras: ${e.message || e}. Se exportará lo disponible.`, 'error'); }
+            let rows = etiquetadoConstruirFilas(consolidadas).filter(row => {
+                if (!etiquetadoCumpleFiltrosBaseGrupo(row, filtrosBaseGrupo)) return false;
+                const grupoRow = String(row.grupoFinal || row.grupo || '').trim().toLowerCase() || 'sin grupo';
+                if (gruposSeleccionados.size && !gruposSeleccionados.has(grupoRow)) return false;
+                return true;
+            });
+            etiquetadoOrdenarRows(rows);
+            return rows;
+        }
+
         function etiquetadoGenerarCsvSeleccionActual() {
             const bodega = String(document.getElementById('etiqFiltroBodega')?.value || etiquetadoAlmacenInicial || '').toLowerCase();
             if (!etiquetadoRowsFiltradas.length) return alert('No hay registros para exportar.');
-            if (bodega === '__todas__') return etiquetadoGenerarPorTodasBodegas();
+            if (bodega === '__todas__') return etiquetadoAbrirMenuBodegasExportacion();
             const prov = etiquetadoProveedorActual();
             const csv = etiquetadoBuildCsv(etiquetadoRowsFiltradas, bodega);
             etiquetadoDownloadBlob(`etiquetado_qr_${bodega}_${prov}_${etiquetadoPeriodo()}.csv`, csv);
         }
 
         async function etiquetadoGenerarPorTodasBodegas() {
+            return etiquetadoAbrirMenuBodegasExportacion();
+        }
+
+        async function etiquetadoAbrirMenuBodegasExportacion() {
             const prov = etiquetadoProveedorActual();
-            if (!prov || prov === 'todos' || prov.length < 3) return alert('Selecciona un proveedor de la lista, por ejemplo EMI, para generar por todas las bodegas.');
-            const sel = document.getElementById('etiqFiltroBodega');
-            const prev = sel?.value || etiquetadoAlmacenInicial;
-            if (sel) sel.value = '__todas__';
-            await etiquetadoAplicarFiltros();
-            const rows = (etiquetadoRowsFiltradas || []).filter(x => x.proveedor3 === prov);
-            if (!rows.length) { if (sel) sel.value = prev; await etiquetadoAplicarFiltros(); return alert(`No hay registros para proveedor ${prov.toUpperCase()}.`); }
-            const grupos = new Map();
-            rows.forEach(r => { if (!grupos.has(r.bodega)) grupos.set(r.bodega, []); grupos.get(r.bodega).push(r); });
-            if (window.JSZip) {
-                const zip = new JSZip();
-                for (const [bodega, list] of grupos.entries()) zip.file(`etiquetado_qr_${bodega}_${prov}_${etiquetadoPeriodo()}.csv`, etiquetadoBuildCsv(list, bodega));
-                const blob = await zip.generateAsync({type:'blob'});
-                etiquetadoDownloadBlob(`etiquetado_qr_${prov}_todas_bodegas_${etiquetadoPeriodo()}.zip`, blob, 'application/zip');
-            } else {
-                for (const [bodega, list] of grupos.entries()) etiquetadoDownloadBlob(`etiquetado_qr_${bodega}_${prov}_${etiquetadoPeriodo()}.csv`, etiquetadoBuildCsv(list, bodega));
+            if (!etiquetadoDemandaRaw.length) return alert('Carga primero el CSV de demanda + inventario.');
+            if (!prov || prov === 'todos' || prov.length < 3) return alert('Selecciona un proveedor de la lista, por ejemplo RYT, para generar por varias bodegas.');
+            etiquetadoSetStatus(`Preparando selección de bodegas para ${prov.toUpperCase()}...`);
+            const rows = await etiquetadoConstruirFilasExportacionBodegas([], prov);
+            if (!rows.length) return alert(`No hay registros para proveedor ${prov.toUpperCase()} con los filtros actuales.`);
+            const conteos = new Map();
+            for (const row of rows) {
+                const b = String(row.bodega || '').trim().toLowerCase();
+                if (!b) continue;
+                conteos.set(b, (conteos.get(b) || 0) + 1);
             }
+            const bodegas = etiquetadoBodegasOrdenadas([...conteos.keys()]);
+            etiquetadoExportacionMasivaContext = { modo: 'exportacion', prov, rows, bodegas };
+            const cont = document.getElementById('etiqModalBodegasLista');
+            const resumen = document.getElementById('etiqModalBodegasResumen');
+            const subtitulo = document.getElementById('etiqModalBodegasSubtitulo');
+            const titulo = document.getElementById('etiqModalBodegasTitulo');
+            const nota = document.getElementById('etiqModalBodegasNota');
+            const btn = document.getElementById('etiqModalBodegasConfirmarBtn');
+            if (subtitulo) subtitulo.innerText = 'Exportación masiva';
+            if (titulo) titulo.innerText = 'Seleccionar bodegas';
+            if (resumen) resumen.innerText = `${prov.toUpperCase()} · ${rows.length.toLocaleString('es-MX')} registro(s) · ${bodegas.length} bodega(s) disponibles`;
+            if (nota) nota.innerText = 'Se genera un solo CSV con columna bodega y una línea vacía entre el final de una bodega y el inicio de la siguiente.';
+            if (btn) {
+                btn.innerText = 'Generar CSV';
+                btn.className = 'bg-amber-600 text-white rounded-2xl py-3 text-sm font-black uppercase active:bg-amber-700';
+            }
+            if (cont) {
+                cont.innerHTML = bodegas.map(b => `
+                    <label class="flex items-center justify-between gap-3 border border-slate-200 rounded-2xl px-4 py-3 bg-white active:bg-amber-50">
+                        <span class="flex items-center gap-3 min-w-0">
+                            <input type="checkbox" class="etiq-modal-bodega-check w-5 h-5 rounded text-amber-600" value="${escapeHtmlEditor(b)}" checked>
+                            <span class="font-black text-slate-700 uppercase">${escapeHtmlEditor(b)}</span>
+                        </span>
+                        <span class="text-xs font-black text-slate-400">${Number(conteos.get(b) || 0).toLocaleString('es-MX')}</span>
+                    </label>
+                `).join('');
+            }
+            const modal = document.getElementById('modalEtiqBodegas');
+            modal?.classList.remove('hidden');
+            modal?.classList.add('flex');
+        }
+
+        function etiquetadoModalBodegasSet(checked) {
+            document.querySelectorAll('.etiq-modal-bodega-check').forEach(ch => ch.checked = !!checked);
+        }
+
+        function etiquetadoModalBodegasSetGrupo(tipo) {
+            const set = new Set(etiquetadoBodegasRapidas(tipo));
+            document.querySelectorAll('.etiq-modal-bodega-check').forEach(ch => {
+                const val = String(ch.value || '').trim().toLowerCase();
+                ch.checked = set.has(val);
+            });
+        }
+
+        function etiquetadoModalBodegasSeleccionadas() {
+            return Array.from(document.querySelectorAll('.etiq-modal-bodega-check:checked'))
+                .map(ch => String(ch.value || '').trim().toLowerCase())
+                .filter(Boolean);
+        }
+
+        function etiquetadoCerrarMenuBodegasExportacion() {
+            const modal = document.getElementById('modalEtiqBodegas');
+            modal?.classList.add('hidden');
+            modal?.classList.remove('flex');
+        }
+
+        function etiquetadoConfirmarMenuBodegas() {
+            const ctx = etiquetadoExportacionMasivaContext;
+            if (ctx?.modo === 'visto_bueno') return etiquetadoConfirmarVistoBuenoBodegas();
+            if (ctx?.modo === 'quitar_visto_bueno') return etiquetadoConfirmarQuitarVistoBuenoBodegas();
+            return etiquetadoConfirmarExportacionBodegas();
+        }
+
+        function etiquetadoConfirmarExportacionBodegas() {
+            const ctx = etiquetadoExportacionMasivaContext;
+            if (!ctx || !Array.isArray(ctx.rows)) return alert('No hay datos preparados para exportar.');
+            const seleccionadas = etiquetadoModalBodegasSeleccionadas();
+            if (!seleccionadas.length) return alert('Selecciona al menos una bodega.');
+            const seleccionSet = new Set(seleccionadas);
+            const rows = ctx.rows.filter(r => seleccionSet.has(String(r.bodega || '').trim().toLowerCase()));
+            if (!rows.length) return alert('No hay registros para las bodegas seleccionadas.');
+            const bodegasOrden = etiquetadoBodegasOrdenadas(seleccionadas);
+            const csv = etiquetadoBuildCsvBodegas(rows, bodegasOrden);
+            const nombreBodegas = bodegasOrden.join(',');
+            etiquetadoDownloadBlob(`etiquetado_qr_${nombreBodegas}_${ctx.prov}_${etiquetadoPeriodo()}.csv`, csv);
+            etiquetadoCerrarMenuBodegasExportacion();
+            etiquetadoSetStatus(`CSV generado: ${ctx.prov.toUpperCase()} · ${rows.length.toLocaleString('es-MX')} registro(s) · bodegas ${bodegasOrden.map(b => b.toUpperCase()).join(', ')}.`, 'ok');
         }
 
         function etiquetadoDescargarMuestra() {
             if (!etiquetadoRowsFiltradas.length) return alert('No hay registros visibles.');
             const bodega = String(document.getElementById('etiqFiltroBodega')?.value || etiquetadoAlmacenInicial || '').toLowerCase();
             const rows = etiquetadoRowsFiltradas.slice(0, 300);
-            const csv = etiquetadoBuildCsv(rows, bodega === '__todas__' ? 'TOTAL' : bodega);
+            const csv = bodega === '__todas__'
+                ? etiquetadoBuildCsvBodegas(rows, etiquetadoBodegasOrdenadas(rows.map(r => r.bodega)))
+                : etiquetadoBuildCsv(rows, bodega);
             etiquetadoDownloadBlob(`muestra_etiquetado_qr_${etiquetadoProveedorActual()}_${etiquetadoPeriodo()}.csv`, csv);
         }
 
